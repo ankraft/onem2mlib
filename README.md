@@ -69,11 +69,11 @@ And add a &lt;contentInstances> to each of it.
 ## Supported Features & Limitations
 The following resource types are supported in this version.
 
-- [&lt;CSEBase>](./doc/onem2mlib/resources.m.html#onem2mlib.resources.CSEBase)
-- [&lt;AE>](./doc/onem2mlib/resources.m.html#onem2mlib.resources.AE)
-- [&lt;container>](./doc/onem2mlib/resources.m.html#onem2mlib.resources.Container)
-- [&lt;contentInstance>](./doc/onem2mlib/resources.m.html#onem2mlib.resources.ContentInstance)
-- [&lt;group>](./doc/onem2mlib/resources.m.html#onem2mlib.resources.Group)
+- [&lt;CSEBase>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.CSEBase)
+- [&lt;AE>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.AE)
+- [&lt;container>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.Container)
+- [&lt;contentInstance>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.ContentInstance)
+- [&lt;group>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.Group)
 
 See also [ROADMAP](ROADMAP.md) for open issues and planned enhancements.
 
