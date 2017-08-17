@@ -32,7 +32,7 @@ In addition you need to install the [lxml](http://lxml.de) library (install it w
 
 ## Usage
 
-Read the [full module documentation](http://htmlpreview.github.io?https://github.com/ankraft/onem2mlib/blob/master/doc/onem2mlib/index.html).
+Read the [full module documentation](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html).
 
 Have a look at the examples in the [examples](./examples) directory on how to use the *onem2mlib* module.
 
