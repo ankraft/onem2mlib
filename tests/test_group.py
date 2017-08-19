@@ -16,6 +16,7 @@ sys.path.append('..')
 import onem2mlib.session as SE
 import onem2mlib.constants as CON
 from onem2mlib.resources import *
+import onem2mlib.exceptions
 
 from conf import *
 
@@ -100,6 +101,72 @@ class TestGroup(unittest.TestCase):
 		self.assertEqual(TestGroup.grp.memberIDs, mm)
 
 
+	def test_getGroup(self):
+		self.assertIsNotNone(TestGroup.cse)
+		self.assertIsNotNone(TestGroup.ae)
+		self.assertIsNone(TestGroup.ae.findGroup(GRP_NAME+'2'))
+
+		# create a <group> by using the get() method
+		grp = Container(TestGroup.ae, resourceName=GRP_NAME+'2')
+		self.assertIsNotNone(grp)
+		self.assertTrue(grp.get())
+
+		# Check whether it was really created in the CSE
+		grp2 = TestGroup.ae.findGroup(GRP_NAME+'2')
+		self.assertIsNotNone(grp2)
+		self.assertEqual(grp.resourceID, grp2.resourceID)
+
+		# Delete the new <group> again
+		self.assertTrue(grp.deleteFromCSE())
+		self.assertIsNone(TestGroup.ae.findContainer(GRP_NAME+'2'))
+
+
+	def  test_createInstantly(self):
+		self.assertIsNotNone(TestGroup.cse)
+		self.assertIsNotNone(TestGroup.ae)
+		self.assertIsNone(TestGroup.ae.findContainer(GRP_NAME+'2'))
+		containers = TestGroup.ae.containers()
+		self.assertIsNotNone(containers)
+
+		# create an <group> while init
+		grp = Group(TestGroup.ae, resourceName=GRP_NAME+'2', resources=containers, instantly=True)
+		self.assertIsNotNone(TestGroup.cnt2)
+
+		# Check whether it was really created in the CSE
+		grp2 = TestGroup.ae.findContainer(GRP_NAME+'2')
+		self.assertIsNotNone(grp2)
+		self.assertEqual(grp.resourceID, grp2.resourceID)
+
+		# Delete the new <container> again
+		self.assertTrue(grp.deleteFromCSE())
+		self.assertIsNone(TestGroup.ae.findGroup(GRP_NAME+'2'))
+
+
+	def test_emptyMemberIDs(self):
+		self.assertIsNotNone(TestGroup.cse)
+		self.assertIsNotNone(TestGroup.ae)
+		self.assertIsNone(TestGroup.ae.findContainer(GRP_NAME+'2'))
+		grp = None
+
+		try:
+			# create an <group> while init, no memberIDs
+			grp = Group(TestGroup.ae, resourceName=GRP_NAME+'2',  instantly=True)
+			self.assertIsNotNone(TestGroup.cnt2)
+
+			# Check whether it was really created in the CSE
+			grp2 = TestGroup.ae.findContainer(GRP_NAME+'2')
+			self.assertIsNotNone(grp2)
+			self.assertEqual(grp.resourceID, grp2.resourceID)
+
+		except (AssertionError, onem2mlib.exceptions.CSEOperationError):
+			print('WARNING: check om2m issue "allow empty mid"... ', end='', flush=True)
+
+		# Delete the new <container> again
+		if grp:
+			self.assertTrue(grp.deleteFromCSE())
+			self.assertIsNone(TestGroup.ae.findGroup(GRP_NAME+'2'))
+
+
 	def test_findGroup(self):
 		self.assertIsNotNone(TestGroup.ae)
 		grp = TestGroup.ae.findGroup(GRP_NAME)
@@ -115,7 +182,7 @@ class TestGroup(unittest.TestCase):
 		self.assertEqual(len(TestGroup.grp.memberIDs), 2)
 
 
-	def getGroupResources(self):
+	def test_getGroupResources(self):
 		self.assertIsNotNone(TestGroup.grp)
 		resources = TestGroup.grp.getGroupResources()
 		self.assertIsNotNone(resources)
@@ -124,7 +191,7 @@ class TestGroup(unittest.TestCase):
 		self.assertEqual(resources[1].resourceID, TestGroup.cnt1.resourceID)
 
 
-	def updateGroupResources(self):
+	def test_updateGroupResources(self):
 		self.assertIsNotNone(TestGroup.grp)
 		self.assertTrue(TestGroup.cnt0.retrieveFromCSE())	# <container> cnt0 and cnt1 should be retrievable
 		self.assertTrue(TestGroup.cnt1.retrieveFromCSE())
@@ -137,7 +204,7 @@ class TestGroup(unittest.TestCase):
 		self.assertEqual(TestGroup.cnt1.maxNrOfInstances, 99)
 
 
-	def createGroupResources(self):
+	def test_createGroupResources(self):
 		self.assertIsNotNone(TestGroup.grp)
 		cin = ContentInstance(content=CIN_CONTENT)
 		self.assertIsNotNone(cin)
@@ -152,7 +219,7 @@ class TestGroup(unittest.TestCase):
 		self.assertEqual(cins[1].content, CIN_CONTENT)
 
 
-	def deleteGroupResources(self):
+	def test_deleteGroupResources(self):
 		self.assertIsNotNone(TestGroup.grp)
 		self.assertTrue(TestGroup.cnt0.retrieveFromCSE())	# <container> cnt0 and cnt1 should be retrievable
 		self.assertTrue(TestGroup.cnt1.retrieveFromCSE())
@@ -179,11 +246,14 @@ if __name__ == '__main__':
 	suite.addTest(TestGroup('test_createGroup'))
 	suite.addTest(TestGroup('test_retrieveGroup'))
 	suite.addTest(TestGroup('test_findGroup'))
+	suite.addTest(TestGroup('test_getGroup'))
 	suite.addTest(TestGroup('test_updateGroup'))
-	suite.addTest(TestGroup('getGroupResources'))	
-	suite.addTest(TestGroup('updateGroupResources'))	
-	suite.addTest(TestGroup('createGroupResources'))	
-	suite.addTest(TestGroup('deleteGroupResources'))	
+	suite.addTest(TestGroup('test_emptyMemberIDs'))
+	suite.addTest(TestGroup('test_getGroupResources'))	
+	suite.addTest(TestGroup('test_createInstantly'))	
+	suite.addTest(TestGroup('test_updateGroupResources'))	
+	suite.addTest(TestGroup('test_createGroupResources'))	
+	suite.addTest(TestGroup('test_deleteGroupResources'))	
 	suite.addTest(TestGroup('test_deleteGroup'))
 	suite.addTest(TestGroup('test_finit'))
 

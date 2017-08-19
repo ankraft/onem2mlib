@@ -8,6 +8,7 @@ Licensed under the BSD 3-Clause License. See the LICENSE file for further detail
 import onem2mlib.constants
 import onem2mlib.resources
 import onem2mlib.session
+import onem2mlib.exceptions
 
 
-__all__ = ['resources', 'session', 'constants']
+__all__ = ['resources', 'session', 'constants', 'exceptions']

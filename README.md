@@ -1,5 +1,5 @@
 # onem2mlib
-**Version 0.1**
+**Version 0.2**
 
 This Python3 module implements a library to access and manage resources on a oneM2M CSE.
 
@@ -27,7 +27,20 @@ This module requires Python3.
 
 Copy the *onem2mlib* directory to your project.
 
-In addition you need to install the [lxml](http://lxml.de) library (install it with ``pip3 install lxml``).
+### LXML
+In addition you need to install the [lxml](http://lxml.de) library:
+
+- Install it with
+
+		pip3 install lxml
+
+- You might need to install some additional libraries:
+
+		apt-get install libxml2-dev libxslt1-dev
+
+- This might take a very long time on a small system. Alternative you may install with the package manager
+
+		sudo apt-get install python3-lxml
 
 
 ## Usage
@@ -36,35 +49,50 @@ Read the [full module documentation](http://htmlpreview.github.io/?https://raw.g
 
 Have a look at the examples in the [examples](./examples) directory on how to use the *onem2mlib* module.
 
-Some examples
+The following sections provide some examples.
 
 ### Connect to a CSE
 
-	# create session
-	session = SE.Session('http://host.com:8282', 'admin', 'admin')
-	# get the <CSEBase> resource
-	cse = CSEBase(session, 'mn-cse')
+	session = SE.Session('http://host.com:8282', 'admin', 'admin') # create a session
+	cse = CSEBase(session, 'mn-cse') # get the <CSEBase> resource
 
 ### Create an &lt;AE> resource in a CSE
 
+The first example creates a new &lt;AE> resource or, if an &lt;AE> resource with the same name already exists in the CSE, the existsing &lt;AE> would be returned. This is much simpler for most cases.
+
+	ae = AE(cse, resourceName='aeName', instantly=True)
+
+The second example is similar to the first, but offers the possibility to modify the resource object before sending it to the CSE.
+In general, the *get()* method creates a new or retrieves an existing resource.
+
 	ae = AE(cse, resourceName='aeName')
+	# do more modifications here
+	ae.get()
+
+The lat example also creates a new &lt;AE> resource in the CSE, but does it explicitly. It fails in case a resource with the same name already exists.
+
+	ae = AE(cse, resourceName='aeName')
+	# do more modifications here
 	ae.createInCSE()
+
+### Add a &lt;container> resource to an &lt;AE>
+Add a container to an &lt;AE> resource.
+
+	container = Container(ae, resourceName='myContainer', instantly=True)
 
 ### Find all &lt;container> resources of an &lt;AE>
 And print them.  
-And add a &lt;contentInstances> to each of it.
+And add a &lt;contentInstances> to each of them.
 	
-	containers = TestAE.ae.containers()
+	containers = ae.containers()
 	for cnt in containers:
 		print(cnts)
-		cin = ContentInstance(cnt, content='some Value')
-		cin.createInCSE()
+		cin = ContentInstance(cnt, content='some Value', instantly=True)
 
 
 ### Delete an &lt;AE> from a CSE
 
 	ae.deleteFromCSE()
-
 
 ## Supported Features & Limitations
 The following resource types are supported in this version.

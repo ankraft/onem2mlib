@@ -23,23 +23,22 @@ if __name__ == '__main__':
 
 	# create an <AE> resource
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName)
-	ae.createInCSE()
+	ae = AE(cse, resourceName=aeName, instantly=True)
 
 	# create two <container>'s' and add them to the <AE>
-	cnt1 = Container(ae, resourceName='container1')
-	cnt1.createInCSE()
-	cnt2 = Container(ae, resourceName='container2')
-	cnt2.createInCSE()
+	cnt1 = Container(ae, resourceName='container1', instantly=True)
+	cnt2 = Container(ae, resourceName='container2', instantly=True)
 
 	# create a <group> reosurce that contains both containers, and add it to the <ae>
-	grp = Group(ae, resourceName='myGroup', resources=[cnt1, cnt2])
-	grp.createInCSE()
+	grp = Group(ae, resourceName='myGroup', resources=[cnt1, cnt2], instantly=True)
 
 	# print the group
 	print(grp)
 
 	# add a <contentInstance> to each <container> via the <group> resource's fanOutPoint
+	# Note, that we just create a <contentInstance, but we don't set a parent for this
+	# <contentInstance>, or send it to the CSE (yet). This is done when assigning it
+	# to the whole group.
 	cin = ContentInstance(content='Some value')
 	grp.createGroupResources(cin)
 

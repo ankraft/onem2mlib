@@ -15,6 +15,7 @@ This sub-module defines the oneM2M Resource classes of the onem2mlib module.
 import onem2mlib.utilities as UT
 import onem2mlib.mcarequests as MCA
 import onem2mlib.constants as CON
+import onem2mlib.exceptions as EXC
 
 
 ###############################################################################
@@ -96,7 +97,7 @@ class ResourceBase:
 		result += UT.strResource('lastModifiedTime', 'lt', self.lastModifiedTime)
 		result += UT.strResource('stateTag', 'st', self.stateTag)
 		result += UT.strResource('labels', 'lbl', self.labels)
-		result += UT.strResource('accessControlPoliciyIDs', 'acpi', self.accessControlPolicyIDs)
+		result += UT.strResource('accessControlPolicyIDs', 'acpi', self.accessControlPolicyIDs)
 		result += UT.strResource('expirationTime', 'et', self.expirationTime)
 		result += UT.strResource('dynamicAuthorizationConsultationIDs', 'daci', self.dynamicAuthorizationConsultationIDs)
 		result += UT.strResource('announceTo', 'at', self.announceTo)
@@ -127,6 +128,7 @@ class ResourceBase:
 		self.expirationTime = UT.getElement(root, 'et', self.expirationTime)
 		self.announceTo = UT.getElement(root, 'at', self.announceTo)
 		self.announcedAttribute = UT.getElement(root, 'aa', self.announcedAttribute)
+		# todo: dynamicAuthorizationConsultationIDs
 
 
 
@@ -135,6 +137,21 @@ class ResourceBase:
 		UT.addToElement(root, 'lbl', self.labels)
 		UT.addToElement(root, 'aa', self.announcedAttribute)
 		UT.addToElement(root, 'at', self.announceTo)
+
+
+	def _copy(self, resource):
+		self.resourceName = resource.resourceName
+		self.type = resource.type
+		self.stateTag = resource.stateTag
+		self.labels = resource.labels
+		self.resourceID = resource.resourceID
+		self.parentID = resource.parentID
+		self.creationTime = resource.creationTime
+		self.lastModifiedTime = resource.lastModifiedTime
+		self.accessControlPolicyIDs = resource.accessControlPolicyIDs
+		self.expirationTime = resource.expirationTime
+		self.announceTo = resource.announceTo
+		self.announcedAttribute = resource.announcedAttribute
 
 
 ###############################################################################
@@ -280,6 +297,18 @@ class CSEBase:
 		return '/' + self.cseID + '/' + self.csename
 
 
+	def _copy(self, resource):
+		self.csename = resource.csename
+		self.creationTime = resource.creationTime
+		self.lastModifiedTime = resource.lastModifiedTime
+		self.accessControlPolicyIDs = resource.accessControlPolicyIDs
+		self.resourceID = resource.resourceID
+		self.cseType = resource.cseType
+		self.supportedResourceType = resource.supportedResourceType
+		self.cseID = resource.cseID
+		self.pointOfAccess = self.pointOfAccess
+
+
 ###############################################################################
 
 class AE(ResourceBase):
@@ -290,7 +319,7 @@ class AE(ResourceBase):
 	application and the sub-structure of resources beneath it.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability='true', labels=[]):
+	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability='true', labels=[], instantly=False):
 		"""
 		Initialize the &lt;AE> resource. 
 
@@ -298,6 +327,8 @@ class AE(ResourceBase):
 
 		- *parent*: The parent resource object in which the &lt;AE> resource
 			will be created.
+		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might raise
+			a *CSEOperationError* exception in case of an error.
 		- All other arguments initialize the status variables of the same name in the
 			&lt;AE> instance or `onem2mlib.resources.ResourceBase`.
 		"""
@@ -317,6 +348,11 @@ class AE(ResourceBase):
 
 		self.pointOfAccess = []
 		""" List of String. The list of addresses for communicating with the registered AE. """
+
+		if instantly:
+			if not self.get():
+				raise EXC.CSEOperationError('Cannot get or create AE')
+
 
 	def __str__(self):
 		result = 'AE:\n'
@@ -376,6 +412,19 @@ class AE(ResourceBase):
 		return MCA.updateInCSE(self, CON.Type_AE)
 
 
+	def get(self):
+		"""
+		Retrieve the &lt;AE> resource from the CSE, or create it if it doesn't exist.
+		This object instance is updated accordingly. 
+
+		The method returns *True* or *False*, depending on the success of the operation.
+
+		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		return _retrieveOrCreateResource(self)
+
+
 	def containers(self):
 		"""
 		Return a list of all &lt;container> resources of this &lt;AE>, or an empty list.
@@ -401,14 +450,20 @@ class AE(ResourceBase):
 		"""
 		Find a specific &lt;group> resource by its *resourceName*, or None.
 		"""
-		return _findResourceInList(self.groups(), resourceName)
+		res = Group(self, resourceName=resourceName)
+		if res.retrieveFromCSE():
+			return res
+		return None
 
 
 	def findContainer(self, resourceName):
 		"""
-		Find a &lt;Container> resource by its *resourceName*, or None
+		Find a &lt;container> resource by its *resourceName*, or None.
 		"""
-		return _findResourceInList(self.containers(), resourceName)
+		res = Container(self, resourceName=resourceName)
+		if res.retrieveFromCSE():
+			return res
+		return None
 
 
 	def _parseResponse(self, response):
@@ -437,6 +492,14 @@ class AE(ResourceBase):
 		return root
 
 
+	def _copy(self, resource):
+		super()._copy(resource)
+		self.appID = resource.appID
+		self.AEID = resource.AEID
+		self.requestReachability = resource.requestReachability
+		self.pointOfAccess = resource.pointOfAccess
+
+
 ###############################################################################
 
 
@@ -447,7 +510,7 @@ class Container(ResourceBase):
 	It is usually a sub-resource of the &lt;AE> or other resources.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[]):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], instantly=False):
 		"""
 		Initialize the &lt;container> resource. 
 
@@ -455,6 +518,8 @@ class Container(ResourceBase):
 
 		- *parent*: The parent resource object in which the &lt;container> resource
 			will be created.
+		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might raise
+			a *CSEOperationError* exception in case of an error.
 		- All other arguments initialize the status variables of the same name in the
 			&lt;container> instance or `onem2mlib.resources.ResourceBase`.
 		"""	
@@ -491,6 +556,9 @@ class Container(ResourceBase):
 		""" String. The resourceID of the latest (newest) &lt;contentInstance> resource in this 
 		&lt;container>. R/O. """
 
+		if instantly:
+			if not self.get():
+				raise EXC.CSEOperationError('Cannot get or create Container')
 
 
 	def __str__(self):
@@ -554,6 +622,19 @@ class Container(ResourceBase):
 		return MCA.deleteFromCSE(self)
 
 
+	def get(self):
+		"""
+		Retrieve the &lt;container> resource from the CSE, or create it if it doesn't exist.
+		This object instance is updated accordingly. 
+
+		The method returns *True* or *False*, depending on the success of the operation.
+
+		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		return _retrieveOrCreateResource(self)
+
+
 	def containers(self):
 		"""
 		Return all &lt;container> sub-resources from this container, or an empty list.
@@ -568,15 +649,29 @@ class Container(ResourceBase):
 		return _findSubResource(self, CON.Type_ContentInstance)
 
 
+	def findContainer(self, resourceName):
+		"""
+		Find a &lt;container> resource by its *resourceName*, or None.
+		"""
+		res = Container(self, resourceName=resourceName)
+		if res.retrieveFromCSE():
+			return res
+		return None
+
+
 	def findContentInstance(self, resourceName):
 		"""
 		Find a &lt;ContentInstance> resource by its *resourceName*, or None.
 		"""
-		cins = self.contentInstances()
-		if cins and len(cins)>0:
-			for cin in cins:
-				if cin.resourceName == resourceName:
-					return cin
+		# cins = self.contentInstances()
+		# if cins and len(cins)>0:
+		# 	for cin in cins:
+		# 		if cin.resourceName == resourceName:
+		# 			return cin
+		# return None
+		res = ContentInstance(self, resourceName=resourceName)
+		if res.retrieveFromCSE():
+			return res
 		return None
 
 
@@ -632,6 +727,17 @@ class Container(ResourceBase):
 		return root
 
 
+	def _copy(self, resource):
+		super()._copy(resource)
+		self.maxNrOfInstances = resource.maxNrOfInstances
+		self.maxByteSize = resource.maxByteSize
+		self.maxInstanceAge = resource.maxInstanceAge
+		self.currentNrOfInstances = resource.currentNrOfInstances
+		self.currentByteSize = resource.currentByteSize
+		self.oldest = resource.oldest
+		self.latest = resource.latest
+
+
 ###############################################################################
 
 
@@ -654,7 +760,7 @@ class ContentInstance(ResourceBase):
 	"""
 
 
-	def __init__(self, parent=None, resourceName=None, content=None, contentInfo=None, resourceID=None, labels = []):
+	def __init__(self, parent=None, resourceName=None, content=None, contentInfo=None, resourceID=None, labels = [], instantly=False):
 		"""
 		Initialize the &lt;contentInstance> resource. 
 
@@ -662,6 +768,8 @@ class ContentInstance(ResourceBase):
 
 		- *parent*: The parent resource object in which the &lt;contentInstance> resource
 			will be created.
+		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might raise
+			a *CSEOperationError* exception in case of an error.
 		- All other arguments initialize the status variables of the same name in
 			&lt;contentInstance> instance or `onem2mlib.resources.ResourceBase`.
 		"""
@@ -677,6 +785,10 @@ class ContentInstance(ResourceBase):
 
 		self.content = content
 		""" Usually an encoded String. The actual content of the &lt;contentInstance> resource."""
+
+		if instantly:
+			if not self.get():
+				raise EXC.CSEOperationError('Cannot get or create ContentInstance')
 
 
 	def __str__(self):
@@ -724,6 +836,19 @@ class ContentInstance(ResourceBase):
 		return MCA.deleteFromCSE(self)
 
 
+	def get(self):
+		"""
+		Retrieve the &lt;contentInstance> resource from the CSE, or create it if it doesn't exist.
+		This object instance is updated accordingly. 
+
+		The method returns *True* or *False*, depending on the success of the operation.
+
+		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		return _retrieveOrCreateResource(self)
+
+
 	def _parseResponse(self, response):
 		#print(response.text)
 		return self._parseXML(UT.responseToXML(response))
@@ -747,6 +872,13 @@ class ContentInstance(ResourceBase):
 		return root
 
 
+	def _copy(self, resource):
+		super()._copy(resource)
+		self.contentInfo = resource.contentInfo
+		self.contentSize = resource.contentSize
+		self.content = resource.content
+
+
 ###############################################################################
 
 
@@ -760,7 +892,7 @@ class Group(ResourceBase):
 	the group and the &lt;fanOutPoint> virtual resource that enables generic operations to be applied 
 	to all the resources represented by those members.
 	"""
-	def __init__(self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = []):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], instantly=False):
 		"""
 		Initialize the &lt;group> resource. 
 
@@ -768,6 +900,8 @@ class Group(ResourceBase):
 
 		- *parent*: The parent resource object in which the &lt;group> resource
 			will be created.
+		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might raise
+			a *CSEOperationError* exception in case of an error.
 		- All other arguments initialize the status variables of the same name in
 			&lt;group> instance or `onem2mlib.resources.ResourceBase`.
 		"""		
@@ -815,6 +949,8 @@ class Group(ResourceBase):
 				else:
 					t = CON.Type_Mixed
 					break
+		if t == -1:
+			t = CON.Type_Mixed
 		
 		self.memberType = t
 		""" Integer. This is the resource type of the member resources of the group, if all member
@@ -828,6 +964,10 @@ class Group(ResourceBase):
 
 		for res in self.resources:
 			self.memberIDs.append(res.resourceID)
+
+		if instantly:
+			if not self.get():
+				raise EXC.CSEOperationError('Cannot get or create Group')
 
 
 	def __str__(self):
@@ -942,6 +1082,19 @@ class Group(ResourceBase):
 		return self._parseFanOutPointResponse(response)
 
 
+	def get(self):
+		"""
+		Retrieve the &lt;group> resource from the CSE, or create it if it doesn't exist.
+		This object instance is updated accordingly. 
+
+		The method returns *True* or *False*, depending on the success of the operation.
+
+		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		return _retrieveOrCreateResource(self)
+
+
 	def _parseResponse(self, response):
 		#print(response.text)
 		return self._parseXML(UT.responseToXML(response))
@@ -968,7 +1121,7 @@ class Group(ResourceBase):
 		if self.maxNrOfMembers and not isUpdate: 	# No mnm when updating
 			UT.addToElement(root, 'mnm', self.maxNrOfMembers)
 		UT.addToElement(root, 'mt', self.memberType)
-		UT.addToElement(root, 'mid', self.memberIDs)
+		UT.addToElement(root, 'mid', self.memberIDs, mandatory=True)
 		if self.consistencyStrategy and not isUpdate: 	# No csy when updating
 			UT.addToElement(root, 'csy', self.consistencyStrategy)
 		UT.addToElement(root, 'gn', self.groupName)
@@ -1006,6 +1159,18 @@ class Group(ResourceBase):
 
 	def _isValidFanOutPoint(self):
 		return  self.fanOutPoint and len(self.fanOutPoint) > 0 and self.session and self.session.connected
+
+
+	def _copy(self, resource):
+		super()._copy(resource)
+		self.maxNrOfMembers = resource.maxNrOfMembers
+		self.memberType = resource.memberType
+		self.currentNrOfMembers = resource.currentNrOfMembers
+		self.memberIDs = resource.memberIDs
+		self.memberTypeValidated = resource.memberTypeValidated
+		self.consistencyStrategy = resource.consistencyStrategy
+		self.groupName = resource.groupName
+		self.fanOutPoint = resource.fanOutPoint
 
 
 ###############################################################################
@@ -1071,4 +1236,14 @@ def _findResourceInList(resources, resourceName):
 			if res.resourceName == resourceName:
 				return res
 	return None
+
+
+# Retrieve of create a resource
+def _retrieveOrCreateResource(resource):
+		if resource.resourceID:
+			return resource.retrieveFromCSE()
+		if resource.resourceName:
+			if resource.retrieveFromCSE():
+				return True
+		return resource.createInCSE()
 

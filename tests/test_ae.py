@@ -24,6 +24,7 @@ class TestAE(unittest.TestCase):
 	session = None
 	cse = None
 	ae = None
+	ae2 = None
 
 
 	@classmethod
@@ -40,6 +41,9 @@ class TestAE(unittest.TestCase):
 		if TestAE.ae:
 			TestAE.ae.deleteFromCSE()
 			TestAE.ae = None
+		if TestAE.ae2:
+			TestAE.ae2.deleteFromCSE()
+			TestAE.ae2 = None
 
 
 	def test_init(self): 
@@ -63,6 +67,39 @@ class TestAE(unittest.TestCase):
 		self.assertEqual(TestAE.ae.type, CON.Type_AE)
 		self.assertTrue(TestAE.ae.retrieveFromCSE())
 		self.assertEqual(TestAE.ae.resourceName, AE_NAME)
+
+
+	def test_getAE(self):
+		self.assertIsNotNone(TestAE.cse)
+
+		# create an <AE> by using the get() method
+		TestAE.ae2 = AE(TestAE.cse, resourceName=AE_NAME+'1')
+		self.assertIsNotNone(TestAE.ae2)
+		self.assertTrue(TestAE.ae2.get())
+
+		# Check whether it was really created in the CSE
+		ae2 = TestAE.cse.findAE(AE_NAME+'1')
+		self.assertIsNotNone(ae2)
+		self.assertEqual(TestAE.ae2.resourceID, ae2.resourceID)
+
+		# Delete the new <AE> again
+		self.assertTrue(TestAE.ae2.deleteFromCSE())
+
+
+	def  test_createInstantly(self):
+		self.assertIsNotNone(TestAE.cse)
+
+		# create an <AE> while init
+		TestAE.ae2 = AE(TestAE.cse, resourceName=AE_NAME+'1', instantly=True)
+		self.assertIsNotNone(TestAE.ae2)
+
+		# Check whether it was really created in the CSE
+		ae = TestAE.cse.findAE(AE_NAME+'1')
+		self.assertIsNotNone(ae)
+		self.assertEqual(TestAE.ae2.resourceID, ae.resourceID)
+
+		# Delete the new <AE> again
+		self.assertTrue(TestAE.ae2.deleteFromCSE())
 
 
 	def test_updateAE(self):
@@ -95,7 +132,8 @@ class TestAE(unittest.TestCase):
 
 
 	def test_flexContainersInAE(self):
-		print('\nT O D O')
+		print('TODO: Implement flexContainer test... ', end='', flush=True)
+
 		return
 		# Test empty list
 		fcnts = TestAE.ae.flexContainers()
@@ -141,5 +179,7 @@ if __name__ == '__main__':
 	suite.addTest(TestAE('test_containersInAE'))
 	suite.addTest(TestAE('test_flexContainersInAE'))
 	suite.addTest(TestAE('test_groupsInAE'))
+	suite.addTest(TestAE('test_getAE'))
+	suite.addTest(TestAE('test_createInstantly'))
 	suite.addTest(TestAE('test_finit'))
 	unittest.TextTestRunner(verbosity=2, failfast=True).run(suite)

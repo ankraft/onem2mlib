@@ -22,6 +22,5 @@ if __name__ == '__main__':
 
 	# get and print a list of all <AE> resources
 	aes = cse.aes()
-	for ae in aes: print(ae)
-
-
+	for ae in aes: 
+		print(ae)

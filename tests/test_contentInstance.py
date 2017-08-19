@@ -78,6 +78,35 @@ class TestContentInstance(unittest.TestCase):
 		self.assertEqual(len(TestContentInstance.cnt.contentInstances()), 0)
 
 
+	def test_getContentInstance(self):
+		self.assertIsNotNone(TestContentInstance.cse)
+		self.assertIsNotNone(TestContentInstance.ae)
+
+		# create a <contentInstane> by using the get() method
+		cin = ContentInstance(TestContentInstance.cnt, content=CIN_CONTENT)
+		self.assertIsNotNone(cin)
+		self.assertTrue(cin.get())
+
+		# Check whether it was really created in the CSE
+		cin2 = TestContentInstance.cnt.findContentInstance(cin.resourceName)
+		self.assertIsNotNone(cin2)
+		self.assertEqual(cin.resourceID, cin2.resourceID)
+
+
+	def  test_createInstantly(self):
+		self.assertIsNotNone(TestContentInstance.cse)
+		self.assertIsNotNone(TestContentInstance.ae)
+
+		# create an <contentInstane> while init
+		cin = ContentInstance(TestContentInstance.cnt, content=CIN_CONTENT, instantly=True)
+		self.assertIsNotNone(cin)
+
+		# Check whether it was really created in the CSE
+		cin2 = TestContentInstance.cnt.findContentInstance(cin.resourceName)
+		self.assertIsNotNone(cin2)
+		self.assertEqual(cin.resourceID, cin2.resourceID)
+
+
 	def test_finit(self):
 		self.assertTrue(TestContentInstance.ae.deleteFromCSE())
 		self.assertIsNone(TestContentInstance.cse.findAE(AE_NAME))
@@ -90,5 +119,7 @@ if __name__ == '__main__':
 	suite.addTest(TestContentInstance('test_createContentInstance'))
 	suite.addTest(TestContentInstance('test_retrieveContentInstance'))
 	suite.addTest(TestContentInstance('test_deleteContentInstance'))
+	suite.addTest(TestContentInstance('test_getContentInstance'))
+	suite.addTest(TestContentInstance('test_createInstantly'))
 	suite.addTest(TestContentInstance('test_finit'))
 	unittest.TextTestRunner(verbosity=2, failfast=True).run(suite)

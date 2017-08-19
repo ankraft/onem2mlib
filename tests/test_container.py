@@ -24,6 +24,7 @@ class TestContainer(unittest.TestCase):
 	cse = None
 	ae = None
 	cnt = None
+	cnt2 = None
 	cin = None
 
 
@@ -125,6 +126,45 @@ class TestContainer(unittest.TestCase):
 		# Remove sub-container
 		self.assertTrue(scnt.deleteFromCSE())
 		self.assertEqual(len(TestContainer.cnt.containers()), 0)
+
+
+	def test_getContainer(self):
+		self.assertIsNotNone(TestContainer.cse)
+		self.assertIsNotNone(TestContainer.ae)
+		self.assertIsNone(TestContainer.ae.findContainer(CNT_NAME+'2'))
+
+		# create a <container> by using the get() method
+		TestContainer.cnt2 = Container(TestContainer.ae, resourceName=CNT_NAME+'2')
+		self.assertIsNotNone(TestContainer.cnt2)
+		self.assertTrue(TestContainer.cnt2.get())
+
+		# Check whether it was really created in the CSE
+		cnt2 = TestContainer.ae.findContainer(CNT_NAME+'2')
+		self.assertIsNotNone(cnt2)
+		self.assertEqual(TestContainer.cnt2.resourceID, cnt2.resourceID)
+
+		# Delete the new <container> again
+		self.assertTrue(TestContainer.cnt2.deleteFromCSE())
+		self.assertIsNone(TestContainer.ae.findContainer(CNT_NAME+'2'))
+
+
+	def  test_createInstantly(self):
+		self.assertIsNotNone(TestContainer.cse)
+		self.assertIsNotNone(TestContainer.ae)
+		self.assertIsNone(TestContainer.ae.findContainer(CNT_NAME+'2'))
+
+		# create an <container> while init
+		TestContainer.cnt2 = Container(TestContainer.ae, resourceName=CNT_NAME+'2', instantly=True)
+		self.assertIsNotNone(TestContainer.cnt2)
+
+		# Check whether it was really created in the CSE
+		cnt2 = TestContainer.ae.findContainer(CNT_NAME+'2')
+		self.assertIsNotNone(cnt2)
+		self.assertEqual(TestContainer.cnt2.resourceID, cnt2.resourceID)
+
+		# Delete the new <container> again
+		self.assertTrue(TestContainer.cnt2.deleteFromCSE())
+		self.assertIsNone(TestContainer.ae.findContainer(CNT_NAME+'2'))
 
 
 	def test_addContentInstance1(self):
@@ -251,6 +291,8 @@ if __name__ == '__main__':
 	suite.addTest(TestContainer('test_updateContainer'))
 	suite.addTest(TestContainer('test_containerInContainer'))
 	suite.addTest(TestContainer('test_addContentInstance1'))
+	suite.addTest(TestContainer('test_getContainer'))
+	suite.addTest(TestContainer('test_createInstantly'))
 	suite.addTest(TestContainer('test_testLatest1'))
 	suite.addTest(TestContainer('test_testOldest1'))
 	suite.addTest(TestContainer('test_testLatestOldest1'))

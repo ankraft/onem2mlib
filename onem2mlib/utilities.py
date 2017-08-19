@@ -52,8 +52,8 @@ def createElement(elemName, namespace=None):
 		return ET.Element(elemName)
 
 
-def addToElement(root, name, content):
-	if isinstance(content, int) or (content and len(content) > 0):
+def addToElement(root, name, content, mandatory=False):
+	if isinstance(content, int) or (content and len(content) > 0) or mandatory:
 		elem = createElement(name)
 		if isinstance(content, list):
 			elem.text = ' '.join(content)

@@ -1056,6 +1056,7 @@ table {
     <li class="mono"><a href="#onem2mlib.resources.AE.findContainer">findContainer</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AE.findGroup">findGroup</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AE.flexContainers">flexContainers</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.AE.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AE.groups">groups</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AE.retrieveFromCSE">retrieveFromCSE</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AE.updateInCSE">updateInCSE</a></li>
@@ -1086,7 +1087,9 @@ table {
     <li class="mono"><a href="#onem2mlib.resources.Container.contentInstances">contentInstances</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Container.createInCSE">createInCSE</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Container.deleteFromCSE">deleteFromCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.Container.findContainer">findContainer</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Container.findContentInstance">findContentInstance</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.Container.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Container.latestContentInstance">latestContentInstance</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Container.oldestContentInstance">oldestContentInstance</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Container.retrieveFromCSE">retrieveFromCSE</a></li>
@@ -1102,6 +1105,7 @@ table {
     <li class="mono"><a href="#onem2mlib.resources.ContentInstance.__init__">__init__</a></li>
     <li class="mono"><a href="#onem2mlib.resources.ContentInstance.createInCSE">createInCSE</a></li>
     <li class="mono"><a href="#onem2mlib.resources.ContentInstance.deleteFromCSE">deleteFromCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.ContentInstance.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.resources.ContentInstance.retrieveFromCSE">retrieveFromCSE</a></li>
   </ul>
 
@@ -1116,6 +1120,7 @@ table {
     <li class="mono"><a href="#onem2mlib.resources.Group.createInCSE">createInCSE</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Group.deleteFromCSE">deleteFromCSE</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Group.deleteGroupResources">deleteGroupResources</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.Group.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Group.getGroupResources">getGroupResources</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Group.retrieveFromCSE">retrieveFromCSE</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Group.updateGroupResources">updateGroupResources</a></li>
@@ -1179,7 +1184,7 @@ application and the sub-structure of resources beneath it.</p></div>
             
   <div class="item">
     <div class="name def" id="onem2mlib.resources.AE.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=&#39;true&#39;, labels=[])</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=&#39;true&#39;, labels=[], instantly=False)</p>
     </div>
     
 
@@ -1190,6 +1195,8 @@ application and the sub-structure of resources beneath it.</p></div>
 <ul>
 <li><em>parent</em>: The parent resource object in which the &lt;AE&gt; resource
         will be created.</li>
+<li><em>instantly</em>: The resource will be instantly retrieved from or created on the CSE. This might raise
+        a <em>CSEOperationError</em> exception in case of an error.</li>
 <li>All other arguments initialize the status variables of the same name in the
         &lt;AE&gt; instance or <a href="#onem2mlib.resources.ResourceBase"><code>ResourceBase</code></a>.</li>
 </ul></div>
@@ -1258,7 +1265,7 @@ must be set to a valid value.</p></div>
 
     
   
-    <div class="desc"><p>Find a &lt;Container&gt; resource by its <em>resourceName</em>, or None</p></div>
+    <div class="desc"><p>Find a &lt;container&gt; resource by its <em>resourceName</em>, or None.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1289,6 +1296,25 @@ must be set to a valid value.</p></div>
     
   
     <div class="desc"><p>Return a list of all &lt;flexContainer&gt; resources of this &lt;AE&gt;, or an empty list.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.AE.get">
+    <p>def <span class="ident">get</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Retrieve the &lt;AE&gt; resource from the CSE, or create it if it doesn't exist.
+This object instance is updated accordingly. </p>
+<p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.</p>
+<p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
+must be set to a valid value.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1657,7 +1683,7 @@ Assigned by the CSE. R/O.</p></div>
             
   <div class="item">
     <div class="name def" id="onem2mlib.resources.Container.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[])</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], instantly=False)</p>
     </div>
     
 
@@ -1668,6 +1694,8 @@ Assigned by the CSE. R/O.</p></div>
 <ul>
 <li><em>parent</em>: The parent resource object in which the &lt;container&gt; resource
         will be created.</li>
+<li><em>instantly</em>: The resource will be instantly retrieved from or created on the CSE. This might raise
+        a <em>CSEOperationError</em> exception in case of an error.</li>
 <li>All other arguments initialize the status variables of the same name in the
         &lt;container&gt; instance or <a href="#onem2mlib.resources.ResourceBase"><code>ResourceBase</code></a>.</li>
 </ul></div>
@@ -1744,6 +1772,21 @@ must be set to a valid value.</p></div>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.resources.Container.findContainer">
+    <p>def <span class="ident">findContainer</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a &lt;container&gt; resource by its <em>resourceName</em>, or None.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.resources.Container.findContentInstance">
     <p>def <span class="ident">findContentInstance</span>(</p><p>self, resourceName)</p>
     </div>
@@ -1752,6 +1795,25 @@ must be set to a valid value.</p></div>
     
   
     <div class="desc"><p>Find a &lt;ContentInstance&gt; resource by its <em>resourceName</em>, or None.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.Container.get">
+    <p>def <span class="ident">get</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Retrieve the &lt;container&gt; resource from the CSE, or create it if it doesn't exist.
+This object instance is updated accordingly. </p>
+<p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.</p>
+<p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
+must be set to a valid value.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1944,7 +2006,7 @@ type of the content and decode it accordingly.</p></div>
             
   <div class="item">
     <div class="name def" id="onem2mlib.resources.ContentInstance.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, content=None, contentInfo=None, resourceID=None, labels=[])</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, content=None, contentInfo=None, resourceID=None, labels=[], instantly=False)</p>
     </div>
     
 
@@ -1955,6 +2017,8 @@ type of the content and decode it accordingly.</p></div>
 <ul>
 <li><em>parent</em>: The parent resource object in which the &lt;contentInstance&gt; resource
         will be created.</li>
+<li><em>instantly</em>: The resource will be instantly retrieved from or created on the CSE. This might raise
+        a <em>CSEOperationError</em> exception in case of an error.</li>
 <li>All other arguments initialize the status variables of the same name in
         &lt;contentInstance&gt; instance or <a href="#onem2mlib.resources.ResourceBase"><code>ResourceBase</code></a>.</li>
 </ul></div>
@@ -1992,6 +2056,25 @@ must be set to a valid value.</p></div>
   
     <div class="desc"><p>Delete the &lt;contentInstance&gt; resource from the CSE.</p>
 <p>The method returns <em>True</em> or <em>False</em> depending on the success of the operation.</p>
+<p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
+must be set to a valid value.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.ContentInstance.get">
+    <p>def <span class="ident">get</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Retrieve the &lt;contentInstance&gt; resource from the CSE, or create it if it doesn't exist.
+This object instance is updated accordingly. </p>
+<p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.</p>
 <p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
 must be set to a valid value.</p></div>
   <div class="source_cont">
@@ -2081,7 +2164,7 @@ to all the resources represented by those members.</p></div>
             
   <div class="item">
     <div class="name def" id="onem2mlib.resources.Group.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=10, consistencyStrategy=1, groupName=None, labels=[])</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=10, consistencyStrategy=1, groupName=None, labels=[], instantly=False)</p>
     </div>
     
 
@@ -2092,6 +2175,8 @@ to all the resources represented by those members.</p></div>
 <ul>
 <li><em>parent</em>: The parent resource object in which the &lt;group&gt; resource
         will be created.</li>
+<li><em>instantly</em>: The resource will be instantly retrieved from or created on the CSE. This might raise
+        a <em>CSEOperationError</em> exception in case of an error.</li>
 <li>All other arguments initialize the status variables of the same name in
         &lt;group&gt; instance or <a href="#onem2mlib.resources.ResourceBase"><code>ResourceBase</code></a>.</li>
 </ul></div>
@@ -2164,6 +2249,25 @@ must be set to a valid value.</p></div>
 It returns <em>True</em> or <em>False</em> respectively.</p>
 <p>Note, that the &lt;group&gt; itself is not deleted or altered. It must be deleted separately, 
 if necessary.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.Group.get">
+    <p>def <span class="ident">get</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Retrieve the &lt;group&gt; resource from the CSE, or create it if it doesn't exist.
+This object instance is updated accordingly. </p>
+<p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.</p>
+<p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
+must be set to a valid value.</p></div>
   <div class="source_cont">
 </div>
 

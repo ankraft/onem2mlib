@@ -18,10 +18,14 @@ import onem2mlib.constants as CON
 #	Communication functions
 #
 
+# retrieve a resource either through its resourceID or resourceName
 def retrieveFromCSE(resource):
 	if _isInvalidResource(resource):
 		return False
-	response = get(resource.session, resource.resourceID)
+	if resource.resourceName:
+		response = get(resource.session, resource._structuredResourceID())
+	else:
+		response = get(resource.session, resource.resourceID)
 	if response and response.status_code == 200:
 		resource._parseResponse(response)
 		return True
@@ -127,6 +131,7 @@ def _getPath(session, path):
 def _isInvalidResource(resource):
 	return 	not resource.parent or not resource.parent.resourceID or \
 		 	not resource.session or not resource.session.connected
+
 
 
 
