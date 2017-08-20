@@ -86,7 +86,7 @@ And add a &lt;contentInstances> to each of them.
 	
 	containers = ae.containers()
 	for cnt in containers:
-		print(cnts)
+		print(cnt)
 		cin = ContentInstance(cnt, content='some Value', instantly=True)
 
 
