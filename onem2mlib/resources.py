@@ -692,7 +692,7 @@ class Container(ResourceBase):
 	def _getContentInstance(self, path):
 		if not self.session or not self.session.connected or not path: return None
 		response = MCA.get(self.session, path)
-		if response.status_code == 200:
+		if response and response.status_code == 200:
 			contentInstance = ContentInstance(self)
 			contentInstance._parseResponse(response)
 			return contentInstance

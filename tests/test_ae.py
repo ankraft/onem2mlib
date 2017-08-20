@@ -132,7 +132,7 @@ class TestAE(unittest.TestCase):
 
 
 	def test_flexContainersInAE(self):
-		print('TODO: Implement flexContainer test... ', end='', flush=True)
+		print('TODO: Implement flexContainer tests... ', end='', flush=True)
 
 		return
 		# Test empty list

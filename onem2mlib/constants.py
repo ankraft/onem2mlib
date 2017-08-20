@@ -60,3 +60,11 @@ when there are member that don't match the group type. """
 
 Grp_def_maxNrOfMembers = 10
 """ Default for the &lt;group> resource's *maxNrOfMembers* attribute. """
+
+
+#
+#	Network configurations
+#
+
+NETWORK_REQUEST_TIMEOUT = 20
+""" Timeout after n seconds in requests. """

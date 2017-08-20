@@ -75,7 +75,7 @@ def updateInCSE(resource, type):
 # Get a resource from the CSE
 def get(session, path):
 	try:
-		return requests.get(_getPath(session, path), headers=_getHeaders(session))
+		return requests.get(_getPath(session, path), headers=_getHeaders(session), timeout=CON.NETWORK_REQUEST_TIMEOUT)
 	except Exception as e:
 		return None
 
@@ -85,23 +85,32 @@ def discover(session, path, type=None):
 	path = _getPath(session, path) + '?fu=1&drt=1'	# structured result type
 	if type:
 		path = path + '&ty='+str(type)
-	return requests.get(path, headers=_getHeaders(session))
+	try:
+		return requests.get(path, headers=_getHeaders(session), timeout=CON.NETWORK_REQUEST_TIMEOUT)
+	except Exception as e:
+		return None
 
 
 # Delete an existing resource on the CSE
 def delete(session, path):
-	return requests.delete(_getPath(session, path), headers=_getHeaders(session))
-
+	try:
+		return requests.delete(_getPath(session, path), headers=_getHeaders(session), timeout=CON.NETWORK_REQUEST_TIMEOUT)
+	except Exception as e:
+		return None
 
 # Create a new resource on the CSE
 def create(session, path, type, body):
-	return requests.post(_getPath(session, path), headers=_getHeaders(session, type), data=body)
-
+	try:
+		return requests.post(_getPath(session, path), headers=_getHeaders(session, type), data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT)
+	except Exception as e:
+		return None
 
 # Update an existing resource on the CSE
 def update(session, path, type, body):
-	return requests.put(_getPath(session, path), headers=_getHeaders(session, type), data=body)
-
+	try:
+		return requests.put(_getPath(session, path), headers=_getHeaders(session, type), data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT)
+	except Exception as e:
+		return None
 
 
 ###############################################################################
