@@ -58,7 +58,7 @@ The following sections provide some examples.
 
 ### Create an &lt;AE> resource in a CSE
 
-The first example creates a new &lt;AE> resource or, if an &lt;AE> resource with the same name already exists in the CSE, the existsing &lt;AE> would be returned. This is much simpler for most cases.
+The first example creates a new &lt;AE> resource or, if an &lt;AE> resource with the same name already exists in the CSE, the existsing &lt;AE> is returned. This is usually sufficient for most cases.
 
 	ae = AE(cse, resourceName='aeName', instantly=True)
 
@@ -69,7 +69,7 @@ In general, the *get()* method creates a new or retrieves an existing resource.
 	# do more modifications here
 	ae.get()
 
-The lat example also creates a new &lt;AE> resource in the CSE, but does it explicitly. It fails in case a resource with the same name already exists.
+The last example also creates a new &lt;AE> resource in the CSE, but does it explicitly. It fails in case a resource with the same name already exists.
 
 	ae = AE(cse, resourceName='aeName')
 	# do more modifications here
