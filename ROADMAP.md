@@ -4,7 +4,7 @@
 - FlexContainer
     - Support in &lt;AE>, &lt;Container>
 - AccessControlPolicy
-	- Support for <acp> in <AE>
+	- Support for &lt;acp> in &lt;AE>
 - RemoteCSE
 
 ## Features 
