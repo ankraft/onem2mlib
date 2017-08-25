@@ -240,7 +240,8 @@ class TestContainer(unittest.TestCase):
 		scnt = Container(TestContainer.cnt, maxNrOfInstances=max)
 		self.assertTrue(scnt.createInCSE())
 		self.assertEquals(scnt.maxNrOfInstances, max)
-		for i in range(0,5):
+
+		for i in range(0,max):
 			ci = ContentInstance(scnt, content=str(i))
 			self.assertTrue(ci.createInCSE())
 			time.sleep(1)
