@@ -136,7 +136,7 @@ def strResource(name, shortName, resource, minusIndent=0):
 		if shortName:
 			return ('\t%s(%s):' % (name, shortName)).ljust(_width-minusIndent) + str(resource) + '\n'
 		else:
-			return ('\t%s:' % (name)).ljust(_width) + str(resource-minusIndent) + '\n'			
+			return ('\t%s:' % (name)).ljust(_width-minusIndent) + str(resource) + '\n'			
 	return ''
 
 
