@@ -20,9 +20,17 @@ _ns = {'m2m' : 'http://www.onem2m.org/xml/protocols'}
 #	XML Utilities
 #
 
-# Find a tag value (string) from the tree or, if not found, return the default
-def getElement(tree, elemName, default=None):
-	elem = tree.xpath('//'+elemName, namespaces=_ns)
+def _searchExpression(elemName, relative):
+	if relative:
+		return './/'+elemName
+	return '//'+elemName
+
+
+# Find a tag value (string) from the tree or, if not found, return the default.
+# If relative is set to True then the search is done relatively to the provided
+# element.
+def getElement(tree, elemName, default=None, relative=False):
+	elem = tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)
 	if elem and len(elem)>0 and elem[0].text:
 		result = elem[0].text
 		if isinstance(default, list):
@@ -32,8 +40,17 @@ def getElement(tree, elemName, default=None):
 
 
 # Find all subtree elements from the tree. Returns a list
-def getElements(tree, elemName):
-	return tree.xpath('//'+elemName, namespaces=_ns)
+# If relative is set to True then the search is done relatively to the provided
+# element.
+def getElements(tree, elemName, relative=False):
+	return tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)
+
+
+def getElementWithChildren(tree, elemName):
+	result = getElements(tree, elemName)
+	if result is not None and len(result) > 0:
+		return result[0]
+	return None
 
 
 # Find an attribute value from the tree/element or, if not found, return the default
@@ -50,6 +67,12 @@ def createElement(elemName, namespace=None):
 		return ET.Element('{%s}%s' % (_ns['m2m'], elemName), nsmap=_ns)
 	else:
 		return ET.Element(elemName)
+
+
+def addElement(root, name):
+	elem = createElement(name)
+	root.append(elem)
+	return elem
 
 
 def addToElement(root, name, content, mandatory=False):
@@ -102,7 +125,7 @@ def stringToXML(value):
 
 _width = 45
 
-def strResource(name, shortName, resource):
+def strResource(name, shortName, resource, minusIndent=0):
 	if resource == None:
 		return ''
 	if isinstance(resource, list) and len(resource) == 0:
@@ -111,9 +134,9 @@ def strResource(name, shortName, resource):
 		resource = str(resource)
 	if resource and len(resource) > 0:
 		if shortName:
-			return ('\t%s(%s):' % (name, shortName)).ljust(_width) + str(resource) + '\n'
+			return ('\t%s(%s):' % (name, shortName)).ljust(_width-minusIndent) + str(resource) + '\n'
 		else:
-			return ('\t%s:' % (name)).ljust(_width) + str(resource) + '\n'			
+			return ('\t%s:' % (name)).ljust(_width) + str(resource-minusIndent) + '\n'			
 	return ''
 
 
