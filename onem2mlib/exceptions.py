@@ -23,3 +23,11 @@ class CSEOperationError(OneM2MLibError):
     def __init__(self, message):
         self.message = message
         """ Explanation of the error. """
+
+class ParameterError(OneM2MLibError):
+    """Exception raised for errors in paramterization of resource classes. 
+    """
+
+    def __init__(self, message):
+        self.message = message
+        """ Explanation of the error. """
