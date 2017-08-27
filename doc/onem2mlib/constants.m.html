@@ -1043,6 +1043,13 @@ table {
     <li class="set"><h3><a href="#header-variables">Module variables</a></h3>
       
   <ul>
+    <li class="mono"><a href="#onem2mlib.constants.Acp_ALL">Acp_ALL</a></li>
+    <li class="mono"><a href="#onem2mlib.constants.Acp_CREATE">Acp_CREATE</a></li>
+    <li class="mono"><a href="#onem2mlib.constants.Acp_DELETE">Acp_DELETE</a></li>
+    <li class="mono"><a href="#onem2mlib.constants.Acp_DISCOVER">Acp_DISCOVER</a></li>
+    <li class="mono"><a href="#onem2mlib.constants.Acp_NOTIFY">Acp_NOTIFY</a></li>
+    <li class="mono"><a href="#onem2mlib.constants.Acp_RETRIEVE">Acp_RETRIEVE</a></li>
+    <li class="mono"><a href="#onem2mlib.constants.Acp_UPDATE">Acp_UPDATE</a></li>
     <li class="mono"><a href="#onem2mlib.constants.Cse_Type_ASN">Cse_Type_ASN</a></li>
     <li class="mono"><a href="#onem2mlib.constants.Cse_Type_IN">Cse_Type_IN</a></li>
     <li class="mono"><a href="#onem2mlib.constants.Cse_Type_MN">Cse_Type_MN</a></li>
@@ -1050,6 +1057,8 @@ table {
     <li class="mono"><a href="#onem2mlib.constants.Grp_ABANDON_MEMBER">Grp_ABANDON_MEMBER</a></li>
     <li class="mono"><a href="#onem2mlib.constants.Grp_SET_MIXED">Grp_SET_MIXED</a></li>
     <li class="mono"><a href="#onem2mlib.constants.Grp_def_maxNrOfMembers">Grp_def_maxNrOfMembers</a></li>
+    <li class="mono"><a href="#onem2mlib.constants.NETWORK_REQUEST_TIMEOUT">NETWORK_REQUEST_TIMEOUT</a></li>
+    <li class="mono"><a href="#onem2mlib.constants.Type_ACP">Type_ACP</a></li>
     <li class="mono"><a href="#onem2mlib.constants.Type_AE">Type_AE</a></li>
     <li class="mono"><a href="#onem2mlib.constants.Type_CSEBase">Type_CSEBase</a></li>
     <li class="mono"><a href="#onem2mlib.constants.Type_Container">Type_Container</a></li>
@@ -1057,6 +1066,7 @@ table {
     <li class="mono"><a href="#onem2mlib.constants.Type_FlexContainer">Type_FlexContainer</a></li>
     <li class="mono"><a href="#onem2mlib.constants.Type_Group">Type_Group</a></li>
     <li class="mono"><a href="#onem2mlib.constants.Type_Mixed">Type_Mixed</a></li>
+    <li class="mono"><a href="#onem2mlib.constants.Type_RemoteCSE">Type_RemoteCSE</a></li>
   </ul>
 
     </li>
@@ -1082,6 +1092,69 @@ table {
 
   <section id="section-items">
     <h2 class="section-title" id="header-variables">Module variables</h2>
+      <div class="item">
+      <p id="onem2mlib.constants.Acp_ALL" class="name">var <span class="ident">Acp_ALL</span></p>
+      
+  
+    <div class="desc"><p>Shortcut for all privileges.</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="onem2mlib.constants.Acp_CREATE" class="name">var <span class="ident">Acp_CREATE</span></p>
+      
+  
+    <div class="desc"><p>Privilege to create a child resource.</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="onem2mlib.constants.Acp_DELETE" class="name">var <span class="ident">Acp_DELETE</span></p>
+      
+  
+    <div class="desc"><p>Privilege to delete an addressed resource.</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="onem2mlib.constants.Acp_DISCOVER" class="name">var <span class="ident">Acp_DISCOVER</span></p>
+      
+  
+    <div class="desc"><p>Privilege to discover the resource.</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="onem2mlib.constants.Acp_NOTIFY" class="name">var <span class="ident">Acp_NOTIFY</span></p>
+      
+  
+    <div class="desc"><p>Privilege to receive a notification.</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="onem2mlib.constants.Acp_RETRIEVE" class="name">var <span class="ident">Acp_RETRIEVE</span></p>
+      
+  
+    <div class="desc"><p>Privilege to retrieve the content of an addressed resource.</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="onem2mlib.constants.Acp_UPDATE" class="name">var <span class="ident">Acp_UPDATE</span></p>
+      
+  
+    <div class="desc"><p>Privilege to update the content of an addressed resource.</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
       <div class="item">
       <p id="onem2mlib.constants.Cse_Type_ASN" class="name">var <span class="ident">Cse_Type_ASN</span></p>
       
@@ -1149,6 +1222,24 @@ when there are member that don't match the group type.</p></div>
 
       </div>
       <div class="item">
+      <p id="onem2mlib.constants.NETWORK_REQUEST_TIMEOUT" class="name">var <span class="ident">NETWORK_REQUEST_TIMEOUT</span></p>
+      
+  
+    <div class="desc"><p>Timeout after n seconds in requests.</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="onem2mlib.constants.Type_ACP" class="name">var <span class="ident">Type_ACP</span></p>
+      
+  
+    <div class="desc"><p>The &amp;lt&gt;ACP&gt; resource type,</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
       <p id="onem2mlib.constants.Type_AE" class="name">var <span class="ident">Type_AE</span></p>
       
   
@@ -1207,6 +1298,15 @@ when there are member that don't match the group type.</p></div>
       
   
     <div class="desc"><p>The <em>Mixed</em> type, e.g. for &lt;group&gt; resources that point to resources of various types.</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="onem2mlib.constants.Type_RemoteCSE" class="name">var <span class="ident">Type_RemoteCSE</span></p>
+      
+  
+    <div class="desc"><p>The &lt;remoteCSE&gt; resource type.</p></div>
   <div class="source_cont">
 </div>
 

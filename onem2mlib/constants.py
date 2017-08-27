@@ -17,6 +17,8 @@ This sub-module defines various constants used in the onem2mlib module.
 
 Type_Mixed =  0
 """ The *Mixed* type, e.g. for &lt;group> resources that point to resources of various types. """
+Type_ACP = 1
+""" The &lt>ACP> resource type, """
 Type_AE =  2
 """ The &lt;AE> resource type. """
 Type_Container =  3
@@ -27,6 +29,8 @@ Type_CSEBase = 5
 """ The &lt;CSE> resource type. """
 Type_Group =  9
 """ The &lt;group> resource type. """
+Type_RemoteCSE = 16
+""" The &lt;remoteCSE> resource type. """
 Type_FlexContainer = 24
 """ The &lt;flexContainer> resource type. """
 
@@ -41,6 +45,25 @@ Cse_Type_MN = 2
 """ Used for the &lt;CSEBase> resource's *cseType* attribute. In indicates an MN-CSE. """
 Cse_Type_ASN = 3
 """ Used for the &lt;CSEBase> resource's *cseType* attribute. In indicates an ASN-CSE. """
+
+
+#
+#	ACP
+#
+Acp_CREATE = 1
+""" Privilege to create a child resource. """
+Acp_RETRIEVE = 2
+""" Privilege to retrieve the content of an addressed resource. """
+Acp_UPDATE = 4
+""" Privilege to update the content of an addressed resource. """
+Acp_DELETE = 8
+""" Privilege to delete an addressed resource. """
+Acp_NOTIFY = 16
+""" Privilege to receive a notification. """
+Acp_DISCOVER = 32
+""" Privilege to discover the resource. """
+Acp_ALL = 63
+""" Shortcut for all privileges. """
 
 
 #

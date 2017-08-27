@@ -17,6 +17,8 @@ CSE_NAME	= 'mn-cse'
 AE_NAME		= 'TEST_AE'
 AE_LABELS	= ['test/test', 'aLabel/Another%20Label']
 
+ACP_NAME	= 'TEST_ACP'
+
 CNT_NAME	= 'TEST_CONTAINER'
 CNT_LABELS	= ['test/test', 'aLabel/Another%20Label']
 CNT_MNI		= 1

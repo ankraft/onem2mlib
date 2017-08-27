@@ -4,7 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 
     <title>onem2mlib.resources API documentation</title>
-    <meta name="description" content="This sub-module defines the oneM2M Resource classes of the onem2mlib module." />
+    <meta name="description" content="This sub-module defines the oneM2M Resource and support classes of the onem2mlib module." />
 
   <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
   
@@ -1064,13 +1064,38 @@ table {
 
         </li>
         <li class="mono">
+        <span class="class_name"><a href="#onem2mlib.resources.AccessControlPolicy">AccessControlPolicy</a></span>
+        
+          
+  <ul>
+    <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.__init__">__init__</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.createInCSE">createInCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.deleteFromCSE">deleteFromCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.get">get</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.retrieveFromCSE">retrieveFromCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.updateInCSE">updateInCSE</a></li>
+  </ul>
+
+        </li>
+        <li class="mono">
+        <span class="class_name"><a href="#onem2mlib.resources.AccessControlRule">AccessControlRule</a></span>
+        
+          
+  <ul>
+    <li class="mono"><a href="#onem2mlib.resources.AccessControlRule.__init__">__init__</a></li>
+  </ul>
+
+        </li>
+        <li class="mono">
         <span class="class_name"><a href="#onem2mlib.resources.CSEBase">CSEBase</a></span>
         
           
   <ul>
     <li class="mono"><a href="#onem2mlib.resources.CSEBase.__init__">__init__</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.CSEBase.accessControlPolicies">accessControlPolicies</a></li>
     <li class="mono"><a href="#onem2mlib.resources.CSEBase.aes">aes</a></li>
     <li class="mono"><a href="#onem2mlib.resources.CSEBase.findAE">findAE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.CSEBase.findAccessControlPolicy">findAccessControlPolicy</a></li>
     <li class="mono"><a href="#onem2mlib.resources.CSEBase.groups">groups</a></li>
     <li class="mono"><a href="#onem2mlib.resources.CSEBase.retrieveFromCSE">retrieveFromCSE</a></li>
     <li class="mono"><a href="#onem2mlib.resources.CSEBase.retrieveResource">retrieveResource</a></li>
@@ -1152,7 +1177,7 @@ table {
 
   <header id="section-intro">
   <h1 class="title"><span class="name">onem2mlib.resources</span> module</h1>
-  <p>This sub-module defines the oneM2M Resource classes of the onem2mlib module.</p>
+  <p>This sub-module defines the oneM2M Resource and support classes of the onem2mlib module.</p>
   
 
   </header>
@@ -1421,6 +1446,242 @@ Assigned by the application or the CSE.</p></div>
       </div>
       
       <div class="item">
+      <p id="onem2mlib.resources.AccessControlPolicy" class="name">class <span class="ident">AccessControlPolicy</span></p>
+      
+  
+    <div class="desc"><p>This class implements the oneM2M &lt;accessControlPolicy&gt; resource. </p>
+<p>It is always a sub-resource of the &lt;CSEBase&gt; resource, and it contains access right
+privileges to resources.</p></div>
+  <div class="source_cont">
+</div>
+
+
+      <div class="class">
+          <h3>Ancestors (in MRO)</h3>
+          <ul class="class_list">
+          <li><a href="#onem2mlib.resources.AccessControlPolicy">AccessControlPolicy</a></li>
+          <li><a href="#onem2mlib.resources.ResourceBase">ResourceBase</a></li>
+          <li><a href="/builtins.object.ext">builtins.object</a></li>
+          </ul>
+          <h3>Static methods</h3>
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.AccessControlPolicy.__init__">
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, privileges=[], selfPrivileges=[], instantly=False)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Initialize the &lt;accessControlPolicy&gt; resource. </p>
+<p>Args:</p>
+<ul>
+<li><em>parent</em>: The parent resource object in which the &lt;accessControlPolicy&gt; resource
+        will be created. This must be a &lt;CSEBase&gt; or &lt;remoteCSE&gt; resource. This might raise a
+        <em>ParameterError</em> exception if this is not the case.</li>
+<li><em>instantly</em>: The resource will be instantly retrieved from or created on the CSE. This might raise
+        a <em>CSEOperationError</em> exception in case of an error.</li>
+<li>All other arguments initialize the status variables of the same name in the
+        &lt;accessControlPolicy&gt; instance or <a href="#onem2mlib.resources.ResourceBase"><code>ResourceBase</code></a>.</li>
+</ul></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.AccessControlPolicy.createInCSE">
+    <p>def <span class="ident">createInCSE</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Create the &lt;accessControlPolicy&gt; resource in the &lt;CSEBase&gt;.</p>
+<p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.'</p>
+<p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
+must be set to a valid value.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.AccessControlPolicy.deleteFromCSE">
+    <p>def <span class="ident">deleteFromCSE</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Delete the &lt;accessControlPolicy&gt; resource from the CSE. </p>
+<p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.'</p>
+<p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
+must be set to a valid value.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.AccessControlPolicy.get">
+    <p>def <span class="ident">get</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Retrieve the &lt;accessControlPolicy&gt; resource from the CSE, or create it if 
+it doesn't exist. This object instance is updated accordingly. </p>
+<p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.</p>
+<p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
+must be set to a valid value.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.AccessControlPolicy.retrieveFromCSE">
+    <p>def <span class="ident">retrieveFromCSE</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Retrieve the &lt;accessControlPolicy&gt; resource from the CSE. This object instance 
+is updated accordingly. </p>
+<p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.</p>
+<p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
+must be set to a valid value.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.AccessControlPolicy.updateInCSE">
+    <p>def <span class="ident">updateInCSE</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Update the existing &lt;accessControlPolicy&gt; resource with new attributes.</p>
+<p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.'</p>
+<p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
+must be set to a valid value.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+          <h3>Instance variables</h3>
+            <div class="item">
+            <p id="onem2mlib.resources.AccessControlPolicy.privileges" class="name">var <span class="ident">privileges</span></p>
+            
+
+            
+  
+    <div class="desc"><p>A list of <em>AccessControlRules</em> that applies to resources referencing this 
+&lt;accessControlPolicy&gt; resource using the accessControlPolicyID attribute.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.resources.AccessControlPolicy.selfPrivileges" class="name">var <span class="ident">selfPrivileges</span></p>
+            
+
+            
+  
+    <div class="desc"><p>A list of <em>AccessControlRules</em> that apply to the &lt;accessControlPolicy&gt; resource itself.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+      </div>
+      </div>
+      
+      <div class="item">
+      <p id="onem2mlib.resources.AccessControlRule" class="name">class <span class="ident">AccessControlRule</span></p>
+      
+  
+    <div class="desc"><p>This class provides the structure for access control rules that shall be used to define
+privileges in &lt;accessControlPolicy&gt; resources. It contains:</p>
+<ul>
+<li><em>accessControlOriginators</em> : The accessControlOriginators is a mandatory parameter in an
+        AccessControlRule. It represents the list of Originators that shall be allowed to use
+        an access control rule. The list of Originators is described as a list of parameters, where the
+        types of the parameter can vary within the list.
+        See also table Table 9.6.2.1-1 of oneM2M's TS-0001.</li>
+<li><em>accessControlOperations</em> : The accessControlOperations is a mandatory parameter in an
+        AccessControlRule structure that represents the set of operations that are authorized
+        using this access control rule.</li>
+</ul></div>
+  <div class="source_cont">
+</div>
+
+
+      <div class="class">
+          <h3>Ancestors (in MRO)</h3>
+          <ul class="class_list">
+          <li><a href="#onem2mlib.resources.AccessControlRule">AccessControlRule</a></li>
+          <li><a href="/builtins.object.ext">builtins.object</a></li>
+          </ul>
+          <h3>Static methods</h3>
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.AccessControlRule.__init__">
+    <p>def <span class="ident">__init__</span>(</p><p>self, accessControlOriginators=[], accessControlOperations=0)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Initialize the AccessControlRule. </p>
+<p>Args:</p>
+<ul>
+<li><em>accessControlOriginators</em>: A list of originators.</li>
+<li><em>accessControlOperations</em>: The combination of operation privileges.</li>
+</ul></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+          <h3>Instance variables</h3>
+            <div class="item">
+            <p id="onem2mlib.resources.AccessControlRule.accessControlOperations" class="name">var <span class="ident">accessControlOperations</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Integer. This attribute is an OR'ed combination of the operation privileges for this AccessControlRule. R/W.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.resources.AccessControlRule.accessControlOriginators" class="name">var <span class="ident">accessControlOriginators</span></p>
+            
+
+            
+  
+    <div class="desc"><p>List of string. This attribute specifies the list of originators. R/W.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+      </div>
+      </div>
+      
+      <div class="item">
       <p id="onem2mlib.resources.CSEBase" class="name">class <span class="ident">CSEBase</span></p>
       
   
@@ -1458,6 +1719,21 @@ Assigned by the application or the CSE.</p></div>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.resources.CSEBase.accessControlPolicies">
+    <p>def <span class="ident">accessControlPolicies</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return a list of &lt;accessControlPolicy&gt; resources from this CSE, or an empty list.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.resources.CSEBase.aes">
     <p>def <span class="ident">aes</span>(</p><p>self)</p>
     </div>
@@ -1481,6 +1757,21 @@ Assigned by the application or the CSE.</p></div>
     
   
     <div class="desc"><p>Find a specific &lt;AE&gt; resource by its <em>resourceName</em>, or None otherwise.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.CSEBase.findAccessControlPolicy">
+    <p>def <span class="ident">findAccessControlPolicy</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a specific &lt;accessControlPolicy&gt; resource by its <em>resourceName</em>, or None.</p></div>
   <div class="source_cont">
 </div>
 
