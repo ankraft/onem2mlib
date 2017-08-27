@@ -348,8 +348,7 @@ class AccessControlPolicy(ResourceBase):
 			&lt;accessControlPolicy> instance or `onem2mlib.resources.ResourceBase`.
 		"""
 		super().__init__(parent, resourceName, resourceID, CON.Type_ACP)
-
-		if self.type != CON.Type_CSEBase or self.type != CON.Type_RemoteCSE:
+		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:
 			raise EXC.ParameterError('Parent must be <CSE> or <remoteCSE>.')
 
 		self.privileges = privileges
@@ -441,7 +440,6 @@ class AccessControlPolicy(ResourceBase):
 		super()._parseXML(root)
 		self.privileges = []
 		pv = UT.getElementWithChildren(root, 'pv')
-		print(pv)
 		if pv is not None and len(pv)>0:
 			acrs = UT.getElements(pv[0], 'acr', relative=True) # only the first element[0]
 			for a in acrs:
