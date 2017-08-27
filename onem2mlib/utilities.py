@@ -39,17 +39,18 @@ def getElement(tree, elemName, default=None, relative=False):
 	return default
 
 
-# Find all subtree elements from the tree. Returns a list
+# Find all subtree elements from the tree. Returns a list.
 # If relative is set to True then the search is done relatively to the provided
 # element.
 def getElements(tree, elemName, relative=False):
 	return tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)
 
 
+# Find the children elements of a specific XML element.
 def getElementWithChildren(tree, elemName):
 	result = getElements(tree, elemName)
-	if result is not None and len(result) > 0:
-		return result[0]
+	if result is not None:
+		return result
 	return None
 
 
