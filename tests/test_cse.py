@@ -27,7 +27,7 @@ class TestCSE(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestCSE.session = SE.Session(host, username, password)
+		TestCSE.session = SE.Session(host, originator)
 
 
 	@classmethod
@@ -41,12 +41,11 @@ class TestCSE(unittest.TestCase):
 		self.assertIsNotNone(TestCSE.session)
 		self.assertFalse(TestCSE.session.connected)
 		self.assertEqual(TestCSE.session.address, host)
-		self.assertEqual(TestCSE.session.username, username)
-		self.assertEqual(TestCSE.session.password, password)
+		self.assertEqual(TestCSE.session.originator, originator)
 
 
 	def test_cseGet(self):
-		TestCSE.cse = CSEBase(TestCSE.session, CSE_NAME)
+		TestCSE.cse = CSEBase(TestCSE.session, CSE_ID)
 		self.assertTrue(TestCSE.session.connected)
 		self.assertIsNotNone(TestCSE.cse)
 		self.assertEqual(TestCSE.cse.type, CON.Type_CSEBase)

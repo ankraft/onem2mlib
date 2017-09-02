@@ -1,5 +1,5 @@
 # onem2mlib
-**Version 0.2**
+**Version 0.3**
 
 This Python3 module implements a library to access and manage resources on a oneM2M CSE.
 
@@ -53,7 +53,7 @@ The following sections provide some examples.
 
 ### Connect to a CSE
 
-	session = SE.Session('http://host.com:8282', 'admin', 'admin') # create a session
+	session = SE.Session('http://host.com:8282', 'admin:admin') # create a session
 	cse = CSEBase(session, 'mn-cse') # get the <CSEBase> resource
 
 ### Create an &lt;AE> resource in a CSE
@@ -66,13 +66,13 @@ The second example is similar to the first, but offers the possibility to modify
 In general, the *get()* method creates a new or retrieves an existing resource.
 
 	ae = AE(cse, resourceName='aeName')
-	# do more modifications here
+	# set more attributes here
 	ae.get()
 
 The last example also creates a new &lt;AE> resource in the CSE, but does it explicitly. It fails in case a resource with the same name already exists.
 
 	ae = AE(cse, resourceName='aeName')
-	# do more modifications here
+	# set more attributes here
 	ae.createInCSE()
 
 ### Add a &lt;container> resource to an &lt;AE>
@@ -102,6 +102,7 @@ The following resource types are supported in this version.
 - [&lt;container>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.Container)
 - [&lt;contentInstance>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.ContentInstance)
 - [&lt;group>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.Group)
+- [&lt;accessControlPolicy>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.AccessControlPolicy)
 
 See also [ROADMAP](ROADMAP.md) for open issues and planned enhancements.
 

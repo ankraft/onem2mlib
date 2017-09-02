@@ -15,7 +15,7 @@ from onem2mlib.resources import *
 
 if __name__ == '__main__':
 	# create session 
-	session = SE.Session('http://localhost:8282', 'admin', 'admin')
+	session = SE.Session('http://localhost:8282', 'admin:admin')
 
 	# get the <CSEBase> resource
 	cse = CSEBase(session, 'mn-cse')

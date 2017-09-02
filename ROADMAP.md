@@ -2,9 +2,7 @@
 
 ## Resource Types
 - FlexContainer
-    - Support in &lt;AE>, &lt;Container>
-- AccessControlPolicy
-	- Support for &lt;accessControlPolicy> in &lt;CSE>
+    - Support in &lt;AE>, &lt;Container>, &lt;flexContainers>
 - RemoteCSE
 
 ## Features 
@@ -14,4 +12,3 @@
 - Test with other oneM2M implementations
 - More discovery functions
 - Announced resources
-- Better support for access control originator in Sessions

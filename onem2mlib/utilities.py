@@ -35,6 +35,8 @@ def getElement(tree, elemName, default=None, relative=False):
 		result = elem[0].text
 		if isinstance(default, list):
 			result = result.split()
+		if isinstance(default, int):
+			result = int(result)
 		return result
 	return default
 

@@ -16,7 +16,7 @@ from onem2mlib.resources import *
 if __name__ == '__main__':
 
 	# Create session
-	session = SE.Session('http://localhost:8282', 'admin', 'admin')
+	session = SE.Session('http://localhost:8282', 'admin:admin')
 
 	# Get the <CSEBase> resource
 	cse = CSEBase(session, 'mn-cse')
@@ -37,7 +37,6 @@ if __name__ == '__main__':
 	#
 	aeName2 = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
 	ae2 = AE(cse, resourceName=aeName2, instantly=True)
-	ae2.createInCSE()
 	print(ae2)
 
 

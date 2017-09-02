@@ -64,12 +64,13 @@ def deleteFromCSE(resource):
 	if _isInvalidResource(resource) or not resource.resourceID :
 		lastError = 'Invalid resource'
 		return False
-
 	response = delete(resource.session, resource.resourceID)
 	if response and response.status_code == 200:
 		return True
 	lastError = str(response.status_code) + ' - ' + response.text
+	#print(response.status_code)
 	return False
+
 
 def updateInCSE(resource, type):
 	global lastError
@@ -144,13 +145,12 @@ def update(session, path, type, body):
 
 def _getHeaders(session, type=None):
 	headers = dict()
-	headers['X-M2M-Origin'] = session.username + ':' + session.password
+	headers['X-M2M-Origin'] = session.originator
 	if type:
 		headers['Content-Type'] = 'application/xml;ty=' + str(type)
 	else:
 		headers['Content-Type'] = 'application/xml'
 	headers['Accept'] = 'application/xml'
-
 	return headers
 
 

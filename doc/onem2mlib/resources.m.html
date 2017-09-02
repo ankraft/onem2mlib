@@ -1059,6 +1059,7 @@ table {
     <li class="mono"><a href="#onem2mlib.resources.AE.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AE.groups">groups</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AE.retrieveFromCSE">retrieveFromCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.AE.setAccessControlPolicies">setAccessControlPolicies</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AE.updateInCSE">updateInCSE</a></li>
   </ul>
 
@@ -1073,6 +1074,7 @@ table {
     <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.deleteFromCSE">deleteFromCSE</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.retrieveFromCSE">retrieveFromCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.setAccessControlPolicies">setAccessControlPolicies</a></li>
     <li class="mono"><a href="#onem2mlib.resources.AccessControlPolicy.updateInCSE">updateInCSE</a></li>
   </ul>
 
@@ -1118,6 +1120,7 @@ table {
     <li class="mono"><a href="#onem2mlib.resources.Container.latestContentInstance">latestContentInstance</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Container.oldestContentInstance">oldestContentInstance</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Container.retrieveFromCSE">retrieveFromCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.Container.setAccessControlPolicies">setAccessControlPolicies</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Container.updateInCSE">updateInCSE</a></li>
   </ul>
 
@@ -1132,6 +1135,7 @@ table {
     <li class="mono"><a href="#onem2mlib.resources.ContentInstance.deleteFromCSE">deleteFromCSE</a></li>
     <li class="mono"><a href="#onem2mlib.resources.ContentInstance.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.resources.ContentInstance.retrieveFromCSE">retrieveFromCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.ContentInstance.setAccessControlPolicies">setAccessControlPolicies</a></li>
   </ul>
 
         </li>
@@ -1148,6 +1152,7 @@ table {
     <li class="mono"><a href="#onem2mlib.resources.Group.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Group.getGroupResources">getGroupResources</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Group.retrieveFromCSE">retrieveFromCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.Group.setAccessControlPolicies">setAccessControlPolicies</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Group.updateGroupResources">updateGroupResources</a></li>
     <li class="mono"><a href="#onem2mlib.resources.Group.updateInCSE">updateInCSE</a></li>
   </ul>
@@ -1159,6 +1164,7 @@ table {
           
   <ul>
     <li class="mono"><a href="#onem2mlib.resources.ResourceBase.__init__">__init__</a></li>
+    <li class="mono"><a href="#onem2mlib.resources.ResourceBase.setAccessControlPolicies">setAccessControlPolicies</a></li>
   </ul>
 
         </li>
@@ -1380,6 +1386,27 @@ must be set to a valid value.</p></div>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.resources.AE.setAccessControlPolicies">
+    <p>def <span class="ident">setAccessControlPolicies</span>(</p><p>self, acps)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Set the &lt;ccessControlPolicy&gt; resource ID(s) for a resource (if the resource type supports 
+AccessControlPolicies). </p>
+<p><em>acps</em> could either be a single <em>AccessControlPolicies</em> object or a list of
+<em>AccessControlPolicy</em> objects. If <em>acps</em> is <em>None</em>, then the accessControlPolicies
+of this resource are set to an empty list.</p>
+<p>This method may throw a <em>NotSupportedError</em> exception when called on a resource that doesn't
+support accessControlPolicies.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.resources.AE.updateInCSE">
     <p>def <span class="ident">updateInCSE</span>(</p><p>self)</p>
     </div>
@@ -1450,7 +1477,7 @@ Assigned by the application or the CSE.</p></div>
       
   
     <div class="desc"><p>This class implements the oneM2M &lt;accessControlPolicy&gt; resource. </p>
-<p>It is always a sub-resource of the &lt;CSEBase&gt; resource, and it contains access right
+<p>It is always a sub-resource of a &lt;CSEBase&gt; or a &lt;remoteCSE&gt; resource, and it contains access right
 privileges to resources.</p></div>
   <div class="source_cont">
 </div>
@@ -1518,6 +1545,8 @@ must be set to a valid value.</p></div>
   
     <div class="desc"><p>Delete the &lt;accessControlPolicy&gt; resource from the CSE. </p>
 <p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.'</p>
+<p><strong>Note</strong>: One must delete associated resources first before delete the
+&lt;accessControlPolicy&gt; resource.</p>
 <p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
 must be set to a valid value.</p></div>
   <div class="source_cont">
@@ -1558,6 +1587,27 @@ is updated accordingly. </p>
 <p>The method returns <em>True</em> or <em>False</em>, depending on the success of the operation.</p>
 <p>The <a href="#onem2mlib.resources.ResourceBase.resourceID"><code>resourceID</code></a> state variable of the instance
 must be set to a valid value.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.AccessControlPolicy.setAccessControlPolicies">
+    <p>def <span class="ident">setAccessControlPolicies</span>(</p><p>self, acps)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Set the &lt;ccessControlPolicy&gt; resource ID(s) for a resource (if the resource type supports 
+AccessControlPolicies). </p>
+<p><em>acps</em> could either be a single <em>AccessControlPolicies</em> object or a list of
+<em>AccessControlPolicy</em> objects. If <em>acps</em> is <em>None</em>, then the accessControlPolicies
+of this resource are set to an empty list.</p>
+<p>This method may throw a <em>NotSupportedError</em> exception when called on a resource that doesn't
+support accessControlPolicies.</p></div>
   <div class="source_cont">
 </div>
 
@@ -2160,6 +2210,27 @@ must be set to a valid value.</p></div>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.resources.Container.setAccessControlPolicies">
+    <p>def <span class="ident">setAccessControlPolicies</span>(</p><p>self, acps)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Set the &lt;ccessControlPolicy&gt; resource ID(s) for a resource (if the resource type supports 
+AccessControlPolicies). </p>
+<p><em>acps</em> could either be a single <em>AccessControlPolicies</em> object or a list of
+<em>AccessControlPolicy</em> objects. If <em>acps</em> is <em>None</em>, then the accessControlPolicies
+of this resource are set to an empty list.</p>
+<p>This method may throw a <em>NotSupportedError</em> exception when called on a resource that doesn't
+support accessControlPolicies.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.resources.Container.updateInCSE">
     <p>def <span class="ident">updateInCSE</span>(</p><p>self)</p>
     </div>
@@ -2391,6 +2462,27 @@ must be set to a valid value.</p></div>
 
   </div>
   
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.ContentInstance.setAccessControlPolicies">
+    <p>def <span class="ident">setAccessControlPolicies</span>(</p><p>self, acps)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Set the &lt;ccessControlPolicy&gt; resource ID(s) for a resource (if the resource type supports 
+AccessControlPolicies). </p>
+<p><em>acps</em> could either be a single <em>AccessControlPolicies</em> object or a list of
+<em>AccessControlPolicy</em> objects. If <em>acps</em> is <em>None</em>, then the accessControlPolicies
+of this resource are set to an empty list.</p>
+<p>This method may throw a <em>NotSupportedError</em> exception when called on a resource that doesn't
+support accessControlPolicies.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
           <h3>Instance variables</h3>
             <div class="item">
             <p id="onem2mlib.resources.ContentInstance.content" class="name">var <span class="ident">content</span></p>
@@ -2600,6 +2692,27 @@ must be set to a valid value.</p></div>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.resources.Group.setAccessControlPolicies">
+    <p>def <span class="ident">setAccessControlPolicies</span>(</p><p>self, acps)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Set the &lt;ccessControlPolicy&gt; resource ID(s) for a resource (if the resource type supports 
+AccessControlPolicies). </p>
+<p><em>acps</em> could either be a single <em>AccessControlPolicies</em> object or a list of
+<em>AccessControlPolicy</em> objects. If <em>acps</em> is <em>None</em>, then the accessControlPolicies
+of this resource are set to an empty list.</p>
+<p>This method may throw a <em>NotSupportedError</em> exception when called on a resource that doesn't
+support accessControlPolicies.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.resources.Group.updateGroupResources">
     <p>def <span class="ident">updateGroupResources</span>(</p><p>self, resource)</p>
     </div>
@@ -2788,6 +2901,27 @@ resource attributes.</p></div>
 <li>All other arguments initialize the status variables of the same name in the
         ResourceBase instance.</li>
 </ul></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.resources.ResourceBase.setAccessControlPolicies">
+    <p>def <span class="ident">setAccessControlPolicies</span>(</p><p>self, acps)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Set the &lt;ccessControlPolicy&gt; resource ID(s) for a resource (if the resource type supports 
+AccessControlPolicies). </p>
+<p><em>acps</em> could either be a single <em>AccessControlPolicies</em> object or a list of
+<em>AccessControlPolicy</em> objects. If <em>acps</em> is <em>None</em>, then the accessControlPolicies
+of this resource are set to an empty list.</p>
+<p>This method may throw a <em>NotSupportedError</em> exception when called on a resource that doesn't
+support accessControlPolicies.</p></div>
   <div class="source_cont">
 </div>
 

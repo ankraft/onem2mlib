@@ -105,6 +105,32 @@ class ResourceBase:
 		return result
 
 
+	def setAccessControlPolicies(self, acps):
+		"""
+		Set the &lt;ccessControlPolicy> resource ID(s) for a resource (if the resource type supports 
+		AccessControlPolicies). 
+
+		*acps* could either be a single *AccessControlPolicies* object or a list of
+		*AccessControlPolicy* objects. If *acps* is *None*, then the accessControlPolicies
+		of this resource are set to an empty list.
+
+		This method may throw a *NotSupportedError* exception when called on a resource that doesn't
+		support accessControlPolicies.
+		"""
+		self.accessControlPolicyIDs = []
+
+		if isinstance(self, ContentInstance):
+			raise EXC.NotSupportedError('Resource does not support AccessControlPolicies.')
+
+		if acps is not None:
+			if isinstance(acps, AccessControlPolicy) and acps.resourceID is not None:
+				self.accessControlPolicyIDs.append(acps.resourceID)
+			else:
+				for acp in acps:
+					if isinstance(acp, AccessControlPolicy) and acp.resourceID is not None:
+						print(acp.resourceID)
+						self.accessControlPolicyIDs.append(acp.resourceID)
+
 	def _structuredResourceID(self):
 		return self.parent._structuredResourceID() + '/' + self.resourceName
 
@@ -136,6 +162,7 @@ class ResourceBase:
 		UT.addToElement(root, 'lbl', self.labels)
 		UT.addToElement(root, 'aa', self.announcedAttribute)
 		UT.addToElement(root, 'at', self.announceTo)
+		UT.addToElement(root, 'acpi', self.accessControlPolicyIDs)
 
 
 	def _copy(self, resource):
@@ -393,6 +420,9 @@ class AccessControlPolicy(ResourceBase):
 
 		The method returns *True* or *False*, depending on the success of the operation.'
 
+		**Note**: One must delete associated resources first before delete the
+		&lt;accessControlPolicy> resource.
+
 		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
 		must be set to a valid value.
 		"""
@@ -437,6 +467,7 @@ class AccessControlPolicy(ResourceBase):
 
 
 	def _parseXML(self, root):
+		#print(UT.xmlToString(root))
 		super()._parseXML(root)
 		self.privileges = []
 		pv = UT.getElementWithChildren(root, 'pv')
@@ -515,15 +546,19 @@ class AccessControlRule():
 
 
 	def _parseXML(self, root):
-		self.accessControlOriginators = UT.getElement(root, 'acor', [], relative=True)
+		self.accessControlOriginators = []
+		acors = UT.getElements(root, 'acor', relative=True)
+		if acors:
+			for acor in acors:
+				self.accessControlOriginators.append(acor.text)
 		self.accessControlOperations  = UT.getElement(root, 'acop', 0, relative=True)
 
 
 	def _createXML(self, root):
 		acr = UT.addElement(root, 'acr')
-		UT.addToElement(acr, 'acor', self.accessControlOriginators)
-		# for acor in self.accessControlOriginators:
-		# 	UT.addToElement(acr, 'acor', acor)
+		#UT.addToElement(acr, 'acor', self.accessControlOriginators)
+		for acor in self.accessControlOriginators:
+			UT.addToElement(acr, 'acor', acor)
 		UT.addToElement(acr, 'acop', self.accessControlOperations)
 
 
@@ -1442,7 +1477,7 @@ def _findSubResource(resource, type):
 						grp.retrieveFromCSE()
 						result.append(grp)
 					elif type == CON.Type_ACP:
-						acp = ACP(resource, resourceID=ri)
+						acp = AccessControlPolicy(resource, resourceID=ri)
 						acp.retrieveFromCSE()
 						result.append(acp)
 			# Still a hack: sort the list by the ct attribute

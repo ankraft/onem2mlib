@@ -16,6 +16,7 @@ class OneM2MLibError(Exception):
     """Base class for exceptions in this module."""
     pass
 
+
 class CSEOperationError(OneM2MLibError):
     """Exception raised for errors when invoking operations on the CSE.
     """
@@ -24,8 +25,28 @@ class CSEOperationError(OneM2MLibError):
         self.message = message
         """ Explanation of the error. """
 
+
+class AuthenticationError(OneM2MLibError):
+    """Exception raised for errors regarding authorization. 
+    """
+
+    def __init__(self, message):
+        self.message = message
+        """ Explanation of the error. """
+
+
 class ParameterError(OneM2MLibError):
     """Exception raised for errors in paramterization of resource classes. 
+    """
+
+    def __init__(self, message):
+        self.message = message
+        """ Explanation of the error. """
+
+
+
+class NotSupportedError(OneM2MLibError):
+    """Exception raised when accessing/modifying not supported features of a resource.
     """
 
     def __init__(self, message):

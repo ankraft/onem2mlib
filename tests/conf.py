@@ -8,16 +8,18 @@
 #	Change the settings for *host*, *username*, and *password* according to your setup.
 
 host		= 'http://localhost:8282'
-username	= 'admin'
-password	= 'admin'
+originator	= 'admin:admin'
 
 
-CSE_NAME	= 'mn-cse'
+CSE_NAME	= 'mn-name'
+CSE_ID		= 'mn-cse'
 
 AE_NAME		= 'TEST_AE'
 AE_LABELS	= ['test/test', 'aLabel/Another%20Label']
 
 ACP_NAME	= 'TEST_ACP'
+ACP_LIMITED = 'limited:limited'
+
 
 CNT_NAME	= 'TEST_CONTAINER'
 CNT_LABELS	= ['test/test', 'aLabel/Another%20Label']

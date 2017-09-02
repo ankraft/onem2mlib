@@ -29,8 +29,11 @@ class TestAE(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestAE.session = SE.Session(host, username, password)
-		TestAE.cse = CSEBase(TestAE.session, CSE_NAME)
+		TestAE.session = SE.Session(host, originator)
+		TestAE.cse = CSEBase(TestAE.session, CSE_ID)
+		if not TestAE.session.connected:
+			print('*** Not connected to CSE')
+			exit()
 		if TestAE.cse.findAE(AE_NAME):
 			print('*** AE with name "' + AE_NAME + '" already present in CSE. Please remove it first.')
 			exit()

@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3
 
 #
 #	test_group.py
@@ -34,8 +33,11 @@ class TestGroup(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestGroup.session = SE.Session(host, username, password)
-		TestGroup.cse = CSEBase(TestGroup.session, CSE_NAME)
+		TestGroup.session = SE.Session(host, originator)
+		TestGroup.cse = CSEBase(TestGroup.session, CSE_ID)
+		if not TestGroup.session.connected:
+			print('*** Not connected to CSE')
+			exit()
 		if TestGroup.cse.findAE(AE_NAME):
 			print('*** AE with name "' + AE_NAME + '" already present in CSE. Please remove it first.')
 			exit()
@@ -151,18 +153,21 @@ class TestGroup(unittest.TestCase):
 		try:
 			# create an <group> while init, no memberIDs
 			grp = Group(TestGroup.ae, resourceName=GRP_NAME+'2',  instantly=True)
+
+			# The following might fail, because om2m doesn't allow for empty member IDs
+			# which is false. This is why the assert exception is caught here
 			self.assertIsNotNone(TestGroup.cnt2)
 
+		except (AssertionError, onem2mlib.exceptions.CSEOperationError):
+			print('WARNING: check om2m issue "allow empty mid" ... ', end='', flush=True)
+
+		if grp:
 			# Check whether it was really created in the CSE
 			grp2 = TestGroup.ae.findContainer(GRP_NAME+'2')
 			self.assertIsNotNone(grp2)
 			self.assertEqual(grp.resourceID, grp2.resourceID)
 
-		except (AssertionError, onem2mlib.exceptions.CSEOperationError):
-			print('WARNING: check om2m issue "allow empty mid"... ', end='', flush=True)
-
-		# Delete the new <container> again
-		if grp:
+			# Delete the new <container> again
 			self.assertTrue(grp.deleteFromCSE())
 			self.assertIsNone(TestGroup.ae.findGroup(GRP_NAME+'2'))
 

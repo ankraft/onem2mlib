@@ -1097,7 +1097,7 @@ table {
             
   <div class="item">
     <div class="name def" id="onem2mlib.session.Session.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, address=None, username=None, password=None)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, address, originator)</p>
     </div>
     
 
@@ -1107,10 +1107,9 @@ table {
 <p>Please note, the credentials are currently hold unsecured in Session instances.</p>
 <p>Args:</p>
 <ul>
-<li><em>address</em>: The URL of the CSE host to connect to. This includes the protocol, hostname, 
+<li><em>address</em>: String. The URL of the CSE host to connect to. This includes the protocol, hostname, 
         port number, and any API prefix etc.</li>
-<li><em>username</em>: The username part of the credentials.</li>
-<li><em>password</em>: The password part of the credentials.</li>
+<li><em>originator</em>: String. The originator for identification in access control policies</li>
 </ul></div>
   <div class="source_cont">
 </div>
@@ -1142,23 +1141,13 @@ port number, and any API prefix etc.</p></div>
 
             </div>
             <div class="item">
-            <p id="onem2mlib.session.Session.password" class="name">var <span class="ident">password</span></p>
+            <p id="onem2mlib.session.Session.originator" class="name">var <span class="ident">originator</span></p>
             
 
             
   
-    <div class="desc"><p>String. The password part of the credentials.</p></div>
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="onem2mlib.session.Session.username" class="name">var <span class="ident">username</span></p>
-            
-
-            
-  
-    <div class="desc"><p>String. The username part of the credentials.</p></div>
+    <div class="desc"><p>String. This specifies the originator for identification in access control policies. 
+It can be a domain, an originatorID, the string "all", or a role-ID.</p></div>
   <div class="source_cont">
 </div>
 
