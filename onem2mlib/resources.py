@@ -12,6 +12,7 @@ This sub-module defines the oneM2M Resource and support classes of the onem2mlib
 
 """
 
+
 import onem2mlib.utilities as UT
 import onem2mlib.mcarequests as MCA
 import onem2mlib.constants as CON
@@ -130,6 +131,73 @@ class ResourceBase:
 					if isinstance(acp, AccessControlPolicy) and acp.resourceID is not None:
 						print(acp.resourceID)
 						self.accessControlPolicyIDs.append(acp.resourceID)
+
+
+
+	def retrieveFromCSE(self):
+		"""
+		Retrieve the resource from the &lt;CSEBase>. This object instance is updated accordingly. 
+
+		The method returns *True* or *False*, depending on the success of the operation.
+
+		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		return MCA.retrieveFromCSE(self)
+
+
+	def deleteFromCSE(self):
+		"""
+		Delete the resource and all its sub-resources from the &lt;CSEBase>. 
+
+		The method returns *True* or *False*, depending on the success of the operation.'
+
+		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		return MCA.deleteFromCSE(self)
+
+
+	def createInCSE(self):
+		"""
+		Create the resource in the &lt;CSEBase>.
+
+		The method returns *True* or *False*, depending on the success of the operation.'
+
+		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		return MCA.createInCSE(self, self.type)
+
+
+	def updateInCSE(self):
+		"""
+		Update the existing resource with new attributes.
+
+		The method returns *True* or *False*, depending on the success of the operation.
+		It may throw a *NotSupportedError* exception when the operation is not supported
+		by the resource type.
+
+		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		if self.type in [CON.Type_ContentInstance]: # not allowed
+			raise EXC.NotSupportedError('ResourceType doesn''t support updating.')
+		return MCA.updateInCSE(self, self.type)
+
+
+	def get(self):
+		"""
+		Retrieve the resource from the &lt;CSEBase>, or create it if it doesn't exist.
+		This object instance is updated accordingly. 
+
+		The method returns *True* or *False*, depending on the success of the operation.
+
+		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		return _retrieveOrCreateResource(self)
+
 
 	def _structuredResourceID(self):
 		return self.parent._structuredResourceID() + '/' + self.resourceName
@@ -358,6 +426,8 @@ class AccessControlPolicy(ResourceBase):
 
 	It is always a sub-resource of a &lt;CSEBase> or a &lt;remoteCSE> resource, and it contains access right
 	privileges to resources.
+
+	**Note**: Delete associated resources first before deleting the	&lt;accessControlPolicy> resource.
 	"""
 
 	def __init__(self, parent=None, resourceName=None, resourceID=None, privileges = [], selfPrivileges=[], instantly=False):
@@ -367,9 +437,9 @@ class AccessControlPolicy(ResourceBase):
 		Args:
 
 		- *parent*: The parent resource object in which the &lt;accessControlPolicy> resource
-			will be created. This must be a &lt;CSEBase> or &lt;remoteCSE> resource. This might raise a
+			will be created. This must be a &lt;CSEBase> or &lt;remoteCSE> resource. This might throw a
 			*ParameterError* exception if this is not the case.
-		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might raise
+		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
 			a *CSEOperationError* exception in case of an error.
 		- All other arguments initialize the status variables of the same name in the
 			&lt;accessControlPolicy> instance or `onem2mlib.resources.ResourceBase`.
@@ -399,71 +469,6 @@ class AccessControlPolicy(ResourceBase):
 		for p in self.selfPrivileges:
 			result += str(p)
 		return result
-
-
-	def retrieveFromCSE(self):
-		"""
-		Retrieve the &lt;accessControlPolicy> resource from the CSE. This object instance 
-		is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.retrieveFromCSE(self)
-
-
-	def deleteFromCSE(self):
-		"""
-		Delete the &lt;accessControlPolicy> resource from the CSE. 
-
-		The method returns *True* or *False*, depending on the success of the operation.'
-
-		**Note**: One must delete associated resources first before delete the
-		&lt;accessControlPolicy> resource.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.deleteFromCSE(self)
-
-
-	def createInCSE(self):
-		"""
-		Create the &lt;accessControlPolicy> resource in the &lt;CSEBase>.
-
-		The method returns *True* or *False*, depending on the success of the operation.'
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.createInCSE(self, CON.Type_ACP)
-
-
-	def updateInCSE(self):
-		"""
-		Update the existing &lt;accessControlPolicy> resource with new attributes.
-
-		The method returns *True* or *False*, depending on the success of the operation.'
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.updateInCSE(self, CON.Type_ACP)
-
-
-	def get(self):
-		"""
-		Retrieve the &lt;accessControlPolicy> resource from the CSE, or create it if 
-		it doesn't exist. This object instance is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return _retrieveOrCreateResource(self)
 
 
 	def _parseXML(self, root):
@@ -581,7 +586,7 @@ class AE(ResourceBase):
 
 		- *parent*: The parent resource object in which the &lt;AE> resource
 			will be created.
-		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might raise
+		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
 			a *CSEOperationError* exception in case of an error.
 		- All other arguments initialize the status variables of the same name in the
 			&lt;AE> instance or `onem2mlib.resources.ResourceBase`.
@@ -616,67 +621,6 @@ class AE(ResourceBase):
 		result += UT.strResource('requestReachability', 'rr', self.requestReachability)
 		result += UT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
 		return result
-
-
-	def retrieveFromCSE(self):
-		"""
-		Retrieve the &lt;AE> resource from the CSE. This object instance is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.retrieveFromCSE(self)
-
-
-	def deleteFromCSE(self):
-		"""
-		Delete the &lt;AE> resource and all its sub-resources from the CSE. 
-
-		The method returns *True* or *False*, depending on the success of the operation.'
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.deleteFromCSE(self)
-
-
-	def createInCSE(self):
-		"""
-		Create the &lt;AE> resource in the &lt;CSEBase>.
-
-		The method returns *True* or *False*, depending on the success of the operation.'
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.createInCSE(self, CON.Type_AE)
-
-
-	def updateInCSE(self):
-		"""
-		Update the existing &lt;AE> resource with new attributes.
-
-		The method returns *True* or *False*, depending on the success of the operation.'
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.updateInCSE(self, CON.Type_AE)
-
-
-	def get(self):
-		"""
-		Retrieve the &lt;AE> resource from the CSE, or create it if it doesn't exist.
-		This object instance is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return _retrieveOrCreateResource(self)
 
 
 	def containers(self):
@@ -772,7 +716,7 @@ class Container(ResourceBase):
 
 		- *parent*: The parent resource object in which the &lt;container> resource
 			will be created.
-		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might raise
+		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
 			a *CSEOperationError* exception in case of an error.
 		- All other arguments initialize the status variables of the same name in the
 			&lt;container> instance or `onem2mlib.resources.ResourceBase`.
@@ -826,67 +770,6 @@ class Container(ResourceBase):
 		result += UT.strResource('oldest', 'ol', self.oldest)
 		result += UT.strResource('latest', 'la', self.latest)
 		return result
-
-
-	def retrieveFromCSE(self):
-		"""
-		Retrieve the &lt;container> resource from the CSE. This object instance is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.retrieveFromCSE(self)
-
-
-	def createInCSE(self):
-		"""
-		Create the &lt;container> in the &lt;CSEBase>.
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.createInCSE(self, CON.Type_Container)
-
-
-	def updateInCSE(self):
-		"""
-		Update the existing &lt;container> resource with new attributes.
-
-		The method returns *True* or *False* depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.updateInCSE(self, CON.Type_Container)
-
-
-	def deleteFromCSE(self):
-		"""
-		Delete the &lt;container> resource and all its sub-resources from the CSE.
-
-		The method returns *True* or *False* depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.deleteFromCSE(self)
-
-
-	def get(self):
-		"""
-		Retrieve the &lt;container> resource from the CSE, or create it if it doesn't exist.
-		This object instance is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return _retrieveOrCreateResource(self)
 
 
 	def containers(self):
@@ -1022,7 +905,7 @@ class ContentInstance(ResourceBase):
 
 		- *parent*: The parent resource object in which the &lt;contentInstance> resource
 			will be created.
-		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might raise
+		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
 			a *CSEOperationError* exception in case of an error.
 		- All other arguments initialize the status variables of the same name in
 			&lt;contentInstance> instance or `onem2mlib.resources.ResourceBase`.
@@ -1052,55 +935,6 @@ class ContentInstance(ResourceBase):
 		result += UT.strResource('contentSize', 'cs', self.contentSize)
 		result += UT.strResource('content', 'con', self.content)
 		return result
-
-
-	def retrieveFromCSE(self):
-		"""
-		Retrieve the &lt;contentInstance> from the CSE.	This object instance is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.retrieveFromCSE(self)
-
-
-	def createInCSE(self):
-		"""
-		Create the &lt;contentInstance> resource in the CSE.
-
-		The method returns *True* or *False* depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.createInCSE(self, CON.Type_ContentInstance)
-
-
-	def deleteFromCSE(self):
-		"""
-		Delete the &lt;contentInstance> resource from the CSE.
-
-		The method returns *True* or *False* depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.deleteFromCSE(self)
-
-
-	def get(self):
-		"""
-		Retrieve the &lt;contentInstance> resource from the CSE, or create it if it doesn't exist.
-		This object instance is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return _retrieveOrCreateResource(self)
 
 
 	def _parseResponse(self, response):
@@ -1154,7 +988,7 @@ class Group(ResourceBase):
 
 		- *parent*: The parent resource object in which the &lt;group> resource
 			will be created.
-		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might raise
+		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
 			a *CSEOperationError* exception in case of an error.
 		- All other arguments initialize the status variables of the same name in
 			&lt;group> instance or `onem2mlib.resources.ResourceBase`.
@@ -1238,53 +1072,6 @@ class Group(ResourceBase):
 		return result
 
 
-	def createInCSE(self):
-		"""
-		Create the &lt;group> resource in the CSE. 
-
-		This object instance is updated accordingly. 
-
-		The method returns *True* or *False* depending on the success of the operation.
-		"""
-		return MCA.createInCSE(self, CON.Type_Group)
-
-
-	def deleteFromCSE(self):
-		"""
-		Delete the &lt;group> resource from the CSE. 
-
-		The method returns *True* or *False* depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.deleteFromCSE(self)
-
-
-	def retrieveFromCSE(self):
-		"""
-		Retrieve the &lt;group> from the CSE. This object instance is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.retrieveFromCSE(self)
-
-
-	def updateInCSE(self):
-		"""
-		Update the existing &lt;group> resource with new attributes. It returns *True* or *False*.
-
-		The method returns *True* or *False* depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return MCA.updateInCSE(self, CON.Type_Group)
-
-
 	def getGroupResources(self):
 		"""
 		Return the resources that are managed by this &lt;group> resource. This method returns a list of
@@ -1334,19 +1121,6 @@ class Group(ResourceBase):
 		body = UT.xmlToString(resource._createXML(isUpdate=True))
 		response = MCA.create(self.session, self.fanOutPoint, resource.type, body)
 		return self._parseFanOutPointResponse(response)
-
-
-	def get(self):
-		"""
-		Retrieve the &lt;group> resource from the CSE, or create it if it doesn't exist.
-		This object instance is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		return _retrieveOrCreateResource(self)
 
 
 	def _parseResponse(self, response):
@@ -1503,4 +1277,44 @@ def _retrieveOrCreateResource(resource):
 			if resource.retrieveFromCSE():
 				return True
 		return resource.createInCSE()
+
+
+###############################################################################
+#
+#	Exclude some docstrings to keep the documentation leaner.
+
+__pdoc__ = {}
+__pdoc__['AE.createInCSE']                               = None
+__pdoc__['AE.deleteFromCSE']                             = None
+__pdoc__['AE.updateInCSE']                               = None
+__pdoc__['AE.retrieveFromCSE']                           = None
+__pdoc__['AE.get']                                       = None
+__pdoc__['AE.setAccessControlPolicies']                  = None
+__pdoc__['AccessControlPolicy.createInCSE']              = None
+__pdoc__['AccessControlPolicy.deleteFromCSE']            = None
+__pdoc__['AccessControlPolicy.updateInCSE']              = None
+__pdoc__['AccessControlPolicy.retrieveFromCSE']          = None
+__pdoc__['AccessControlPolicy.get']                      = None
+__pdoc__['AccessControlPolicy.setAccessControlPolicies'] = None
+__pdoc__['Container.createInCSE']                        = None
+__pdoc__['Container.deleteFromCSE']                      = None
+__pdoc__['Container.updateInCSE']                        = None
+__pdoc__['Container.retrieveFromCSE']                    = None
+__pdoc__['Container.get']                                = None
+__pdoc__['Container.setAccessControlPolicies']           = None
+__pdoc__['ContentInstance.createInCSE']                  = None
+__pdoc__['ContentInstance.deleteFromCSE']                = None
+__pdoc__['ContentInstance.updateInCSE']                  = None
+__pdoc__['ContentInstance.retrieveFromCSE']              = None
+__pdoc__['ContentInstance.get']                          = None
+__pdoc__['ContentInstance.setAccessControlPolicies']     = None
+__pdoc__['Group.createInCSE']                            = None
+__pdoc__['Group.deleteFromCSE']                          = None
+__pdoc__['Group.updateInCSE']                            = None
+__pdoc__['Group.retrieveFromCSE']                        = None
+__pdoc__['Group.get']                                    = None
+__pdoc__['Group.setAccessControlPolicies']               = None
+
+
+
 

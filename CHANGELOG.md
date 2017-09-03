@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Version 0.4 (xxx-xx-xx)
+- [CHANDE] Moved basic operations from resource classes to the ResourceBase class.
+
 
 ## Version 0.3 (2017-09-01)
 - [IMPROVEMENT] Better handling of lost connections to the CSE. Added connection timeout.
