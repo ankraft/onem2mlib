@@ -15,6 +15,7 @@ sys.path.append('..')
 
 import onem2mlib.session as SE
 from onem2mlib.resources import *
+import onem2mlib.exceptions as EXC
 
 from conf import *
 
@@ -99,6 +100,7 @@ class TestContentInstance(unittest.TestCase):
 	def  test_createInstantly(self):
 		self.assertIsNotNone(TestContentInstance.cse)
 		self.assertIsNotNone(TestContentInstance.ae)
+		self.assertIsNotNone(TestContentInstance.cnt)
 
 		# create an <contentInstane> while init
 		cin = ContentInstance(TestContentInstance.cnt, content=CIN_CONTENT, instantly=True)
@@ -108,6 +110,21 @@ class TestContentInstance(unittest.TestCase):
 		cin2 = TestContentInstance.cnt.findContentInstance(cin.resourceName)
 		self.assertIsNotNone(cin2)
 		self.assertEqual(cin.resourceID, cin2.resourceID)
+
+
+	def  test_updateFail(self):
+		self.assertIsNotNone(TestContentInstance.cse)
+		self.assertIsNotNone(TestContentInstance.ae)
+		self.assertIsNotNone(TestContentInstance.cnt)
+
+		# create an <contentInstane> while init
+		cin = ContentInstance(TestContentInstance.cnt, content=CIN_CONTENT, instantly=True)
+		self.assertIsNotNone(cin)
+
+		# try to update. This should fail and raise a NotSupportedError exception
+		cin.content = 'newValue'
+		with self.assertRaises(EXC.NotSupportedError):
+			cin.updateInCSE()
 
 
 	def test_finit(self):
@@ -124,5 +141,6 @@ if __name__ == '__main__':
 	suite.addTest(TestContentInstance('test_deleteContentInstance'))
 	suite.addTest(TestContentInstance('test_getContentInstance'))
 	suite.addTest(TestContentInstance('test_createInstantly'))
+	suite.addTest(TestContentInstance('test_updateFail'))	
 	suite.addTest(TestContentInstance('test_finit'))
 	unittest.TextTestRunner(verbosity=2, failfast=True).run(suite)
