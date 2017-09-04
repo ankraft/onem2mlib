@@ -9,6 +9,7 @@ import onem2mlib.constants
 import onem2mlib.resources
 import onem2mlib.session
 import onem2mlib.exceptions
+import onem2mlib.utilities
 
 
-__all__ = ['resources', 'session', 'constants', 'exceptions']
+__all__ = ['resources', 'session', 'constants', 'exceptions', 'utilities']

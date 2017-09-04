@@ -11,7 +11,7 @@
 This sub-module defines the Session class used in the onem2mlib module.
 """
 
-import onem2mlib.utilities as UT
+import onem2mlib.internal as INT
 import onem2mlib.exceptions as EXC
 
 
@@ -51,7 +51,7 @@ class Session:
 
 	def __str__(self):
 		result = 'Session:\n'
-		result += UT.strResource('address', None, self.address)
-		result += UT.strResource('originator', None, self.originator)
-		result += UT.strResource('connected', None, self.connected)
+		result += INT.strResource('address', None, self.address)
+		result += INT.strResource('originator', None, self.originator)
+		result += INT.strResource('connected', None, self.connected)
 		return result

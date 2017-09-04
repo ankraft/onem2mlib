@@ -4,7 +4,7 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module defines various utility functions.
+#	This module defines various internal utility functions for the library.
 #
 
 

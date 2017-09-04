@@ -8,7 +8,7 @@
 #
 
 import requests
-import onem2mlib.utilities as UT
+import onem2mlib.internal as INT
 import onem2mlib.constants as CON
 
 
@@ -47,8 +47,8 @@ def createInCSE(resource, type):
 		lastError = 'Invalid resource'
 		return False
 	root = resource._createXML()
-	#print(UT.xmlToString(root))
-	response =  create(resource.session, resource.parent.resourceID, type, UT.xmlToString(root))
+	#print(INT.xmlToString(root))
+	response =  create(resource.session, resource.parent.resourceID, type, INT.xmlToString(root))
 	if response and response.status_code == 201:
 		resource._parseResponse(response)	# update own fields with response
 		return True
@@ -80,8 +80,8 @@ def updateInCSE(resource, type):
 		lastError = 'Invalid resource'
 		return False
 	root = resource._createXML(True)
-	#print(UT.xmlToString(root))
-	response = update(resource.session, resource.resourceID, type, UT.xmlToString(root))
+	#print(INT.xmlToString(root))
+	response = update(resource.session, resource.resourceID, type, INT.xmlToString(root))
 	if response and response.status_code == 200:
 		resource._parseResponse(response)	# update own fields with response
 		return True

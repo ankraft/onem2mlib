@@ -13,7 +13,7 @@ This sub-module defines the oneM2M Resource and support classes of the onem2mlib
 """
 
 
-import onem2mlib.utilities as UT
+import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
 import onem2mlib.constants as CON
 import onem2mlib.exceptions as EXC
@@ -90,19 +90,19 @@ class ResourceBase:
 
 	def __str__(self):
 		result = ''
-		result += UT.strResource('type', 'ty', self.type)
-		result += UT.strResource('resourceName', 'rn', self.resourceName)
-		result += UT.strResource('resourceID', 'ri', self.resourceID)
-		result += UT.strResource('parentID', 'pi', self.parentID)
-		result += UT.strResource('creationTime', 'ct', self.creationTime)
-		result += UT.strResource('lastModifiedTime', 'lt', self.lastModifiedTime)
-		result += UT.strResource('stateTag', 'st', self.stateTag)
-		result += UT.strResource('labels', 'lbl', self.labels)
-		result += UT.strResource('accessControlPolicyIDs', 'acpi', self.accessControlPolicyIDs)
-		result += UT.strResource('expirationTime', 'et', self.expirationTime)
-		result += UT.strResource('dynamicAuthorizationConsultationIDs', 'daci', self.dynamicAuthorizationConsultationIDs)
-		result += UT.strResource('announceTo', 'at', self.announceTo)
-		result += UT.strResource('announcedAttribute', 'aa', self.announcedAttribute)
+		result += INT.strResource('type', 'ty', self.type)
+		result += INT.strResource('resourceName', 'rn', self.resourceName)
+		result += INT.strResource('resourceID', 'ri', self.resourceID)
+		result += INT.strResource('parentID', 'pi', self.parentID)
+		result += INT.strResource('creationTime', 'ct', self.creationTime)
+		result += INT.strResource('lastModifiedTime', 'lt', self.lastModifiedTime)
+		result += INT.strResource('stateTag', 'st', self.stateTag)
+		result += INT.strResource('labels', 'lbl', self.labels)
+		result += INT.strResource('accessControlPolicyIDs', 'acpi', self.accessControlPolicyIDs)
+		result += INT.strResource('expirationTime', 'et', self.expirationTime)
+		result += INT.strResource('dynamicAuthorizationConsultationIDs', 'daci', self.dynamicAuthorizationConsultationIDs)
+		result += INT.strResource('announceTo', 'at', self.announceTo)
+		result += INT.strResource('announcedAttribute', 'aa', self.announcedAttribute)
 		return result
 
 
@@ -205,32 +205,32 @@ class ResourceBase:
 
 	def _parseResponse(self, response):
 		#print(response.text)
-		return self._parseXML(UT.responseToXML(response))
+		return self._parseXML(INT.responseToXML(response))
 
 
 	def _parseXML(self, root):
-		rootTag = UT.xmlQualifiedName(root)
-		self.resourceName = UT.getAttribute(root, 'm2m:'+rootTag.localname, 'rn', self.resourceName)
-		self.type = UT.getElement(root, 'ty', self.type)
-		self.stateTag = UT.toInt(UT.getElement(root, 'st', self.stateTag))
-		self.labels = UT.getElement(root, 'lbl', self.labels)
-		self.resourceID = UT.getElement(root, 'ri', self.resourceID)
-		self.parentID = UT.getElement(root, 'pi', self.parentID)
-		self.creationTime = UT.getElement(root, 'ct', self.creationTime)
-		self.lastModifiedTime = UT.getElement(root, 'lt', self.lastModifiedTime)
-		self.accessControlPolicyIDs = UT.getElement(root, 'acpi', self.accessControlPolicyIDs)
-		self.expirationTime = UT.getElement(root, 'et', self.expirationTime)
-		self.announceTo = UT.getElement(root, 'at', self.announceTo)
-		self.announcedAttribute = UT.getElement(root, 'aa', self.announcedAttribute)
+		rootTag = INT.xmlQualifiedName(root)
+		self.resourceName = INT.getAttribute(root, 'm2m:'+rootTag.localname, 'rn', self.resourceName)
+		self.type = INT.getElement(root, 'ty', self.type)
+		self.stateTag = INT.toInt(INT.getElement(root, 'st', self.stateTag))
+		self.labels = INT.getElement(root, 'lbl', self.labels)
+		self.resourceID = INT.getElement(root, 'ri', self.resourceID)
+		self.parentID = INT.getElement(root, 'pi', self.parentID)
+		self.creationTime = INT.getElement(root, 'ct', self.creationTime)
+		self.lastModifiedTime = INT.getElement(root, 'lt', self.lastModifiedTime)
+		self.accessControlPolicyIDs = INT.getElement(root, 'acpi', self.accessControlPolicyIDs)
+		self.expirationTime = INT.getElement(root, 'et', self.expirationTime)
+		self.announceTo = INT.getElement(root, 'at', self.announceTo)
+		self.announcedAttribute = INT.getElement(root, 'aa', self.announcedAttribute)
 		# todo: dynamicAuthorizationConsultationIDs
 
 
 	# Create the XML for only some of the writable attributes.
 	def _createXML(self, root):
-		UT.addToElement(root, 'lbl', self.labels)
-		UT.addToElement(root, 'aa', self.announcedAttribute)
-		UT.addToElement(root, 'at', self.announceTo)
-		UT.addToElement(root, 'acpi', self.accessControlPolicyIDs)
+		INT.addToElement(root, 'lbl', self.labels)
+		INT.addToElement(root, 'aa', self.announcedAttribute)
+		INT.addToElement(root, 'at', self.announceTo)
+		INT.addToElement(root, 'acpi', self.accessControlPolicyIDs)
 
 
 	def _copy(self, resource):
@@ -306,15 +306,15 @@ class CSEBase:
 
 	def __str__(self):
 		result = 'CSEBase:\n'
-		result += UT.strResource('cseID', 'csi', self.cseID)
-		result += UT.strResource('csename', 'rn', self.csename)
-		result += UT.strResource('resourceID', 'ri', self.resourceID)
-		result += UT.strResource('cseType', 'cst', self.cseType)
-		result += UT.strResource('creationTime', 'ct', self.creationTime)
-		result += UT.strResource('lastModifiedTime', 'lt', self.lastModifiedTime)
-		result += UT.strResource('accessControlPolicyIDs', 'acpi', self.accessControlPolicyIDs)
-		result += UT.strResource('supportedResourceType', 'srt', self.supportedResourceType)
-		result += UT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
+		result += INT.strResource('cseID', 'csi', self.cseID)
+		result += INT.strResource('csename', 'rn', self.csename)
+		result += INT.strResource('resourceID', 'ri', self.resourceID)
+		result += INT.strResource('cseType', 'cst', self.cseType)
+		result += INT.strResource('creationTime', 'ct', self.creationTime)
+		result += INT.strResource('lastModifiedTime', 'lt', self.lastModifiedTime)
+		result += INT.strResource('accessControlPolicyIDs', 'acpi', self.accessControlPolicyIDs)
+		result += INT.strResource('supportedResourceType', 'srt', self.supportedResourceType)
+		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
 		return result
 
 
@@ -330,16 +330,16 @@ class CSEBase:
 		response = MCA.get(self.session, self.cseID)
 		if response and response.status_code == 200:
 			#print(response.text)
-			root = UT.responseToXML(response)
-			self.csename = UT.getAttribute(root, 'm2m:cb', 'rn', self.csename)
-			self.creationTime = UT.getElement(root, 'ct', self.creationTime)
-			self.lastModifiedTime  = UT.getElement(root, 'lt', self.lastModifiedTime)
-			self.accessControlPolicyIDs = UT.getElement(root, 'acpi', self.accessControlPolicyIDs)
-			self.resourceID = UT.getElement(root, 'ri', self.resourceID)
-			self.cseType = UT.toInt(UT.getElement(root, 'cst', self.cseType))
-			self.supportedResourceType = UT.getElement(root, 'srt', self.supportedResourceType)
+			root = INT.responseToXML(response)
+			self.csename = INT.getAttribute(root, 'm2m:cb', 'rn', self.csename)
+			self.creationTime = INT.getElement(root, 'ct', self.creationTime)
+			self.lastModifiedTime  = INT.getElement(root, 'lt', self.lastModifiedTime)
+			self.accessControlPolicyIDs = INT.getElement(root, 'acpi', self.accessControlPolicyIDs)
+			self.resourceID = INT.getElement(root, 'ri', self.resourceID)
+			self.cseType = INT.toInt(INT.getElement(root, 'cst', self.cseType))
+			self.supportedResourceType = INT.getElement(root, 'srt', self.supportedResourceType)
 			# cseID (csi) ignored
-			self.pointOfAccess = UT.getElement(root, 'poa', self.pointOfAccess)
+			self.pointOfAccess = INT.getElement(root, 'poa', self.pointOfAccess)
 			return True
 		else:
 			return False
@@ -389,8 +389,8 @@ class CSEBase:
 		result = None
 		response = MCA.get(self.session, resourceID)
 		if response and response.status_code == 200:
-			root = UT.responseToXML(response)
-			type = UT.toInt(UT.getElement(root, 'ty'))
+			root = INT.responseToXML(response)
+			type = INT.toInt(INT.getElement(root, 'ty'))
 			if type == CON.Type_ContentInstance:	result = ContentInstance(self)
 			elif type == CON.Type_Container:		result = Container(self)
 			# elif type == CON.Type_FlexContainer:	result = FlexContainer(self)
@@ -472,20 +472,20 @@ class AccessControlPolicy(ResourceBase):
 
 
 	def _parseXML(self, root):
-		#print(UT.xmlToString(root))
+		#print(INT.xmlToString(root))
 		super()._parseXML(root)
 		self.privileges = []
-		pv = UT.getElementWithChildren(root, 'pv')
+		pv = INT.getElementWithChildren(root, 'pv')
 		if pv is not None and len(pv)>0:
-			acrs = UT.getElements(pv[0], 'acr', relative=True) # only the first element[0]
+			acrs = INT.getElements(pv[0], 'acr', relative=True) # only the first element[0]
 			for a in acrs:
 				acr = AccessControlRule()
 				acr._parseXML(a)
 				self.privileges.append(acr)
 		self.selfPrivileges = []
-		pvs = UT.getElementWithChildren(root, 'pvs')
+		pvs = INT.getElementWithChildren(root, 'pvs')
 		if pvs is not None and len(pvs)>0:
-			acrs = UT.getElements(pvs[0], 'acr', relative=True) # only the first element[0]
+			acrs = INT.getElements(pvs[0], 'acr', relative=True) # only the first element[0]
 			for a in acrs:
 				acr = AccessControlRule()
 				acr._parseXML(a)
@@ -493,15 +493,15 @@ class AccessControlPolicy(ResourceBase):
 
 
 	def _createXML(self, isUpdate=False):
-		root = UT.createElement('acp', namespace='m2m')
+		root = INT.createElement('acp', namespace='m2m')
 		# add resource attributes
 		if self.resourceName and not isUpdate: 	# No RN when updating
 			root.attrib['rn'] = self.resourceName
 		super()._createXML(root)
-		pv = UT.addElement(root, 'pv')
+		pv = INT.addElement(root, 'pv')
 		for p in self.privileges:
 			p._createXML(pv)
-		pvs = UT.addElement(root, 'pvs')
+		pvs = INT.addElement(root, 'pvs')
 		for p in self.selfPrivileges:
 			p._createXML(pvs)
 		return root
@@ -545,26 +545,26 @@ class AccessControlRule():
 
 	def __str__(self):
 		result =  '\t  accessControlRule(acr):\n'
-		result += UT.strResource('    ' + 'accessControlOriginators', 'acor', self.accessControlOriginators)
-		result += UT.strResource('    ' + 'accessControlOperations', 'acop', self.accessControlOperations)
+		result += INT.strResource('    ' + 'accessControlOriginators', 'acor', self.accessControlOriginators)
+		result += INT.strResource('    ' + 'accessControlOperations', 'acop', self.accessControlOperations)
 		return result
 
 
 	def _parseXML(self, root):
 		self.accessControlOriginators = []
-		acors = UT.getElements(root, 'acor', relative=True)
+		acors = INT.getElements(root, 'acor', relative=True)
 		if acors:
 			for acor in acors:
 				self.accessControlOriginators.append(acor.text)
-		self.accessControlOperations  = UT.getElement(root, 'acop', 0, relative=True)
+		self.accessControlOperations  = INT.getElement(root, 'acop', 0, relative=True)
 
 
 	def _createXML(self, root):
-		acr = UT.addElement(root, 'acr')
-		#UT.addToElement(acr, 'acor', self.accessControlOriginators)
+		acr = INT.addElement(root, 'acr')
+		#INT.addToElement(acr, 'acor', self.accessControlOriginators)
 		for acor in self.accessControlOriginators:
-			UT.addToElement(acr, 'acor', acor)
-		UT.addToElement(acr, 'acop', self.accessControlOperations)
+			INT.addToElement(acr, 'acor', acor)
+		INT.addToElement(acr, 'acop', self.accessControlOperations)
 
 
 ###############################################################################
@@ -610,16 +610,16 @@ class AE(ResourceBase):
 
 		if instantly:
 			if not self.get():
-				raise EXC.CSEOperationError('Cannot get or create AE. '  + MCA.lastError)
+					 EXC.CSEOperationError('Cannot get or create AE. '  + MCA.lastError)
 
 
 	def __str__(self):
 		result = 'AE:\n'
 		result += super().__str__()
-		result += UT.strResource('appID', 'api', self.appID)
-		result += UT.strResource('AEID', 'aei', self.AEID)
-		result += UT.strResource('requestReachability', 'rr', self.requestReachability)
-		result += UT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
+		result += INT.strResource('appID', 'api', self.appID)
+		result += INT.strResource('AEID', 'aei', self.AEID)
+		result += INT.strResource('requestReachability', 'rr', self.requestReachability)
+		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
 		return result
 
 
@@ -666,27 +666,27 @@ class AE(ResourceBase):
 
 	def _parseResponse(self, response):
 		#print(response.text)
-		return self._parseXML(UT.responseToXML(response))
+		return self._parseXML(INT.responseToXML(response))
 
 
 	def _parseXML(self, root):
 		super()._parseXML(root)
-		self.appID = UT.getElement(root, 'api', self.appID)
-		self.AEID = UT.getElement(root, 'aei', self.AEID)
-		self.requestReachability = UT.getElement(root, 'rr', self.requestReachability)
-		self.pointOfAccess = UT.getElement(root, 'poa', self.pointOfAccess)
+		self.appID = INT.getElement(root, 'api', self.appID)
+		self.AEID = INT.getElement(root, 'aei', self.AEID)
+		self.requestReachability = INT.getElement(root, 'rr', self.requestReachability)
+		self.pointOfAccess = INT.getElement(root, 'poa', self.pointOfAccess)
 
 
 	def _createXML(self, isUpdate=False):
-		root = UT.createElement('ae', namespace='m2m')
+		root = INT.createElement('ae', namespace='m2m')
 		# add resource attributes
 		if self.resourceName and not isUpdate: 	# No RN when updating
 			root.attrib['rn'] = self.resourceName
 		super()._createXML(root)
 		if self.appID and not isUpdate: 	# No api when updating
-			UT.addToElement(root, 'api', self.appID)
-		UT.addToElement(root, 'rr', self.requestReachability)
-		UT.addToElement(root, 'poa', self.pointOfAccess)
+			INT.addToElement(root, 'api', self.appID)
+		INT.addToElement(root, 'rr', self.requestReachability)
+		INT.addToElement(root, 'poa', self.pointOfAccess)
 		return root
 
 
@@ -762,13 +762,13 @@ class Container(ResourceBase):
 	def __str__(self):
 		result = 'Container:\n'
 		result += super().__str__()
-		result += UT.strResource('maxNrOfInstances', 'mni', self.maxNrOfInstances)
-		result += UT.strResource('maxByteSize', 'mbs', self.maxByteSize)
-		result += UT.strResource('maxInstanceAge', 'mia', self.maxInstanceAge)
-		result += UT.strResource('currentNrOfInstances', 'cni', self.currentNrOfInstances)
-		result += UT.strResource('currentByteSize', 'cbs', self.currentByteSize)
-		result += UT.strResource('oldest', 'ol', self.oldest)
-		result += UT.strResource('latest', 'la', self.latest)
+		result += INT.strResource('maxNrOfInstances', 'mni', self.maxNrOfInstances)
+		result += INT.strResource('maxByteSize', 'mbs', self.maxByteSize)
+		result += INT.strResource('maxInstanceAge', 'mia', self.maxInstanceAge)
+		result += INT.strResource('currentNrOfInstances', 'cni', self.currentNrOfInstances)
+		result += INT.strResource('currentByteSize', 'cbs', self.currentByteSize)
+		result += INT.strResource('oldest', 'ol', self.oldest)
+		result += INT.strResource('latest', 'la', self.latest)
 		return result
 
 
@@ -838,29 +838,29 @@ class Container(ResourceBase):
 
 	def _parseResponse(self, response):
 		#print(response.text)
-		return self._parseXML(UT.responseToXML(response))
+		return self._parseXML(INT.responseToXML(response))
 
 
 	def _parseXML(self, root):
 		super()._parseXML(root)
-		self.maxNrOfInstances = UT.toInt(UT.getElement(root, 'mni', self.maxNrOfInstances))
-		self.maxByteSize = UT.toInt(UT.getElement(root, 'mbs', self.maxByteSize))
-		self.maxInstanceAge = UT.toInt(UT.getElement(root, 'mia', self.maxInstanceAge))
-		self.currentNrOfInstances = UT.toInt(UT.getElement(root, 'cni', self.currentNrOfInstances))
-		self.currentByteSize = UT.toInt(UT.getElement(root, 'cbs', self.currentByteSize))
-		self.oldest = UT.getElement(root, 'ol', self.oldest)
-		self.latest = UT.getElement(root, 'la', self.latest)
+		self.maxNrOfInstances = INT.toInt(INT.getElement(root, 'mni', self.maxNrOfInstances))
+		self.maxByteSize = INT.toInt(INT.getElement(root, 'mbs', self.maxByteSize))
+		self.maxInstanceAge = INT.toInt(INT.getElement(root, 'mia', self.maxInstanceAge))
+		self.currentNrOfInstances = INT.toInt(INT.getElement(root, 'cni', self.currentNrOfInstances))
+		self.currentByteSize = INT.toInt(INT.getElement(root, 'cbs', self.currentByteSize))
+		self.oldest = INT.getElement(root, 'ol', self.oldest)
+		self.latest = INT.getElement(root, 'la', self.latest)
 
 
 	def _createXML(self, isUpdate=False):
-		root = UT.createElement('cnt', namespace='m2m')
+		root = INT.createElement('cnt', namespace='m2m')
 		# add resource attributes
 		if self.resourceName and not isUpdate:		# No RN when updating
 			root.attrib['rn'] = self.resourceName
 		super()._createXML(root)
-		UT.addToElement(root, 'mni', self.maxNrOfInstances)
-		UT.addToElement(root, 'mbs', self.maxByteSize)
-		UT.addToElement(root, 'mia', self.maxInstanceAge)
+		INT.addToElement(root, 'mni', self.maxNrOfInstances)
+		INT.addToElement(root, 'mbs', self.maxByteSize)
+		INT.addToElement(root, 'mia', self.maxInstanceAge)
 		return root
 
 
@@ -931,32 +931,32 @@ class ContentInstance(ResourceBase):
 	def __str__(self):
 		result = 'ContentInstance:\n'
 		result += super().__str__()
-		result += UT.strResource('contentInfo', 'cnf', self.contentInfo)
-		result += UT.strResource('contentSize', 'cs', self.contentSize)
-		result += UT.strResource('content', 'con', self.content)
+		result += INT.strResource('contentInfo', 'cnf', self.contentInfo)
+		result += INT.strResource('contentSize', 'cs', self.contentSize)
+		result += INT.strResource('content', 'con', self.content)
 		return result
 
 
 	def _parseResponse(self, response):
 		#print(response.text)
-		return self._parseXML(UT.responseToXML(response))
+		return self._parseXML(INT.responseToXML(response))
 
 
 	def _parseXML(self, root):
 		super()._parseXML(root)
-		self.contentInfo = UT.getElement(root, 'cnf', self.contentInfo)
-		self.contentSize = UT.toInt(UT.getElement(root, 'cs', self.contentSize))
-		self.content = UT.getElement(root, 'con', self.content)
+		self.contentInfo = INT.getElement(root, 'cnf', self.contentInfo)
+		self.contentSize = INT.toInt(INT.getElement(root, 'cs', self.contentSize))
+		self.content = INT.getElement(root, 'con', self.content)
 
 
 	def _createXML(self, isUpdate=False):
-		root = UT.createElement('cin', namespace='m2m')
+		root = INT.createElement('cin', namespace='m2m')
 		# add resource attributes
 		if self.resourceName and not isUpdate:      # No RN when updating
 			root.attrib['rn'] = self.resourceName
 		super()._createXML(root)
-		UT.addToElement(root, 'cnf', self.contentInfo)
-		UT.addToElement(root, 'con', self.content)
+		INT.addToElement(root, 'cnf', self.contentInfo)
+		INT.addToElement(root, 'con', self.content)
 		return root
 
 
@@ -1061,14 +1061,14 @@ class Group(ResourceBase):
 	def __str__(self):
 		result = 'Group:\n'
 		result += super().__str__()
-		result += UT.strResource('maxNrOfMembers', 'mnm', self.maxNrOfMembers)
-		result += UT.strResource('memberType', 'mt', self.memberType)
-		result += UT.strResource('currentNrOfMembers', 'cnm', self.currentNrOfMembers)
-		result += UT.strResource('memberIDs', 'mid', self.memberIDs)
-		result += UT.strResource('memberTypeValidated', 'mtv', self.memberTypeValidated)
-		result += UT.strResource('consistencyStrategy', 'csy', self.consistencyStrategy)
-		result += UT.strResource('groupName', 'gn', self.groupName)
-		result += UT.strResource('fanOutPoint', 'fopt', self.fanOutPoint)
+		result += INT.strResource('maxNrOfMembers', 'mnm', self.maxNrOfMembers)
+		result += INT.strResource('memberType', 'mt', self.memberType)
+		result += INT.strResource('currentNrOfMembers', 'cnm', self.currentNrOfMembers)
+		result += INT.strResource('memberIDs', 'mid', self.memberIDs)
+		result += INT.strResource('memberTypeValidated', 'mtv', self.memberTypeValidated)
+		result += INT.strResource('consistencyStrategy', 'csy', self.consistencyStrategy)
+		result += INT.strResource('groupName', 'gn', self.groupName)
+		result += INT.strResource('fanOutPoint', 'fopt', self.fanOutPoint)
 		return result
 
 
@@ -1106,7 +1106,7 @@ class Group(ResourceBase):
 		the resource identifiers in *memberIDs*.
 		"""
 		if not self._isValidFanOutPoint: return None
-		body = UT.xmlToString(resource._createXML(isUpdate=True))
+		body = INT.xmlToString(resource._createXML(isUpdate=True))
 		response = MCA.update(self.session, self.fanOutPoint, resource.type, body)
 		return self._parseFanOutPointResponse(response)
 
@@ -1118,48 +1118,48 @@ class Group(ResourceBase):
 		It returns a list of the created resources, or *None* in case of an error.
 		"""
 		if not self._isValidFanOutPoint: return None
-		body = UT.xmlToString(resource._createXML(isUpdate=True))
+		body = INT.xmlToString(resource._createXML(isUpdate=True))
 		response = MCA.create(self.session, self.fanOutPoint, resource.type, body)
 		return self._parseFanOutPointResponse(response)
 
 
 	def _parseResponse(self, response):
 		#print(response.text)
-		return self._parseXML(UT.responseToXML(response))
+		return self._parseXML(INT.responseToXML(response))
 
 
 	def _parseXML(self, root):
 		super()._parseXML(root)
-		self.maxNrOfMembers = UT.toInt(UT.getElement(root, 'mnm', self.maxNrOfMembers))
-		self.memberType = UT.toInt(UT.getElement(root, 'mt', self.memberType))
-		self.currentNrOfMembers = UT.toInt(UT.getElement(root, 'cnm', self.currentNrOfMembers))
-		self.memberIDs = UT.getElement(root, 'mid', self.memberIDs)
-		self.memberTypeValidated = UT.getElement(root, 'mtv', self.memberTypeValidated)
-		self.consistencyStrategy = UT.toInt(UT.getElement(root, 'csy', self.consistencyStrategy))
-		self.groupName = UT.getElement(root, 'gn', self.groupName)
-		self.fanOutPoint = UT.getElement(root, 'fopt', self.fanOutPoint)
+		self.maxNrOfMembers = INT.toInt(INT.getElement(root, 'mnm', self.maxNrOfMembers))
+		self.memberType = INT.toInt(INT.getElement(root, 'mt', self.memberType))
+		self.currentNrOfMembers = INT.toInt(INT.getElement(root, 'cnm', self.currentNrOfMembers))
+		self.memberIDs = INT.getElement(root, 'mid', self.memberIDs)
+		self.memberTypeValidated = INT.getElement(root, 'mtv', self.memberTypeValidated)
+		self.consistencyStrategy = INT.toInt(INT.getElement(root, 'csy', self.consistencyStrategy))
+		self.groupName = INT.getElement(root, 'gn', self.groupName)
+		self.fanOutPoint = INT.getElement(root, 'fopt', self.fanOutPoint)
 
 
 	def _createXML(self, isUpdate=False):
-		root = UT.createElement('grp', namespace='m2m')
+		root = INT.createElement('grp', namespace='m2m')
 		# add resource attributes
 		if self.resourceName and not isUpdate:      # No RN when updating
 			root.attrib['rn'] = self.resourceName
 		super()._createXML(root)
 		if self.maxNrOfMembers and not isUpdate: 	# No mnm when updating
-			UT.addToElement(root, 'mnm', self.maxNrOfMembers)
-		UT.addToElement(root, 'mt', self.memberType)
-		UT.addToElement(root, 'mid', self.memberIDs, mandatory=True)
+			INT.addToElement(root, 'mnm', self.maxNrOfMembers)
+		INT.addToElement(root, 'mt', self.memberType)
+		INT.addToElement(root, 'mid', self.memberIDs, mandatory=True)
 		if self.consistencyStrategy and not isUpdate: 	# No csy when updating
-			UT.addToElement(root, 'csy', self.consistencyStrategy)
-		UT.addToElement(root, 'gn', self.groupName)
+			INT.addToElement(root, 'csy', self.consistencyStrategy)
+		INT.addToElement(root, 'gn', self.groupName)
 		return root
 
 
 	def _parseFanOutPointResponse(self, response):
 		# Get the resources from the answer
 		if response and response.status_code == 200:
-			rsps = UT.getElements(UT.responseToXML(response), 'pc')	# deep-search the tree for all <pc> elements
+			rsps = INT.getElements(INT.responseToXML(response), 'pc')	# deep-search the tree for all <pc> elements
 			if not rsps or not len(rsps) > 0: return None
 			resources = []
 			for rsp in rsps: # each <pc>  contains a onem2m resource 
@@ -1167,10 +1167,10 @@ class Group(ResourceBase):
 				# The following is a hack to get a stand-alone XML tree. Otherwise the XML parser always only
 				# finds the first resource in the whole response tree.
 				# Take the XML as a string and parse it again.
-				xml = UT.stringToXML(UT.xmlToString(rsp[0]))
+				xml = INT.stringToXML(INT.xmlToString(rsp[0]))
 
 				resource = None
-				tag = UT.xmlQualifiedName(xml, True)
+				tag = INT.xmlQualifiedName(xml, True)
 				# The resources get the group as a parent to pass on the Session.
 				# Yes, this is halfway wrong, it will not result in a fully qualified path later.
 				# But at least the resources can be used by the application
@@ -1213,8 +1213,8 @@ def _findSubResource(resource, type):
 	result = []
 	response = MCA.discover(resource.session, resource.resourceID, type=type)
 	if response and response.status_code == 200:
-		root = UT.responseToXML(response)
-		list = UT.getElement(root, 'm2m:uril')
+		root = INT.responseToXML(response)
+		list = INT.getElement(root, 'm2m:uril')
 		if list and len(list)> 0:
 			ris = list.split()
 
