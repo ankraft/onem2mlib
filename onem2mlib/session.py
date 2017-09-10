@@ -23,7 +23,8 @@ class Session:
 		"""
 		Initialize a Session object. 
 
-		Please note, the credentials are currently hold unsecured in Session instances.
+		Please note, the credentials (the originator) are currently hold unsecured in
+		Session instances.
 
 		Args:
 
@@ -34,10 +35,6 @@ class Session:
 		self.address = address
 		""" String. The URL of the CSE host to connect to. The address includes the protocol, hostname, 
 			port number, and any API prefix etc. """
-		#self.username = username
-		#""" String. The username part of the credentials. """
-		#self.password = password
-		#""" String. The password part of the credentials. """
 		self.originator = originator
 		""" String. This specifies the originator for identification in access control policies. 
 			It can be a domain, an originatorID, the string "all", or a role-ID. """
@@ -46,7 +43,6 @@ class Session:
 
 		if not self.originator:
 			raise EXC.AuthenticationError('Missing accessControlOriginator.')
-
 
 
 	def __str__(self):

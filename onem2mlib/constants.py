@@ -86,6 +86,14 @@ Grp_def_maxNrOfMembers = 10
 
 
 #
+#	Discovery
+#
+Dsc_AND = 1
+""" Used to define the filter operation. Perform a logical conjunction (logical AND) on all filter criteria. """
+Dsc_OR = 2
+""" Used to define the filter operation. Perform a logical disjunction (logical OR) on all filter criteria. """
+
+#
 #	Network configurations
 #
 

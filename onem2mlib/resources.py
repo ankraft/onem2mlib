@@ -12,11 +12,11 @@ This sub-module defines the oneM2M Resource and support classes of the onem2mlib
 
 """
 
-
 import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
 import onem2mlib.constants as CON
 import onem2mlib.exceptions as EXC
+import onem2mlib.utilities as UT
 
 
 ###############################################################################
@@ -45,44 +45,46 @@ class ResourceBase:
 		""" Session. The Session object of the parent. """
 		if parent:
 			self.session = parent.session
-
+		
 		self.type = type
 		""" Integer. The type of the resource. """
-
+		
 		self.resourceID	= resourceID
-		""" String. The resource ID of the resource. Assigned by the CSE. """
-
+		""" String. The resource ID of the resource. Assigned by the CSE.
+			For a &lt;CSEBase> this is the *cseID*.2"""
+		
 		self.resourceName= resourceName
-		""" String. The resource name of the resource. Assigned by the application or the CSE. """
-
+		""" String. The resource name of the resource. Assigned by the application or the CSE. 
+			For a &lt;CSEBase> this is the *cseName*."""
+		
 		self.parentID = None
 		""" String. The resource ID of the parent resource. Assigned by the CSE. """
-
+		
 		self.creationTime = None
 		""" String. The time of creation of the resource in the CSE. Assigned by the CSE. R/O. """
-
+		
 		self.lastModifiedTime = None
 		""" String. The time of the last modification of the resource. Assigned by the CSE. R/O. """
-
+		
 		self.accessControlPolicyIDs = []
 		""" List of String. A list of ACP resources. This might be an empty list."""
-
+		
 		self.expirationTime	= None
 		""" String. The expiration time of the resource, or None. Assigned by the CSE. R/O. """
-
+		
 		self.stateTag = 0
 		"""Integer. An incremental counter of modification on the resource. Assigned by the CSE. R/O."""
-
+		
 		self.labels = labels
 		""" List of String. A list of labels of the resource. This might be an empty list. """
-
+		
 		self.dynamicAuthorizationConsultationIDs = []
 		""" List of String. A List of dynamic authorization consultation IDs. This might be an empty list. """
-
+		
 		self.announceTo = []
 		""" List of String. A list of URLs that point to the CSE(s) to which this resource is announced to,
 			or an empty list. """
-
+		
 		self.announcedAttribute = []
 		""" List of String. A list of the announced attribute names of an original resource, 
 			or an empty list. """
@@ -133,7 +135,6 @@ class ResourceBase:
 						self.accessControlPolicyIDs.append(acp.resourceID)
 
 
-
 	def retrieveFromCSE(self):
 		"""
 		Retrieve the resource from the &lt;CSEBase>. This object instance is updated accordingly. 
@@ -150,11 +151,15 @@ class ResourceBase:
 		"""
 		Delete the resource and all its sub-resources from the &lt;CSEBase>. 
 
-		The method returns *True* or *False*, depending on the success of the operation.'
+		The method returns *True* or *False*, depending on the success of the operation.
+		It may throw a *NotSupportedError* exception when the operation is not supported
+		by the resource type.
 
 		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
 		must be set to a valid value.
 		"""
+		if self.type in [CON.Type_CSEBase]: # not allowed
+			raise EXC.NotSupportedError('Resource doesn''t support deleting.')
 		return MCA.deleteFromCSE(self)
 
 
@@ -163,10 +168,14 @@ class ResourceBase:
 		Create the resource in the &lt;CSEBase>.
 
 		The method returns *True* or *False*, depending on the success of the operation.'
+		It may throw a *NotSupportedError* exception when the operation is not supported
+		by the resource type.
 
 		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
 		must be set to a valid value.
 		"""
+		if self.type in [CON.Type_CSEBase]: # not allowed
+			raise EXC.NotSupportedError('Resource doesn''t support updating.')
 		return MCA.createInCSE(self, self.type)
 
 
@@ -181,8 +190,8 @@ class ResourceBase:
 		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
 		must be set to a valid value.
 		"""
-		if self.type in [CON.Type_ContentInstance]: # not allowed
-			raise EXC.NotSupportedError('ResourceType doesn''t support updating.')
+		if self.type in [CON.Type_ContentInstance, CON.Type_CSEBase]: # not allowed
+			raise EXC.NotSupportedError('Resource doesn''t support updating.')
 		return MCA.updateInCSE(self, self.type)
 
 
@@ -196,10 +205,48 @@ class ResourceBase:
 		The `onem2mlib.resources.ResourceBase.resourceID` state variable of the instance
 		must be set to a valid value.
 		"""
-		return _retrieveOrCreateResource(self)
+		if self.resourceID:
+			return self.retrieveFromCSE()
+		if self.resourceName:
+			if self.retrieveFromCSE():
+				return True
+		return self.createInCSE()
 
 
+
+	def discover(self, filter, filterOperation=CON.Dsc_AND):
+		"""
+		Discover a rsource on the CSE, starting with the resource as a root for
+		discovery.
+
+		Args:
+
+		- *filter*: A list of *filterCriteria*. These critera can be constructed using the
+		*onem2mlib.utilties.new...FilterCriteria* functions.
+		- *filterOperation*. A boolean value that Indicates the logical operation (AND/OR) 
+		to be used for different condition tags. The default value is logical AND.
+
+		The method returns a list of found resources, or an empty list.
+
+		**Note**
+
+		Currently, only *label* and *resoureType* are supported in filters.
+		"""
+		rids = MCA.discoverInCSE(self, filter=filter, filterOperation=filterOperation)
+		if rids is None:
+			return []
+		result = []
+		for id in rids:
+			result.append(retrieveResourceFromCSE(self, id))	# TODO: check for errors neccessary?
+		return result
+
+
+	# Recursivly construct a structured resourceName
 	def _structuredResourceID(self):
+		if self.type == CON.Type_CSEBase:		# CSEBase means end of recursion
+			if self.resourceID.startswith('/'):	# special handling for CSE ID's that start with a /
+				return self.resourceID + '/' + self.resourceName
+			return '/' + self.resourceID + '/' + self.resourceName
 		return self.parent._structuredResourceID() + '/' + self.resourceName
 
 
@@ -250,99 +297,54 @@ class ResourceBase:
 
 ###############################################################################
 
-class CSEBase:
+class CSEBase(ResourceBase):
 	"""
 	CSEBase holds the attributes of a CSE and gives access to resources under it.
+
+	When created and initialized correctly, it is automatically retrieved from the
+	CSE immediatly.
 	"""
 
-	def __init__(self, session=None, cseid=None):
+	def __init__(self, session=None, cseID=None):
 		"""
 		Initialize a CSEBase object.
 
 		Args:
 
-		- *session*: A Session object that points to a CSE.
+		- *session*: A Session object that holds the information to connect to a CSE.
 		- *cseid*: The CSE-ID of the CSE.
+
+		Internally, the *cseID* is assigned to the *resourceID* attribute, and the *csename* is handled
+		by the *resourceName*. 
 		"""
+		super().__init__(None, None, cseID, CON.Type_CSEBase)
 
-		self.session = session
-		"""Session. The Session object for the connection to the CSE. """
-
-		self.type = CON.Type_CSEBase
-		""" Integer. The type of the resource. """
-
-		self.resourceID = None
-		""" String. The resource ID of the CSE. Assigned by the CSE. R/O. """
-
-		self.cseID = cseid
-		""" String. The CSE-ID of the CSE. """
-
+		self.session = session # Must assign session manually.
+		
 		self.cseType = None
 		""" Integer. The type of the CSE. See also the `Constants.CSE_Type_*` constants.
 			Assigned by the CSE. R/O."""
-
-		self.csename = None
-		""" String. The resource name of the CSE. Assigned by the CSE. R/O. """
-
-		self.creationTime = None
-		""" String. The creation time of the CSE. Assigned by the CSE. R/O. """
-
-		self.lastModifiedTime = None
-		""" String. The modification time of the CSE. Assigned by the CSE. R/O. """
-
-		self.accessControlPolicyIDs = []
-		""" List of String. A list of ACP resources. This might be an empty list."""
-
-		self.supportedResourceType = []
+		
+		self.supportedResourceTypes = []
 		""" List of String. A list of supported resource types of this CSE.	Assigned by the CSE. R/O. """
-
+		
 		self.pointOfAccess = []
 		""" List of String. A list of physical addresses to be used by remote CSEs to connect to this CSE.
 			Assigned by the CSE. R/O. """
 
 		if self.retrieveFromCSE():
 			session.connected = True
+		else:
+			raise EXC.CSEOperationError('Cannot get CSEBase. ' + MCA.lastError)
 
 
 	def __str__(self):
 		result = 'CSEBase:\n'
-		result += INT.strResource('cseID', 'csi', self.cseID)
-		result += INT.strResource('csename', 'rn', self.csename)
-		result += INT.strResource('resourceID', 'ri', self.resourceID)
+		result += super().__str__()
 		result += INT.strResource('cseType', 'cst', self.cseType)
-		result += INT.strResource('creationTime', 'ct', self.creationTime)
-		result += INT.strResource('lastModifiedTime', 'lt', self.lastModifiedTime)
-		result += INT.strResource('accessControlPolicyIDs', 'acpi', self.accessControlPolicyIDs)
-		result += INT.strResource('supportedResourceType', 'srt', self.supportedResourceType)
+		result += INT.strResource('supportedResourceTypes', 'srt', self.supportedResourceTypes)
 		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
 		return result
-
-
-	def retrieveFromCSE(self):
-		"""
-		Retrieve the &lt;CSEBase> resource from the CSE. This object instance is updated accordingly. 
-
-		The method returns *True* or *False*, depending on the success of the operation.
-
-		The `onem2mlib.resources.CSEBase.resourceID` state variable of the instance
-		must be set to a valid value.
-		"""
-		response = MCA.get(self.session, self.cseID)
-		if response and response.status_code == 200:
-			#print(response.text)
-			root = INT.responseToXML(response)
-			self.csename = INT.getAttribute(root, 'm2m:cb', 'rn', self.csename)
-			self.creationTime = INT.getElement(root, 'ct', self.creationTime)
-			self.lastModifiedTime  = INT.getElement(root, 'lt', self.lastModifiedTime)
-			self.accessControlPolicyIDs = INT.getElement(root, 'acpi', self.accessControlPolicyIDs)
-			self.resourceID = INT.getElement(root, 'ri', self.resourceID)
-			self.cseType = INT.toInt(INT.getElement(root, 'cst', self.cseType))
-			self.supportedResourceType = INT.getElement(root, 'srt', self.supportedResourceType)
-			# cseID (csi) ignored
-			self.pointOfAccess = INT.getElement(root, 'poa', self.pointOfAccess)
-			return True
-		else:
-			return False
 
 
 	def accessControlPolicies(self):
@@ -356,7 +358,7 @@ class CSEBase:
 		"""
 		Find a specific &lt;accessControlPolicy> resource by its *resourceName*, or None.
 		"""
-		return _findResourceInList(self.accessControlPolicies(), resourceName)
+		return _getResourceFromCSEByResourceName(CON.Type_ACP, resourceName, self)
 
 
 	def aes(self):
@@ -370,7 +372,7 @@ class CSEBase:
 		"""
 		Find a specific &lt;AE> resource by its *resourceName*, or None otherwise.
 		"""
-		return _findResourceInList(self.aes(), resourceName)
+		return _getResourceFromCSEByResourceName(CON.Type_AE, resourceName, self)
 
 
 	def groups(self):
@@ -380,42 +382,27 @@ class CSEBase:
 		return _findSubResource(self, CON.Type_Group)
 
 
-	def retrieveResource(self, resourceID):
+	def findGroup(self, resourceName):
 		"""
-		Retrieve a resource by its *resourceID* from the CSE. When successful, this method returns the
-		resource as an object, or None otherwise.
+		Find a specific &lt;group> resource by its *resourceName*, or None.
 		"""
-		if not self.session or not self.session.connected or not resourceID or not len(resourceID):	return False
-		result = None
-		response = MCA.get(self.session, resourceID)
-		if response and response.status_code == 200:
-			root = INT.responseToXML(response)
-			type = INT.toInt(INT.getElement(root, 'ty'))
-			if type == CON.Type_ContentInstance:	result = ContentInstance(self)
-			elif type == CON.Type_Container:		result = Container(self)
-			# elif type == CON.Type_FlexContainer:	result = FlexContainer(self)
-			elif type == CON.Type_AE:				result = AE(self)
-			elif type == CON.Type_Group:			result = Group(self)
-			if result:
-				result._parseXML(root)
-		return result
+		return _getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self)
+
+# TODO Testcase for findgroup()
 
 
-	def _structuredResourceID(self):
-		return '/' + self.cseID + '/' + self.csename
+	def _parseXML(self, root):
+		super()._parseXML(root)
+		self.cseType = INT.toInt(INT.getElement(root, 'cst', self.cseType))
+		self.supportedResourceTypes = INT.getElement(root, 'srt', self.supportedResourceTypes)
+		self.pointOfAccess = INT.getElement(root, 'poa', self.pointOfAccess)
 
 
 	def _copy(self, resource):
-		self.csename = resource.csename
-		self.creationTime = resource.creationTime
-		self.lastModifiedTime = resource.lastModifiedTime
-		self.accessControlPolicyIDs = resource.accessControlPolicyIDs
-		self.resourceID = resource.resourceID
+		super()._copy(resource)
 		self.cseType = resource.cseType
-		self.supportedResourceType = resource.supportedResourceType
-		self.cseID = resource.cseID
+		self.supportedResourceTypes = resource.supportedResourceTypes
 		self.pointOfAccess = self.pointOfAccess
-
 
 
 ###############################################################################
@@ -451,6 +438,7 @@ class AccessControlPolicy(ResourceBase):
 		self.privileges = privileges
 		""" A list of *AccessControlRules* that applies to resources referencing this 
 		&lt;accessControlPolicy> resource using the accessControlPolicyID attribute. """
+		
 		self.selfPrivileges = selfPrivileges
 		""" A list of *AccessControlRules* that apply to the &lt;accessControlPolicy> resource itself. """
 
@@ -540,6 +528,7 @@ class AccessControlRule():
 
 		self.accessControlOriginators = accessControlOriginators
 		""" List of string. This attribute specifies the list of originators. R/W. """
+		
 		self.accessControlOperations = accessControlOperations
 		""" Integer. This attribute is an OR'ed combination of the operation privileges for this AccessControlRule. R/W. """
 
@@ -556,7 +545,7 @@ class AccessControlRule():
 		if acors:
 			for acor in acors:
 				self.accessControlOriginators.append(acor.text)
-		self.accessControlOperations  = INT.getElement(root, 'acop', 0, relative=True)
+		self.accessControlOperations = INT.getElement(root, 'acop', 0, relative=True)
 
 
 	def _createXML(self, root):
@@ -630,11 +619,25 @@ class AE(ResourceBase):
 		return _findSubResource(self, CON.Type_Container)
 
 
-	def flexContainers(self):
+	def findContainer(self, resourceName):
 		"""
-		Return a list of all &lt;flexContainer> resources of this &lt;AE>, or an empty list.
+		Find a &lt;container> resource by its *resourceName*, or None.
 		"""
-		return _findSubResource(self, CON.Type_FlexContainer)
+		return _getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
+
+
+	# def flexContainers(self):
+	# 	"""
+	# 	Return a list of all &lt;flexContainer> resources of this &lt;AE>, or an empty list.
+	# 	"""
+	# 	return _findSubResource(self, CON.Type_FlexContainer)
+
+
+	# def findFlexContainer(self, resourceName):
+	# 	"""
+	# 	Find a &lt;flexContainer> resource by its *resourceName*, or None.
+	# 	"""
+	# 	return _getResourceFromCSEByResourceName(CON.Type_FlexContainer, resourceName, self)
 
 
 	def groups(self):
@@ -648,25 +651,7 @@ class AE(ResourceBase):
 		"""
 		Find a specific &lt;group> resource by its *resourceName*, or None.
 		"""
-		res = Group(self, resourceName=resourceName)
-		if res.retrieveFromCSE():
-			return res
-		return None
-
-
-	def findContainer(self, resourceName):
-		"""
-		Find a &lt;container> resource by its *resourceName*, or None.
-		"""
-		res = Container(self, resourceName=resourceName)
-		if res.retrieveFromCSE():
-			return res
-		return None
-
-
-	def _parseResponse(self, response):
-		#print(response.text)
-		return self._parseXML(INT.responseToXML(response))
+		return _getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self)
 
 
 	def _parseXML(self, root):
@@ -790,26 +775,14 @@ class Container(ResourceBase):
 		"""
 		Find a &lt;container> resource by its *resourceName*, or None.
 		"""
-		res = Container(self, resourceName=resourceName)
-		if res.retrieveFromCSE():
-			return res
-		return None
+		return _getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
 
 
 	def findContentInstance(self, resourceName):
 		"""
 		Find a &lt;ContentInstance> resource by its *resourceName*, or None.
 		"""
-		# cins = self.contentInstances()
-		# if cins and len(cins)>0:
-		# 	for cin in cins:
-		# 		if cin.resourceName == resourceName:
-		# 			return cin
-		# return None
-		res = ContentInstance(self, resourceName=resourceName)
-		if res.retrieveFromCSE():
-			return res
-		return None
+		return _getResourceFromCSEByResourceName(CON.Type_ContentInstance, resourceName, self)
 
 
 	def latestContentInstance(self):
@@ -834,11 +807,6 @@ class Container(ResourceBase):
 			contentInstance._parseResponse(response)
 			return contentInstance
 		return None
-
-
-	def _parseResponse(self, response):
-		#print(response.text)
-		return self._parseXML(INT.responseToXML(response))
 
 
 	def _parseXML(self, root):
@@ -937,11 +905,6 @@ class ContentInstance(ResourceBase):
 		return result
 
 
-	def _parseResponse(self, response):
-		#print(response.text)
-		return self._parseXML(INT.responseToXML(response))
-
-
 	def _parseXML(self, root):
 		super()._parseXML(root)
 		self.contentInfo = INT.getElement(root, 'cnf', self.contentInfo)
@@ -1000,11 +963,11 @@ class Group(ResourceBase):
 
 		self.resources = resources
 		""" List of resource instances. The resources in this &lt;group>. """
-
+		
 		self.currentNrOfMembers = len(resources)
 		""" Integer. Current number of members in a &lt;group>. It shall not be larger than 
 		*maxNrOfMembers*. R/O. """
-
+		
 		self.memberTypeValidated = None
 		""" Boolean as a String ('true', 'false'), or None. Denotes if the resource types of all members resources 
 		of the &lt;group> has been validated by the Hosting CSE. In the case that the *memberType* 
@@ -1123,11 +1086,6 @@ class Group(ResourceBase):
 		return self._parseFanOutPointResponse(response)
 
 
-	def _parseResponse(self, response):
-		#print(response.text)
-		return self._parseXML(INT.responseToXML(response))
-
-
 	def _parseXML(self, root):
 		super()._parseXML(root)
 		self.maxNrOfMembers = INT.toInt(INT.getElement(root, 'mnm', self.maxNrOfMembers))
@@ -1204,58 +1162,59 @@ class Group(ResourceBase):
 ###############################################################################
 
 #
+#	General functions
+
+def retrieveResourceFromCSE(parent, resourceID):
+	"""
+	Retrieve a resource by its *resourceID* from the CSE. Any valid *parent* resource
+	instance from that CSE must be given to pass on various internal attributes. 
+	The type of the resource is unknown and determined during retrieval.
+
+	When successful, this method returns the resource as an object, or None otherwise.
+	"""
+	if not parent.session or not parent.session.connected or not resourceID or not len(resourceID):
+		return False
+	result = None
+	response = MCA.get(parent.session, resourceID)
+	if response and response.status_code == 200:
+		root = INT.responseToXML(response)
+		type = INT.toInt(INT.getElement(root, 'ty'))
+		result = _newResourceFromRID(type, resourceID, parent)
+		if result:
+			result._parseXML(root)
+	return result
+
+###############################################################################
+
+#
 #	Search
 #
 
 # Find a sub-resource
 def _findSubResource(resource, type):
-	if not resource or not resource.session or not resource.resourceID or not resource.session.connected: return None
+	if not resource or not resource.session or not resource.resourceID or not resource.session.connected: 
+		return None
 	result = []
-	response = MCA.discover(resource.session, resource.resourceID, type=type)
-	if response and response.status_code == 200:
-		root = INT.responseToXML(response)
-		list = INT.getElement(root, 'm2m:uril')
-		if list and len(list)> 0:
-			ris = list.split()
+	ris = MCA.discoverInCSE(resource, filter=[UT.newTypeFilterCriteria(int(type))], structuredResult=True)
+	if ris:
+		#	The following is a hack to restrict the search result to the direct child
+		#	level. Yes, the oneM2M "level" attribute could be used for that, but it
+		#	doesn't seem to be supported that much (at least not in om2m).
+		#	Anyway, the hack works like that: count the forward slashes, ie. the 
+		#	number of path elements, and only add those from the response to the result
+		#	which have count+1 path elements.
 
-			#	The following is a hack to restrict the search result to the direct child
-			#	level. Yes, the oneM2M "level" attribute could be used for that, but it
-			#	doesn't seem to be supported that much (at least not in om2m).
-			#	Anyway, the hack works like that: count the forward slashes, ie. the 
-			#	number of path elements, and only add those from the response to the result
-			#	which have count+1 path elements.
+		sid = resource._structuredResourceID()
+		count = sid.count('/') + 1
 
-			sid = resource._structuredResourceID()
-			count = sid.count('/') + 1
+		for ri in ris:
+			if ri.count('/') == count:	# <- hack s.o.
+				subResource = _newResourceFromRID(type, ri, resource)
+				subResource.retrieveFromCSE()
+				result.append(subResource)
 
-			for ri in ris:
-				if ri.count('/') == count:	# <- hack s.o.
-					if type == CON.Type_ContentInstance:
-						cin = ContentInstance(resource, resourceID=ri)
-						cin.retrieveFromCSE()
-						result.append(cin)
-					elif type == CON.Type_Container:
-						cnt = Container(resource, resourceID=ri)
-						cnt.retrieveFromCSE()
-						result.append(cnt)
-					# elif type == CON.Type_FlexContainer:
-					# 	fcnt = FlexContainer(resource, resourceID=ri)
-					# 	fcnt.retrieveFromCSE()
-					# 	result.append(fcnt)
-					elif type == CON.Type_AE:
-						ae = AE(resource, resourceID=ri)
-						ae.retrieveFromCSE()
-						result.append(ae)
-					elif type == CON.Type_Group:
-						grp = Group(resource, resourceID=ri)
-						grp.retrieveFromCSE()
-						result.append(grp)
-					elif type == CON.Type_ACP:
-						acp = AccessControlPolicy(resource, resourceID=ri)
-						acp.retrieveFromCSE()
-						result.append(acp)
-			# Still a hack: sort the list by the ct attribute
-			result.sort(key=lambda x: x.creationTime)
+		# Still a hack: sort the list by the ct attribute
+		result.sort(key=lambda x: x.creationTime)
 
 	return result
 
@@ -1269,52 +1228,92 @@ def _findResourceInList(resources, resourceName):
 	return None
 
 
-# Retrieve of create a resource
-def _retrieveOrCreateResource(resource):
-		if resource.resourceID:
-			return resource.retrieveFromCSE()
-		if resource.resourceName:
-			if resource.retrieveFromCSE():
-				return True
-		return resource.createInCSE()
+# Create a new resource object with a given type, RI and parent
+def _newResourceFromRID(type, ri, parent):
+	if type == CON.Type_ContentInstance:
+		return ContentInstance(parent, resourceID=ri)
+	elif type == CON.Type_Container:
+		return Container(parent, resourceID=ri)
+	elif type == CON.Type_AE:
+		return AE(parent, resourceID=ri)
+	elif type == CON.Type_Group:
+		return Group(parent, resourceID=ri)
+	elif type == CON.Type_ACP:
+		return AccessControlPolicy(parent, resourceID=ri)
+
+	# elif type == CON.Type_FlexContainer:
+	# 	return FlexContainer(parent, resourceID=ri)
+
+
+# Get a resource from the CSE by its resourceName
+def _getResourceFromCSEByResourceName(type, rn, parent):
+	res = None
+	if type == CON.Type_ContentInstance:
+		res = ContentInstance(parent, resourceName=rn)
+	elif type == CON.Type_Container:
+		res = Container(parent, resourceName=rn)
+	elif type == CON.Type_AE:
+		res = AE(parent, resourceName=rn)
+	elif type == CON.Type_Group:
+		res = Group(parent, resourceName=rn)
+	elif type == CON.Type_ACP:
+		res = AccessControlPolicy(parent, resourceName=rn)
+	if res is not None and res.retrieveFromCSE():
+		return res
+	return None
 
 
 ###############################################################################
 #
 #	Exclude some docstrings to keep the documentation leaner.
 
-__pdoc__ = {}
+__pdoc__                                                 = {}
 __pdoc__['AE.createInCSE']                               = None
 __pdoc__['AE.deleteFromCSE']                             = None
 __pdoc__['AE.updateInCSE']                               = None
 __pdoc__['AE.retrieveFromCSE']                           = None
 __pdoc__['AE.get']                                       = None
+__pdoc__['AE.discover']                                  = None
 __pdoc__['AE.setAccessControlPolicies']                  = None
+
 __pdoc__['AccessControlPolicy.createInCSE']              = None
 __pdoc__['AccessControlPolicy.deleteFromCSE']            = None
 __pdoc__['AccessControlPolicy.updateInCSE']              = None
 __pdoc__['AccessControlPolicy.retrieveFromCSE']          = None
 __pdoc__['AccessControlPolicy.get']                      = None
+__pdoc__['AccessControlPolicy.discover']                 = None
 __pdoc__['AccessControlPolicy.setAccessControlPolicies'] = None
+
 __pdoc__['Container.createInCSE']                        = None
 __pdoc__['Container.deleteFromCSE']                      = None
 __pdoc__['Container.updateInCSE']                        = None
 __pdoc__['Container.retrieveFromCSE']                    = None
 __pdoc__['Container.get']                                = None
+__pdoc__['Container.discover']                           = None
 __pdoc__['Container.setAccessControlPolicies']           = None
+
+__pdoc__['CSEBase.createInCSE']                 	     = None
+__pdoc__['CSEBase.deleteFromCSE']                        = None
+__pdoc__['CSEBase.updateInCSE']                 	     = None
+__pdoc__['CSEBase.retrieveFromCSE']                      = None
+__pdoc__['CSEBase.get']                                  = None
+__pdoc__['CSEBase.discover']                             = None
+__pdoc__['CSEBase.setAccessControlPolicies']             = None
+
 __pdoc__['ContentInstance.createInCSE']                  = None
 __pdoc__['ContentInstance.deleteFromCSE']                = None
 __pdoc__['ContentInstance.updateInCSE']                  = None
 __pdoc__['ContentInstance.retrieveFromCSE']              = None
 __pdoc__['ContentInstance.get']                          = None
+__pdoc__['ContentInstance.discover']                     = None
 __pdoc__['ContentInstance.setAccessControlPolicies']     = None
+
 __pdoc__['Group.createInCSE']                            = None
 __pdoc__['Group.deleteFromCSE']                          = None
 __pdoc__['Group.updateInCSE']                            = None
 __pdoc__['Group.retrieveFromCSE']                        = None
 __pdoc__['Group.get']                                    = None
+__pdoc__['Group.discover']                               = None
 __pdoc__['Group.setAccessControlPolicies']               = None
-
-
 
 

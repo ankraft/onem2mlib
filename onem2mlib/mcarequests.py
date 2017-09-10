@@ -25,7 +25,7 @@ def retrieveFromCSE(resource):
 	global lastError
 	lastError = ''
 
-	if _isInvalidResource(resource):
+	if not _isValidResource(resource):
 		lastError = 'Invalid resource'
 		return False
 	if resource.resourceName:
@@ -36,6 +36,7 @@ def retrieveFromCSE(resource):
 		resource._parseResponse(response)
 		return True
 	lastError = str(response.status_code) + ' - ' + response.text
+	#print(str(response.status_code) + ' - ' + response.text)
 	return False
 
 
@@ -43,7 +44,7 @@ def createInCSE(resource, type):
 	global lastError
 	lastError = ''
 
-	if _isInvalidResource(resource):
+	if not _isValidResource(resource):
 		lastError = 'Invalid resource'
 		return False
 	root = resource._createXML()
@@ -61,7 +62,7 @@ def deleteFromCSE(resource):
 	global lastError
 	lastError = ''
 
-	if _isInvalidResource(resource) or not resource.resourceID :
+	if not _isValidResource(resource) or not resource.resourceID :
 		lastError = 'Invalid resource'
 		return False
 	response = delete(resource.session, resource.resourceID)
@@ -76,7 +77,7 @@ def updateInCSE(resource, type):
 	global lastError
 	lastError = ''
 
-	if _isInvalidResource(resource):
+	if not _isValidResource(resource):
 		lastError = 'Invalid resource'
 		return False
 	root = resource._createXML(True)
@@ -89,6 +90,29 @@ def updateInCSE(resource, type):
 	#print(response.status_code)
 	return False
 
+
+# Find resources under a resource in the CSE
+def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=False):
+	global lastError
+	lastError = ''
+
+	path = resource.resourceID + '?fu=1&drt='+str(1 if structuredResult else 2)
+	if filter and isinstance(filter, list):						# Construct the filter parameters
+		for key,val in filter:
+			path += '&' + key + '=' + val
+	if filterOperation and isinstance(filterOperation, int):	# Add filter operation
+		path += '&fo=' + str(filterOperation)
+	#print(path)
+	response = get(resource.session, path)
+	if response and response.status_code == 200:
+		#print(response.text)
+		root = INT.responseToXML(response)
+		lst = INT.getElement(root, 'm2m:uril', default=[])	# setting default because: Make sure that the result is a list
+		return lst
+	lastError = str(response.status_code) + ' - ' + response.text
+	return None
+
+
 ###############################################################################
 
 #
@@ -99,21 +123,10 @@ def updateInCSE(resource, type):
 # Get a resource from the CSE
 def get(session, path):
 	try:
+		#print(_getPath(session, path))
 		return requests.get(_getPath(session, path), headers=_getHeaders(session), timeout=CON.NETWORK_REQUEST_TIMEOUT)
 	except Exception as e:
 		return None
-
-
-# Find / discover a resource on the CSE
-def discover(session, path, type=None):
-	path = _getPath(session, path) + '?fu=1&drt=1'	# structured result type
-	if type:
-		path = path + '&ty='+str(type)
-	try:
-		return requests.get(path, headers=_getHeaders(session), timeout=CON.NETWORK_REQUEST_TIMEOUT)
-	except Exception as e:
-		return None
-
 
 # Delete an existing resource on the CSE
 def delete(session, path):
@@ -160,9 +173,10 @@ def _getPath(session, path):
 	else:
 		return session.address+'/~/' + path
 
-def _isInvalidResource(resource):
-	return 	not resource.parent or not resource.parent.resourceID or \
-		 	not resource.session or not resource.session.connected
+def _isValidResource(resource):
+	return	(resource.type == CON.Type_CSEBase and resource.session) or \
+			(resource.parent is not None and resource.parent.resourceID is not None and \
+				resource.session is not None and resource.session.connected is not None)
 
 
 
