@@ -65,6 +65,7 @@ class TestCSE(unittest.TestCase):
 
 	def test_findAEInCSE(self):
 		aef = TestCSE.cse.findAE(AE_NAME)
+		self.assertIsNotNone(aef)
 		self.assertEqual(aef.resourceID, TestCSE.ae.resourceID)
 
 

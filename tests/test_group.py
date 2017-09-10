@@ -96,7 +96,7 @@ class TestGroup(unittest.TestCase):
 		ri = TestGroup.grp.resourceID
 		rn = TestGroup.grp.resourceName
 		mm = TestGroup.grp.memberIDs
-		TestGroup.grp = TestGroup.cse.retrieveResource(ri)
+		TestGroup.grp = retrieveResourceFromCSE(TestGroup.cse, ri)
 		self.assertIsNotNone(TestGroup.grp)
 		self.assertEqual(TestGroup.grp.resourceID, ri)
 		self.assertEqual(TestGroup.grp.resourceName, rn)

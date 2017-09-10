@@ -8,6 +8,7 @@ python3 test_container.py
 python3 test_contentInstance.py
 python3 test_group.py
 python3 test_accessControlPolicy.py
+python3 test_discovery.py
 
 endtime=`date +%s`
 

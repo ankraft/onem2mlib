@@ -22,11 +22,11 @@ ACP_LIMITED = 'limited:limited'
 
 
 CNT_NAME	= 'TEST_CONTAINER'
-CNT_LABELS	= ['test/test', 'aLabel/Another%20Label']
+CNT_LABELS	= ['test/test', 'aLabel/AnotherLabel']
 CNT_MNI		= 1
 
 CIN_NAME	= 'TEST_CONTENTINSTANCE'
-CIN_LABELS	= ['test/test', 'aLabel/Another%20Label']
+CIN_LABELS	= ['test/test', 'aLabel/AnotherLabel']
 CIN_CONTENT	= 'Hello, World'
 
 GRP_NAME	= 'TEST_GROUP'
