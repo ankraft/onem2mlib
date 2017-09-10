@@ -3,10 +3,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 
-    <title>onem2mlib API documentation</title>
-    <meta name="description" content="This Python3 module implements a library to access and manage resources on a oneM2M CSE.
-
-(c) 2017 b..." />
+    <title>onem2mlib.utilities API documentation</title>
+    <meta name="description" content="This sub-module defines the various utility classes and function for the onem2mlib module." />
 
   <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
   
@@ -1043,17 +1041,16 @@ table {
     <h1>Index</h1>
     <ul id="index">
 
+    <li class="set"><h3><a href="#header-functions">Functions</a></h3>
+      
+  <ul>
+    <li class="mono"><a href="#onem2mlib.utilities.newLabelFilterCriteria">newLabelFilterCriteria</a></li>
+    <li class="mono"><a href="#onem2mlib.utilities.newTypeFilterCriteria">newTypeFilterCriteria</a></li>
+  </ul>
 
-
-    <li class="set"><h3><a href="#header-submodules">Sub-modules</a></h3>
-      <ul>
-        <li class="mono"><a href="constants.m.html">onem2mlib.constants</a></li>
-        <li class="mono"><a href="exceptions.m.html">onem2mlib.exceptions</a></li>
-        <li class="mono"><a href="resources.m.html">onem2mlib.resources</a></li>
-        <li class="mono"><a href="session.m.html">onem2mlib.session</a></li>
-        <li class="mono"><a href="utilities.m.html">onem2mlib.utilities</a></li>
-      </ul>
     </li>
+
+
     </ul>
   </div>
 
@@ -1065,54 +1062,57 @@ table {
 
 
   <header id="section-intro">
-  <h1 class="title"><span class="name">onem2mlib</span> module</h1>
-  <p>This Python3 module implements a library to access and manage resources on a oneM2M CSE.</p>
-<p>(c) 2017 by Andreas Kraft<br />
-Licensed under the BSD 3-Clause License. See the LICENSE file for further details.</p>
+  <h1 class="title"><span class="name">onem2mlib.utilities</span> module</h1>
+  <p>This sub-module defines the various utility classes and function for the onem2mlib module.</p>
   
 
   </header>
 
   <section id="section-items">
 
-
-
-    <h2 class="section-title" id="header-submodules">Sub-modules</h2>
-      <div class="item">
-      <p class="name"><a href="constants.m.html">onem2mlib.constants</a></p>
+    <h2 class="section-title" id="header-functions">Functions</h2>
       
-  
-    <div class="desc"><p>This sub-module defines various constants used in the onem2mlib module.</p></div>
+  <div class="item">
+    <div class="name def" id="onem2mlib.utilities.newLabelFilterCriteria">
+    <p>def <span class="ident">newLabelFilterCriteria</span>(</p><p>label)</p>
+    </div>
+    
 
-      </div>
-      <div class="item">
-      <p class="name"><a href="exceptions.m.html">onem2mlib.exceptions</a></p>
+    
+  
+    <div class="desc"><p>Create a new label filter criteria.</p>
+<p>Args:</p>
+<ul>
+<li><em>label</em>: String. The label to filter for. The format of a label is "key/value".</li>
+</ul>
+<p>This function may throw a <em>ParameterError</em> exception when called with an empty or wrong label format.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
       
-  
-    <div class="desc"><p>This sub-module defines the exceptions used in the onem2mlib module.</p></div>
+  <div class="item">
+    <div class="name def" id="onem2mlib.utilities.newTypeFilterCriteria">
+    <p>def <span class="ident">newTypeFilterCriteria</span>(</p><p>type)</p>
+    </div>
+    
 
-      </div>
-      <div class="item">
-      <p class="name"><a href="resources.m.html">onem2mlib.resources</a></p>
-      
+    
   
-    <div class="desc"><p>This sub-module defines the oneM2M Resource and support classes of the onem2mlib module.</p></div>
+    <div class="desc"><p>Create a new resource type filter criteria.</p>
+<p>Args:</p>
+<ul>
+<li><em>label</em>: Integer. The resource type to filter for. It must be one of the valid oneM2M resource types.</li>
+</ul>
+<p>This function may throw a <em>ParameterError</em> exception when called with a wrong resource type.</p></div>
+  <div class="source_cont">
+</div>
 
-      </div>
-      <div class="item">
-      <p class="name"><a href="session.m.html">onem2mlib.session</a></p>
-      
+  </div>
   
-    <div class="desc"><p>This sub-module defines the Session class used in the onem2mlib module.</p></div>
 
-      </div>
-      <div class="item">
-      <p class="name"><a href="utilities.m.html">onem2mlib.utilities</a></p>
-      
-  
-    <div class="desc"><p>This sub-module defines the various utility classes and function for the onem2mlib module.</p></div>
 
-      </div>
   </section>
 
     </article>
