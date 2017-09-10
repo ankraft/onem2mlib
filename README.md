@@ -1,5 +1,5 @@
 # onem2mlib
-**Version 0.3**
+**Version 0.4**
 
 This Python3 module implements a library to access and manage resources on a oneM2M CSE.
 
@@ -30,17 +30,19 @@ Copy the *onem2mlib* directory to your project.
 ### LXML
 In addition you need to install the [lxml](http://lxml.de) library:
 
-- Install it with
+#### Using pip
+Install it with:
 
-		pip3 install lxml
+	pip3 install lxml
 
-- You might need to install some additional libraries:
+You might need to install some additional libraries:
 
-		apt-get install libxml2-dev libxslt1-dev
+	apt-get install libxml2-dev libxslt1-dev
 
-- This might take a very long time on a small system. Alternative you may install with the package manager
+#### Using a package manager
+All this might take a very long time on a small system (such as a Raspberry Pi). Alternative you may install the library with the help of a package manager:
 
-		sudo apt-get install python3-lxml
+	sudo apt-get install python3-lxml
 
 
 ## Usage
@@ -53,8 +55,8 @@ The following sections provide some examples.
 
 ### Connect to a CSE
 
-	session = SE.Session('http://host.com:8282', 'admin:admin') # create a session
-	cse = CSEBase(session, 'mn-cse') # get the <CSEBase> resource
+	session = SE.Session('http://host.com:8282', 'admin:admin').   # create a session
+	cse = CSEBase(session, 'mn-cse')                               # get the <CSEBase> resource
 
 ### Create an &lt;AE> resource in a CSE
 
@@ -80,12 +82,11 @@ Add a container to an &lt;AE> resource.
 
 	container = Container(ae, resourceName='myContainer', instantly=True)
 
-### Find all &lt;container> resources of an &lt;AE>
+### Get all &lt;container> resources of an &lt;AE>
 And print them.  
 And add a &lt;contentInstances> to each of them.
 	
-	containers = ae.containers()
-	for cnt in containers:
+	for cnt in ae.containers():
 		print(cnt)
 		cin = ContentInstance(cnt, content='some Value', instantly=True)
 
@@ -95,6 +96,10 @@ And add a &lt;contentInstances> to each of them.
 	ae.deleteFromCSE()
 
 ## Supported Features & Limitations
+
+See also [ROADMAP](ROADMAP.md) for open issues and planned enhancements.
+
+### Resources
 The following resource types are supported in this version.
 
 - [&lt;CSEBase>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.CSEBase)
@@ -104,7 +109,9 @@ The following resource types are supported in this version.
 - [&lt;group>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.Group)
 - [&lt;accessControlPolicy>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.AccessControlPolicy)
 
-See also [ROADMAP](ROADMAP.md) for open issues and planned enhancements.
+### Features
+- **Discovery**: 
+Currently, only *label* and *resourceType* are supported in filter criteria.
 
 ## License
 
