@@ -1,5 +1,5 @@
 # onem2mlib
-**Version 0.4**
+**Version 0.5**
 
 This Python3 module implements a library to access and manage resources on a oneM2M CSE.
 
@@ -33,16 +33,22 @@ In addition you need to install the [lxml](http://lxml.de) library:
 #### Using pip
 Install it with:
 
-	pip3 install lxml
+```bash
+pip3 install lxml
+```
 
 You might need to install some additional libraries:
 
-	apt-get install libxml2-dev libxslt1-dev
+```bash
+apt-get install libxml2-dev libxslt1-dev
+```
 
 #### Using a package manager
 All this might take a very long time on a small system (such as a Raspberry Pi). Alternative you may install the library with the help of a package manager:
 
-	sudo apt-get install python3-lxml
+```bash
+sudo apt-get install python3-lxml
+```
 
 
 ## Usage
@@ -55,43 +61,76 @@ The following sections provide some examples.
 
 ### Connect to a CSE
 
-	session = SE.Session('http://host.com:8282', 'admin:admin').   # create a session
-	cse = CSEBase(session, 'mn-cse')                               # get the <CSEBase> resource
+First, create a session and then connect to a CSE.
+
+```python
+session = SE.Session('http://host.com:8282', 'admin:admin').   # create a session
+cse = CSEBase(session, 'mn-cse')                               # get the <CSEBase> resource
+```
+
+To use XML encoding, specify the encoding explicitly for a session.
+
+```python
+from onem2mlib.constants import *
+session = SE.Session('http://host.com:8282', 'admin:admin', Encoding_XML).   # create a session with XML encoding
+cse = CSEBase(session, 'mn-cse')                                             # get the <CSEBase> resource
+```
+
 
 ### Create an &lt;AE> resource in a CSE
 
-The first example creates a new &lt;AE> resource or, if an &lt;AE> resource with the same name already exists in the CSE, the existsing &lt;AE> is returned. This is usually sufficient for most cases.
+The first example creates a new &lt;AE> resource or, if an &lt;AE> resource with the same name already exists in the CSE, that &lt;AE> is returned. This method to get/create a resource is usually sufficient in most cases.
 
-	ae = AE(cse, resourceName='aeName', instantly=True)
+```python
+ae = AE(cse, resourceName='aeName', instantly=True)
+```
 
 The second example is similar to the first, but offers the possibility to modify the resource object before sending it to the CSE.
 In general, the *get()* method creates a new or retrieves an existing resource.
 
-	ae = AE(cse, resourceName='aeName')
-	# set more attributes here
-	ae.get()
+```python
+ae = AE(cse, resourceName='aeName')
+# set more attributes here
+ae.get()
+```
 
-The last example also creates a new &lt;AE> resource in the CSE, but does it explicitly. It fails in case a resource with the same name already exists.
+The last example also creates a new &lt;AE> resource in the CSE, but does it explicitly. It fails (ie. returns *None*) in case a resource with the same name already exists.
 
-	ae = AE(cse, resourceName='aeName')
-	# set more attributes here
-	ae.createInCSE()
+```python
+ae = AE(cse, resourceName='aeName')
+# set more attributes here
+ae.createInCSE()
+```
 
 ### Add a &lt;container> resource to an &lt;AE>
 Add a container to an &lt;AE> resource.
 
-	container = Container(ae, resourceName='myContainer', instantly=True)
+```python
+container = Container(ae, resourceName='myContainer', instantly=True)
+```
 
 ### Get all &lt;container> resources of an &lt;AE>
 And print them.  
 And add a &lt;contentInstances> to each of them.
 	
-	for cnt in ae.containers():
-		print(cnt)
-		cin = ContentInstance(cnt, content='some Value', instantly=True)
+```python
+for cnt in ae.containers():
+	print(cnt)
+	# Create and add a new <contentInstance> in one step 
+	cin = ContentInstance(cnt, content='some Value', instantly=True)    
+```
 
+### Retrieve the latest &lt;contentInstance> from a &lt;container> resource
+And print it.
+
+```python 
+cin = container.latestContentInstance()
+if cin is not None:
+	print(cin)
+```
 
 ### Delete an &lt;AE> from a CSE
+Delete an &lt;AE> resource and all its sub-resource from a CSE.
 
 	ae.deleteFromCSE()
 
@@ -112,6 +151,8 @@ The following resource types are supported in this version.
 ### Features
 - **Discovery**: 
 Currently, only *label* and *resourceType* are supported in filter criteria.
+- **Encodings**:
+JSON (the default), XML.
 
 ## License
 

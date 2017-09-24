@@ -5,13 +5,15 @@
     - Support in &lt;AE>, &lt;Container>, &lt;flexContainers>
 - RemoteCSE
 - Subscription
+- Node
 
 ## Features 
 ### Soon
-- Support JSON encoding/decoding
 - Subscription service
 - Add a setup.py for easier installation
 - Announced resources
+- CSE
+	- Children attribute (rcn=5)
 
 ### Sometime
 - Support offset, maxmimum number/size in retrievals

@@ -47,9 +47,8 @@ def createInCSE(resource, type):
 	if not _isValidResource(resource):
 		lastError = 'Invalid resource'
 		return False
-	root = resource._createXML()
-	#print(INT.xmlToString(root))
-	response =  create(resource.session, resource.parent.resourceID, type, INT.xmlToString(root))
+	content = resource._createContent(False)
+	response =  create(resource.session, resource.parent.resourceID, type, content)
 	if response and response.status_code == 201:
 		resource._parseResponse(response)	# update own fields with response
 		return True
@@ -80,9 +79,8 @@ def updateInCSE(resource, type):
 	if not _isValidResource(resource):
 		lastError = 'Invalid resource'
 		return False
-	root = resource._createXML(True)
-	#print(INT.xmlToString(root))
-	response = update(resource.session, resource.resourceID, type, INT.xmlToString(root))
+	content = resource._createContent(True)
+	response = update(resource.session, resource.resourceID, type, content)
 	if response and response.status_code == 200:
 		resource._parseResponse(response)	# update own fields with response
 		return True
@@ -106,9 +104,12 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
 	response = get(resource.session, path)
 	if response and response.status_code == 200:
 		#print(response.text)
-		root = INT.responseToXML(response)
-		lst = INT.getElement(root, 'm2m:uril', default=[])	# setting default because: Make sure that the result is a list
-		return lst
+		if resource.session.encoding == CON.Encoding_XML:
+			return INT.getElement(INT.responseToXML(response), 'm2m:uril', default=[])	# setting default because: Make sure that the result is a list
+		elif resource.session.encoding == CON.Encoding_JSON:
+			return INT.getElementJSON(response.json(), 'm2m:uril', default=[])
+		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
+
 	lastError = str(response.status_code) + ' - ' + response.text
 	return None
 
@@ -159,11 +160,19 @@ def update(session, path, type, body):
 def _getHeaders(session, type=None):
 	headers = dict()
 	headers['X-M2M-Origin'] = session.originator
-	if type:
-		headers['Content-Type'] = 'application/xml;ty=' + str(type)
+	if session.encoding == CON.Encoding_XML:
+		encoding = 'application/xml'
 	else:
-		headers['Content-Type'] = 'application/xml'
-	headers['Accept'] = 'application/xml'
+		encoding = 'application/json'
+
+	if type:
+		headers['Content-Type'] = encoding + ';ty=' + str(type)
+		headers['Accept'] = encoding
+	else:
+		headers['Content-Type'] = encoding
+		headers['Accept'] = encoding
+
+	headers['Accept'] = encoding
 	return headers
 
 

@@ -99,3 +99,9 @@ Dsc_OR = 2
 
 NETWORK_REQUEST_TIMEOUT = 20
 """ Timeout after n seconds in requests. """
+
+Encoding_XML = 1
+""" Specify XML as the request encoding format. """
+
+Encoding_JSON = 2
+""" Specify JSON as the request encoding format. """

@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Version 0.5 (xxxx-xx-xx)
+- [IMPROVEMENT] Added support for JSON encoding to communicate with a CSE. JSON is now the default encoding.
+- [IMPROVEMENT] Added better checks in various functions. Raising more exceptions when encounting wrong or empty resources.
+- [CHANGE] Moved marshalling functions to an extra source file.
+- [CHANGE] Refactored some internal functions
+- [FIX] Fixed some test cases.
+
 ## Version 0.4 (2017-09-10)
 - [IMPROVEMENT] Added general discovery support. Currently supported attributes are *label* and *type*.
 - [FIX] Added more tests for &lt;contentInstances>.

@@ -9,13 +9,13 @@
 
 
 from lxml import etree as ET
+import onem2mlib.constants as CON
 
 
 # define the namespace
 _ns = {'m2m' : 'http://www.onem2m.org/xml/protocols'}
 
 ###############################################################################
-
 #
 #	XML Utilities
 #
@@ -35,6 +35,8 @@ def getElement(tree, elemName, default=None, relative=False):
 		result = elem[0].text
 		if isinstance(default, list):
 			result = result.split()
+		if isinstance(default, bool):	# bool must be checked before int!
+			result = bool(result)
 		if isinstance(default, int):
 			result = int(result)
 		return result
@@ -65,6 +67,7 @@ def getAttribute(tree, elemName, attrName, default=None):
 	return default
 
 
+# Create an XML element, including an optional namespace. Return the element
 def createElement(elemName, namespace=None):
 	if namespace:
 		return ET.Element('{%s}%s' % (_ns['m2m'], elemName), nsmap=_ns)
@@ -72,12 +75,15 @@ def createElement(elemName, namespace=None):
 		return ET.Element(elemName)
 
 
+# Create and add an element with the given name to the root. Return the new element.
 def addElement(root, name):
 	elem = createElement(name)
 	root.append(elem)
 	return elem
 
 
+# Create and add an element with the given name to the root. Add content to it when
+# the content is not None, or add the content nevertheless when mandatory is True.
 def addToElement(root, name, content, mandatory=False):
 	if isinstance(content, int) or (content and len(content) > 0) or mandatory:
 		elem = createElement(name)
@@ -119,6 +125,61 @@ def xmlToString(xml):
 def stringToXML(value):
 	return ET.fromstring(value)
 
+
+###############################################################################
+
+#
+#	JSON Utilities
+#
+
+# Find a tag value (string) from the JSON dictionaty or, if not found, return the default.
+def getElementJSON(jsn, elemName, default=None):
+	if elemName in jsn:
+		elem = jsn[elemName]
+		return elem
+	return default
+
+
+# Add an elememt to the jsn content
+def addToElementJSON(jsn, name, content, mandatory=False):
+	if isinstance(content, int) or (content and len(content) > 0) or mandatory:
+		jsn[name] = content
+
+# Find all the sub-structures of a specific name inside a JSON document
+# TODO: Replace this with some xpath-like query package
+def getALLSubElementsJSON(jsn, name):
+	result = []
+	for elemName in jsn:
+		elem = jsn[elemName]
+		if elemName == name:
+			result.append(elem)
+		elif isinstance(elem, dict):
+			result.extend(getALLSubElementsJSON(elem, name))
+		elif isinstance(elem, list):
+			for e in elem:
+				if isinstance(e, dict):
+					result.extend(getALLSubElementsJSON(e, name))
+	return result
+
+
+###############################################################################
+#
+#	Utilities
+#
+
+# Get the type from a response, for JSON and XML
+def getTypeFromResponse(response, encoding):
+	if encoding == CON.Encoding_XML:
+		root = responseToXML(response)
+		return toInt(getElement(root, 'ty'))
+	elif encoding == CON.Encoding_JSON:
+		jsn = response.json()
+		# This is a bit complicated. We need to get to the type, which is hidden under an
+		# unknown object definition key. So, we asume that the JSON we get has the object
+		# definition in the first element (as it should be).
+		inner = list(jsn.values())[0]
+		return getElementJSON(inner, 'ty')
+	return -1
 
 ###############################################################################
 

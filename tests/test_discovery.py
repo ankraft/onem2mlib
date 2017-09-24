@@ -34,7 +34,7 @@ class TestDiscovery(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestDiscovery.session = SE.Session(host, originator)
+		TestDiscovery.session = SE.Session(host, originator, encoding)
 		TestDiscovery.cse = CSEBase(TestDiscovery.session, CSE_ID)
 		if not TestDiscovery.session.connected:
 			print('*** Not connected to CSE')

@@ -29,7 +29,7 @@ class TestAE(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestAE.session = SE.Session(host, originator)
+		TestAE.session = SE.Session(host, originator, encoding)
 		TestAE.cse = CSEBase(TestAE.session, CSE_ID)
 		if not TestAE.session.connected:
 			print('*** Not connected to CSE')

@@ -20,6 +20,7 @@ from conf import *
 
 
 class TestACP(unittest.TestCase):
+	ae = None
 	session = None
 	cse = None
 	acp = None
@@ -29,7 +30,7 @@ class TestACP(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestACP.session = SE.Session(host, originator)
+		TestACP.session = SE.Session(host, originator, encoding)
 		TestACP.cse = CSEBase(TestACP.session, CSE_ID)
 		if not TestACP.session.connected:
 			print('*** Not connected to CSE')

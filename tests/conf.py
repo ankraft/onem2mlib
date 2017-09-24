@@ -7,9 +7,14 @@
 #	This is the configuration file for the unit tests. 
 #	Change the settings for *host*, *username*, and *password* according to your setup.
 
+import sys
+sys.path.append('..')
+import onem2mlib.constants as CON
+
 host		= 'http://localhost:8282'
 originator	= 'admin:admin'
-
+#encoding	= CON.Encoding_XML
+encoding	= CON.Encoding_JSON
 
 CSE_NAME	= 'mn-name'
 CSE_ID		= 'mn-cse'

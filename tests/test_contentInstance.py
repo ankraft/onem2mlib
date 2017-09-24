@@ -30,7 +30,7 @@ class TestContentInstance(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestContentInstance.session = SE.Session(host, originator)
+		TestContentInstance.session = SE.Session(host, originator, encoding)
 		TestContentInstance.cse = CSEBase(TestContentInstance.session, CSE_ID)
 		if not TestContentInstance.session.connected:
 			print('*** Not connected to CSE')

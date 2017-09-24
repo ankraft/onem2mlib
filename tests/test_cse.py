@@ -19,7 +19,7 @@ from onem2mlib.resources import *
 from conf import *
 
 
-class TestCSE(unittest.TestCase):
+class TestCSE(unittest.TestCase,):
 	session = None
 	ae = None
 	cse = None
@@ -27,7 +27,7 @@ class TestCSE(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestCSE.session = SE.Session(host, originator)
+		TestCSE.session = SE.Session(host, originator, encoding)
 
 
 	@classmethod
@@ -42,6 +42,7 @@ class TestCSE(unittest.TestCase):
 		self.assertFalse(TestCSE.session.connected)
 		self.assertEqual(TestCSE.session.address, host)
 		self.assertEqual(TestCSE.session.originator, originator)
+		self.assertEqual(TestCSE.session.encoding, encoding)
 
 
 	def test_cseGet(self):

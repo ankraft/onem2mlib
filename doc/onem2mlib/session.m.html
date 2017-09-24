@@ -1097,7 +1097,7 @@ table {
             
   <div class="item">
     <div class="name def" id="onem2mlib.session.Session.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, address, originator)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, address, originator, encoding=2)</p>
     </div>
     
 
@@ -1110,7 +1110,10 @@ Session instances.</p>
 <ul>
 <li><em>address</em>: String. The URL of the CSE host to connect to. This includes the protocol, hostname, 
         port number, and any API prefix etc.</li>
-<li><em>originator</em>: String. The originator for identification in access control policies</li>
+<li><em>originator</em>: String. The originator for identification in access control policies.</li>
+<li><em>encoding</em>: Integer. The encoding of request content. Optional, the default is
+        <em>onem2mlib.constants.Encoding_JSON</em>. Providing a wrong encoding will throw a <em>NotSupportedError</em>
+        exception.</li>
 </ul></div>
   <div class="source_cont">
 </div>
@@ -1137,6 +1140,18 @@ port number, and any API prefix etc.</p></div>
             
   
     <div class="desc"><p>Boolean. This flag indicates whether the session is successfully connected to a CSE.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.session.Session.encoding" class="name">var <span class="ident">encoding</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Integer, either <em>onem2mlib.constants.Encoding_XML</em> or <em>onem2mlib.constants.Encoding_JSON</em>.
+It specifies the type of encoding for requests between the AE and the CSE.</p></div>
   <div class="source_cont">
 </div>
 

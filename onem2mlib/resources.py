@@ -12,11 +12,14 @@ This sub-module defines the oneM2M Resource and support classes of the onem2mlib
 
 """
 
+import json
+
 import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
 import onem2mlib.constants as CON
 import onem2mlib.exceptions as EXC
 import onem2mlib.utilities as UT
+import onem2mlib.marshalling as M
 
 
 ###############################################################################
@@ -131,7 +134,6 @@ class ResourceBase:
 			else:
 				for acp in acps:
 					if isinstance(acp, AccessControlPolicy) and acp.resourceID is not None:
-						print(acp.resourceID)
 						self.accessControlPolicyIDs.append(acp.resourceID)
 
 
@@ -235,10 +237,7 @@ class ResourceBase:
 		rids = MCA.discoverInCSE(self, filter=filter, filterOperation=filterOperation)
 		if rids is None:
 			return []
-		result = []
-		for id in rids:
-			result.append(retrieveResourceFromCSE(self, id))	# TODO: check for errors neccessary?
-		return result
+		return [ retrieveResourceFromCSE(self, id) for id in rids ]
 
 
 	# Recursivly construct a structured resourceName
@@ -252,32 +251,19 @@ class ResourceBase:
 
 	def _parseResponse(self, response):
 		#print(response.text)
-		return self._parseXML(INT.responseToXML(response))
+		if self.session.encoding == CON.Encoding_XML:
+			return self._parseXML(INT.responseToXML(response))
+		elif self.session.encoding == CON.Encoding_JSON:
+			return self._parseJSON(response.json())
+		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
 
-	def _parseXML(self, root):
-		rootTag = INT.xmlQualifiedName(root)
-		self.resourceName = INT.getAttribute(root, 'm2m:'+rootTag.localname, 'rn', self.resourceName)
-		self.type = INT.getElement(root, 'ty', self.type)
-		self.stateTag = INT.toInt(INT.getElement(root, 'st', self.stateTag))
-		self.labels = INT.getElement(root, 'lbl', self.labels)
-		self.resourceID = INT.getElement(root, 'ri', self.resourceID)
-		self.parentID = INT.getElement(root, 'pi', self.parentID)
-		self.creationTime = INT.getElement(root, 'ct', self.creationTime)
-		self.lastModifiedTime = INT.getElement(root, 'lt', self.lastModifiedTime)
-		self.accessControlPolicyIDs = INT.getElement(root, 'acpi', self.accessControlPolicyIDs)
-		self.expirationTime = INT.getElement(root, 'et', self.expirationTime)
-		self.announceTo = INT.getElement(root, 'at', self.announceTo)
-		self.announcedAttribute = INT.getElement(root, 'aa', self.announcedAttribute)
-		# todo: dynamicAuthorizationConsultationIDs
-
-
-	# Create the XML for only some of the writable attributes.
-	def _createXML(self, root):
-		INT.addToElement(root, 'lbl', self.labels)
-		INT.addToElement(root, 'aa', self.announcedAttribute)
-		INT.addToElement(root, 'at', self.announceTo)
-		INT.addToElement(root, 'acpi', self.accessControlPolicyIDs)
+	def _createContent(self, isUpdate=False):
+		if self.session.encoding == CON.Encoding_XML:
+			return INT.xmlToString(self._createXML(isUpdate))
+		elif self.session.encoding == CON.Encoding_JSON:
+			return json.dumps(self._createJSON(isUpdate))
+		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
 
 	def _copy(self, resource):
@@ -392,10 +378,11 @@ class CSEBase(ResourceBase):
 
 
 	def _parseXML(self, root):
-		super()._parseXML(root)
-		self.cseType = INT.toInt(INT.getElement(root, 'cst', self.cseType))
-		self.supportedResourceTypes = INT.getElement(root, 'srt', self.supportedResourceTypes)
-		self.pointOfAccess = INT.getElement(root, 'poa', self.pointOfAccess)
+		M._CSEBase_parseXML(self, root)
+
+
+	def _parseJSON(self, jsn):
+		M._CSEBase_parseJSON(self, jsn)
 
 
 	def _copy(self, resource):
@@ -460,39 +447,19 @@ class AccessControlPolicy(ResourceBase):
 
 
 	def _parseXML(self, root):
-		#print(INT.xmlToString(root))
-		super()._parseXML(root)
-		self.privileges = []
-		pv = INT.getElementWithChildren(root, 'pv')
-		if pv is not None and len(pv)>0:
-			acrs = INT.getElements(pv[0], 'acr', relative=True) # only the first element[0]
-			for a in acrs:
-				acr = AccessControlRule()
-				acr._parseXML(a)
-				self.privileges.append(acr)
-		self.selfPrivileges = []
-		pvs = INT.getElementWithChildren(root, 'pvs')
-		if pvs is not None and len(pvs)>0:
-			acrs = INT.getElements(pvs[0], 'acr', relative=True) # only the first element[0]
-			for a in acrs:
-				acr = AccessControlRule()
-				acr._parseXML(a)
-				self.selfPrivileges.append(acr)
+		M._accessControlPolicy_parseXML(self, root)
+
+
+	def _parseJSON(self, jsn):
+		M._accessControlPolicy_parseJSON(self, jsn)
 
 
 	def _createXML(self, isUpdate=False):
-		root = INT.createElement('acp', namespace='m2m')
-		# add resource attributes
-		if self.resourceName and not isUpdate: 	# No RN when updating
-			root.attrib['rn'] = self.resourceName
-		super()._createXML(root)
-		pv = INT.addElement(root, 'pv')
-		for p in self.privileges:
-			p._createXML(pv)
-		pvs = INT.addElement(root, 'pvs')
-		for p in self.selfPrivileges:
-			p._createXML(pvs)
-		return root
+		return M._accessControlPolicy_createXML(self, isUpdate)
+
+
+	def _createJSON(self, isUpdate=False):
+		return M._accessControlPolicy_createJSON(self, isUpdate)
 
 
 	def _copy(self, resource):
@@ -540,20 +507,19 @@ class AccessControlRule():
 
 
 	def _parseXML(self, root):
-		self.accessControlOriginators = []
-		acors = INT.getElements(root, 'acor', relative=True)
-		if acors:
-			for acor in acors:
-				self.accessControlOriginators.append(acor.text)
-		self.accessControlOperations = INT.getElement(root, 'acop', 0, relative=True)
+		M._accessControlRule_parseXML(self, root)
 
 
 	def _createXML(self, root):
-		acr = INT.addElement(root, 'acr')
-		#INT.addToElement(acr, 'acor', self.accessControlOriginators)
-		for acor in self.accessControlOriginators:
-			INT.addToElement(acr, 'acor', acor)
-		INT.addToElement(acr, 'acop', self.accessControlOperations)
+		M._accessControlRule_createXML(self, root)
+
+
+	def _parseJSON(self, jsn):
+		M._accessControlRule_parseJSON(self, jsn)
+
+
+	def _createJSON(self):
+		return M._accessControlRule_createJSON(self)
 
 
 ###############################################################################
@@ -567,7 +533,7 @@ class AE(ResourceBase):
 	application and the sub-structure of resources beneath it.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability='true', labels=[], instantly=False):
+	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[], instantly=False):
 		"""
 		Initialize the &lt;AE> resource. 
 
@@ -591,8 +557,7 @@ class AE(ResourceBase):
 		""" String. The identifier of the Application Entity. Assigned by the application or the CSE. """
 
 		self.requestReachability = requestReachability
-		""" Boolean as a String ('true', 'false'). This indicates the reachability of the AE.
-			Assigned by the application or the CSE. """
+		""" Boolean. This indicates the reachability of the AE.	Assigned by the application or the CSE. """
 
 		self.pointOfAccess = []
 		""" List of String. The list of addresses for communicating with the registered AE. """
@@ -655,24 +620,19 @@ class AE(ResourceBase):
 
 
 	def _parseXML(self, root):
-		super()._parseXML(root)
-		self.appID = INT.getElement(root, 'api', self.appID)
-		self.AEID = INT.getElement(root, 'aei', self.AEID)
-		self.requestReachability = INT.getElement(root, 'rr', self.requestReachability)
-		self.pointOfAccess = INT.getElement(root, 'poa', self.pointOfAccess)
+		M._AE_parseXML(self, root)
 
 
 	def _createXML(self, isUpdate=False):
-		root = INT.createElement('ae', namespace='m2m')
-		# add resource attributes
-		if self.resourceName and not isUpdate: 	# No RN when updating
-			root.attrib['rn'] = self.resourceName
-		super()._createXML(root)
-		if self.appID and not isUpdate: 	# No api when updating
-			INT.addToElement(root, 'api', self.appID)
-		INT.addToElement(root, 'rr', self.requestReachability)
-		INT.addToElement(root, 'poa', self.pointOfAccess)
-		return root
+		return M._AE_createXML(self, isUpdate)
+
+
+	def _parseJSON(self, jsn):
+		M._AE_parseJSON(self, jsn)
+
+
+	def _createJSON(self, isUpdate=False):
+		return M._AE_createJSON(self, isUpdate)
 
 
 	def _copy(self, resource):
@@ -810,26 +770,19 @@ class Container(ResourceBase):
 
 
 	def _parseXML(self, root):
-		super()._parseXML(root)
-		self.maxNrOfInstances = INT.toInt(INT.getElement(root, 'mni', self.maxNrOfInstances))
-		self.maxByteSize = INT.toInt(INT.getElement(root, 'mbs', self.maxByteSize))
-		self.maxInstanceAge = INT.toInt(INT.getElement(root, 'mia', self.maxInstanceAge))
-		self.currentNrOfInstances = INT.toInt(INT.getElement(root, 'cni', self.currentNrOfInstances))
-		self.currentByteSize = INT.toInt(INT.getElement(root, 'cbs', self.currentByteSize))
-		self.oldest = INT.getElement(root, 'ol', self.oldest)
-		self.latest = INT.getElement(root, 'la', self.latest)
+		M._Container_parseXML(self, root)
 
 
 	def _createXML(self, isUpdate=False):
-		root = INT.createElement('cnt', namespace='m2m')
-		# add resource attributes
-		if self.resourceName and not isUpdate:		# No RN when updating
-			root.attrib['rn'] = self.resourceName
-		super()._createXML(root)
-		INT.addToElement(root, 'mni', self.maxNrOfInstances)
-		INT.addToElement(root, 'mbs', self.maxByteSize)
-		INT.addToElement(root, 'mia', self.maxInstanceAge)
-		return root
+		return M._Container_createXML(self, isUpdate)
+
+
+	def _parseJSON(self, jsn):
+		M._Container_parseJSON(self, jsn)
+
+
+	def _createJSON(self, isUpdate=False):
+		return M._Container_createJSON(self, isUpdate)
 
 
 	def _copy(self, resource):
@@ -906,21 +859,19 @@ class ContentInstance(ResourceBase):
 
 
 	def _parseXML(self, root):
-		super()._parseXML(root)
-		self.contentInfo = INT.getElement(root, 'cnf', self.contentInfo)
-		self.contentSize = INT.toInt(INT.getElement(root, 'cs', self.contentSize))
-		self.content = INT.getElement(root, 'con', self.content)
+		M._ContentInstance_parseXML(self, root)
 
 
 	def _createXML(self, isUpdate=False):
-		root = INT.createElement('cin', namespace='m2m')
-		# add resource attributes
-		if self.resourceName and not isUpdate:      # No RN when updating
-			root.attrib['rn'] = self.resourceName
-		super()._createXML(root)
-		INT.addToElement(root, 'cnf', self.contentInfo)
-		INT.addToElement(root, 'con', self.content)
-		return root
+		return M._ContentInstance_createXML(self, isUpdate)
+
+
+	def _parseJSON(self, jsn):
+		M._ContentInstance_parseJSON(self, jsn)
+
+
+	def _createJSON(self, isUpdate=False):
+		return M._ContentInstance_createJSON(self, isUpdate)
 
 
 	def _copy(self, resource):
@@ -969,7 +920,7 @@ class Group(ResourceBase):
 		*maxNrOfMembers*. R/O. """
 		
 		self.memberTypeValidated = None
-		""" Boolean as a String ('true', 'false'), or None. Denotes if the resource types of all members resources 
+		""" Boolean, or None. Denotes if the resource types of all members resources 
 		of the &lt;group> has been validated by the Hosting CSE. In the case that the *memberType* 
 		attribute of the &lt;group> resource is not 'mixed', then this attribute shall be set. """
 
@@ -1009,12 +960,9 @@ class Group(ResourceBase):
 		Otherwise, it is of type 'mixed'. W/O. """
 
 		# assign the resource ids
-		self.memberIDs = []
+		self.memberIDs = [ res.resourceID for res in self.resources ]
 		""" List String, member resource IDs. Each memberID should refer to a member resource or a 
 		(sub-) &lt;group> resource of the &lt;group>. """
-
-		for res in self.resources:
-			self.memberIDs.append(res.resourceID)
 
 		if instantly:
 			if not self.get():
@@ -1069,7 +1017,12 @@ class Group(ResourceBase):
 		the resource identifiers in *memberIDs*.
 		"""
 		if not self._isValidFanOutPoint: return None
-		body = INT.xmlToString(resource._createXML(isUpdate=True))
+		if self.session.encoding == CON.Encoding_XML:
+			body = INT.xmlToString(resource._createXML(isUpdate=True))
+		elif self.session.encoding == CON.Encoding_JSON:
+			body = json.dumps(resource._createJSON(isUpdate=True))
+		else:
+			raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 		response = MCA.update(self.session, self.fanOutPoint, resource.type, body)
 		return self._parseFanOutPointResponse(response)
 
@@ -1081,65 +1034,67 @@ class Group(ResourceBase):
 		It returns a list of the created resources, or *None* in case of an error.
 		"""
 		if not self._isValidFanOutPoint: return None
-		body = INT.xmlToString(resource._createXML(isUpdate=True))
+		if self.session.encoding == CON.Encoding_XML:
+			body = INT.xmlToString(resource._createXML(isUpdate=True))
+		elif self.session.encoding == CON.Encoding_JSON:
+			body = json.dumps(resource._createJSON(isUpdate=True))
+		else:
+			raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 		response = MCA.create(self.session, self.fanOutPoint, resource.type, body)
 		return self._parseFanOutPointResponse(response)
 
 
 	def _parseXML(self, root):
-		super()._parseXML(root)
-		self.maxNrOfMembers = INT.toInt(INT.getElement(root, 'mnm', self.maxNrOfMembers))
-		self.memberType = INT.toInt(INT.getElement(root, 'mt', self.memberType))
-		self.currentNrOfMembers = INT.toInt(INT.getElement(root, 'cnm', self.currentNrOfMembers))
-		self.memberIDs = INT.getElement(root, 'mid', self.memberIDs)
-		self.memberTypeValidated = INT.getElement(root, 'mtv', self.memberTypeValidated)
-		self.consistencyStrategy = INT.toInt(INT.getElement(root, 'csy', self.consistencyStrategy))
-		self.groupName = INT.getElement(root, 'gn', self.groupName)
-		self.fanOutPoint = INT.getElement(root, 'fopt', self.fanOutPoint)
+		M._Group_parseXML(self, root)
 
 
 	def _createXML(self, isUpdate=False):
-		root = INT.createElement('grp', namespace='m2m')
-		# add resource attributes
-		if self.resourceName and not isUpdate:      # No RN when updating
-			root.attrib['rn'] = self.resourceName
-		super()._createXML(root)
-		if self.maxNrOfMembers and not isUpdate: 	# No mnm when updating
-			INT.addToElement(root, 'mnm', self.maxNrOfMembers)
-		INT.addToElement(root, 'mt', self.memberType)
-		INT.addToElement(root, 'mid', self.memberIDs, mandatory=True)
-		if self.consistencyStrategy and not isUpdate: 	# No csy when updating
-			INT.addToElement(root, 'csy', self.consistencyStrategy)
-		INT.addToElement(root, 'gn', self.groupName)
-		return root
+		return M._Group_createXML(self, isUpdate)
+
+
+	def _parseJSON(self, jsn):
+		M._Group_parseJSON(self, jsn)
+
+
+	def _createJSON(self, isUpdate=False):
+		return M._Group_createJSON(self, isUpdate)
 
 
 	def _parseFanOutPointResponse(self, response):
 		# Get the resources from the answer
 		if response and response.status_code == 200:
-			rsps = INT.getElements(INT.responseToXML(response), 'pc')	# deep-search the tree for all <pc> elements
-			if not rsps or not len(rsps) > 0: return None
-			resources = []
-			for rsp in rsps: # each <pc>  contains a onem2m resource 
+			if self.session.encoding == CON.Encoding_XML:
+				rsps = INT.getElements(INT.responseToXML(response), 'pc')	# deep-search the tree for all <pc> elements
+				if not rsps or not len(rsps) > 0: return None
+				resources = []
+				for rsp in rsps: # each <pc>  contains a onem2m resource 
 
-				# The following is a hack to get a stand-alone XML tree. Otherwise the XML parser always only
-				# finds the first resource in the whole response tree.
-				# Take the XML as a string and parse it again.
-				xml = INT.stringToXML(INT.xmlToString(rsp[0]))
+					# The following is a hack to get a stand-alone XML tree. Otherwise the XML parser always only
+					# finds the first resource in the whole response tree.
+					# Take the XML as a string and parse it again.
+					xml = INT.stringToXML(INT.xmlToString(rsp[0]))
+					tag = INT.xmlQualifiedName(xml, True)
+					# The resources get the group as a parent to pass on the Session.
+					# Yes, this is halfway wrong, it will not result in a fully qualified path later.
+					# But at least the resources can be used by the application
+					resource = _newResourceFromTypeString(tag, self)
+					if resource:
+						resource._parseXML(xml)
+						resources.append(resource)
+				return resources
+			elif self.session.encoding == CON.Encoding_JSON:
+				elements = INT.getALLSubElementsJSON(response.json(), 'm2m:pc')
+				resources = []
+				for elem in elements:
+					keyWithoutPrefix = list(elem.keys())[0].replace('m2m:','')
+					resource = _newResourceFromTypeString(keyWithoutPrefix, self)
+					if resource:
+						resource._parseJSON(elem)
+						resources.append(resource)
+				return resources
 
-				resource = None
-				tag = INT.xmlQualifiedName(xml, True)
-				# The resources get the group as a parent to pass on the Session.
-				# Yes, this is halfway wrong, it will not result in a fully qualified path later.
-				# But at least the resources can be used by the application
-				if tag == 'cnt': 	resource = Container(self)
-				elif tag == 'cin':	resource = ContentInstance(self)
-				elif tag == 'ae':	resource = AE(self)
-				# Can a group point to groups?
-				if resource:
-					resource._parseXML(xml)
-					resources.append(resource)
-			return resources
+			else:
+				raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 		return None
 
 
@@ -1160,9 +1115,9 @@ class Group(ResourceBase):
 
 
 ###############################################################################
-
 #
 #	General functions
+#
 
 def retrieveResourceFromCSE(parent, resourceID):
 	"""
@@ -1177,15 +1132,22 @@ def retrieveResourceFromCSE(parent, resourceID):
 	result = None
 	response = MCA.get(parent.session, resourceID)
 	if response and response.status_code == 200:
-		root = INT.responseToXML(response)
-		type = INT.toInt(INT.getElement(root, 'ty'))
-		result = _newResourceFromRID(type, resourceID, parent)
-		if result:
-			result._parseXML(root)
+		ty = INT.getTypeFromResponse(response, parent.session.encoding)
+		if parent.session.encoding == CON.Encoding_XML:
+			root = INT.responseToXML(response)
+			result = _newResourceFromRID(ty, resourceID, parent)
+			if result:
+				result._parseXML(root)
+		elif parent.session.encoding == CON.Encoding_JSON:
+			jsn = response.json()
+			result = _newResourceFromRID(ty, resourceID, parent)
+			if result:
+				result._parseJSON(jsn)
 	return result
 
-###############################################################################
 
+
+###############################################################################
 #
 #	Search
 #
@@ -1230,34 +1192,38 @@ def _findResourceInList(resources, resourceName):
 
 # Create a new resource object with a given type, RI and parent
 def _newResourceFromRID(type, ri, parent):
-	if type == CON.Type_ContentInstance:
-		return ContentInstance(parent, resourceID=ri)
-	elif type == CON.Type_Container:
-		return Container(parent, resourceID=ri)
-	elif type == CON.Type_AE:
-		return AE(parent, resourceID=ri)
-	elif type == CON.Type_Group:
-		return Group(parent, resourceID=ri)
-	elif type == CON.Type_ACP:
-		return AccessControlPolicy(parent, resourceID=ri)
+	res = _newResourceFromType(type, parent)
+	if res:
+		res.resourceID = ri
+	return res
 
-	# elif type == CON.Type_FlexContainer:
-	# 	return FlexContainer(parent, resourceID=ri)
+
+def _newResourceFromType(type, parent):
+	if type == CON.Type_ContentInstance:	return ContentInstance(parent)
+	elif type == CON.Type_Container:		return Container(parent)
+	elif type == CON.Type_AE:				return AE(parent)
+	elif type == CON.Type_Group:			return Group(parent)
+	elif type == CON.Type_ACP:				return AccessControlPolicy(parent)
+	return None
+
+
+def _newResourceFromTypeString(typeString, parent):
+	if typeString == 'cin':		return _newResourceFromType(CON.Type_ContentInstance, parent)
+	elif typeString == 'cnt':	return _newResourceFromType(CON.Type_Container, parent)
+	elif typeString == 'ae':	return _newResourceFromType(CON.Type_AE, parent)
+	elif typeString == 'grp':	return _newResourceFromType(CON.Type_Group, parent)
+	elif typeString == 'acp':	return _newResourceFromType(CON.Type_ACP, parent)
+	return None
 
 
 # Get a resource from the CSE by its resourceName
 def _getResourceFromCSEByResourceName(type, rn, parent):
 	res = None
-	if type == CON.Type_ContentInstance:
-		res = ContentInstance(parent, resourceName=rn)
-	elif type == CON.Type_Container:
-		res = Container(parent, resourceName=rn)
-	elif type == CON.Type_AE:
-		res = AE(parent, resourceName=rn)
-	elif type == CON.Type_Group:
-		res = Group(parent, resourceName=rn)
-	elif type == CON.Type_ACP:
-		res = AccessControlPolicy(parent, resourceName=rn)
+	if type == CON.Type_ContentInstance:		res = ContentInstance(parent, resourceName=rn)
+	elif type == CON.Type_Container:			res = Container(parent, resourceName=rn)
+	elif type == CON.Type_AE:					res = AE(parent, resourceName=rn)
+	elif type == CON.Type_Group:				res = Group(parent, resourceName=rn)
+	elif type == CON.Type_ACP:					res = AccessControlPolicy(parent, resourceName=rn)
 	if res is not None and res.retrieveFromCSE():
 		return res
 	return None

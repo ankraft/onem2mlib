@@ -1216,7 +1216,7 @@ application and the sub-structure of resources beneath it.</p></div>
             
   <div class="item">
     <div class="name def" id="onem2mlib.resources.AE.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=&#39;true&#39;, labels=[], instantly=False)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[], instantly=False)</p>
     </div>
     
 
@@ -1337,8 +1337,7 @@ application and the sub-structure of resources beneath it.</p></div>
 
             
   
-    <div class="desc"><p>Boolean as a String ('true', 'false'). This indicates the reachability of the AE.
-Assigned by the application or the CSE.</p></div>
+    <div class="desc"><p>Boolean. This indicates the reachability of the AE.    Assigned by the application or the CSE.</p></div>
   <div class="source_cont">
 </div>
 
@@ -2202,7 +2201,7 @@ Otherwise, it is of type 'mixed'. W/O.</p></div>
 
             
   
-    <div class="desc"><p>Boolean as a String ('true', 'false'), or None. Denotes if the resource types of all members resources 
+    <div class="desc"><p>Boolean, or None. Denotes if the resource types of all members resources 
 of the &lt;group&gt; has been validated by the Hosting CSE. In the case that the <em>memberType</em> 
 attribute of the &lt;group&gt; resource is not 'mixed', then this attribute shall be set.</p></div>
   <div class="source_cont">

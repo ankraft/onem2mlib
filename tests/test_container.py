@@ -30,7 +30,7 @@ class TestContainer(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestContainer.session = SE.Session(host, originator)
+		TestContainer.session = SE.Session(host, originator, encoding)
 		TestContainer.cse = CSEBase(TestContainer.session, CSE_ID)
 		if not TestContainer.session.connected:
 			print('*** Not connected to CSE')

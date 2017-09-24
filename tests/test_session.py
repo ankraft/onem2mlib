@@ -25,7 +25,7 @@ class TestSession(unittest.TestCase):
 
 
 	def test_init(self): 
-		TestSession.session = SE.Session(host, originator)
+		TestSession.session = SE.Session(host, originator, encoding)
 		self.assertIsNotNone(TestSession.session)
 		self.assertEqual(TestSession.session.address, host)
 		self.assertEqual(TestSession.session.originator, originator)
