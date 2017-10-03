@@ -10,6 +10,8 @@
 
 from lxml import etree as ET
 import onem2mlib.constants as CON
+import onem2mlib.utilities as UT
+import onem2mlib.mcarequests
 
 
 # define the namespace
@@ -35,9 +37,9 @@ def getElement(tree, elemName, default=None, relative=False):
 		result = elem[0].text
 		if isinstance(default, list):
 			result = result.split()
-		if isinstance(default, bool):	# bool must be checked before int!
+		elif isinstance(default, bool):	# bool must be checked before int!
 			result = bool(result)
-		if isinstance(default, int):
+		elif isinstance(default, int):
 			result = int(result)
 		return result
 	return default
@@ -182,7 +184,6 @@ def getTypeFromResponse(response, encoding):
 	return -1
 
 ###############################################################################
-
 #
 #	Formating
 #
@@ -209,6 +210,89 @@ def toInt(value):
 	if value is None:
 		return None
 	return int(value)
+
+
+###############################################################################
+#
+#	Search
+#
+
+# Find a sub-resource
+def _findSubResource(resource, type):
+	if not resource or not resource.session or not resource.resourceID or not resource.session.connected: 
+		return None
+	result = []
+	ris = onem2mlib.mcarequests.discoverInCSE(resource, filter=[UT.newTypeFilterCriteria(int(type))], structuredResult=True)
+	if ris:
+		#	The following is a hack to restrict the search result to the direct child
+		#	level. Yes, the oneM2M "level" attribute could be used for that, but it
+		#	doesn't seem to be supported that much (at least not in om2m).
+		#	Anyway, the hack works like that: count the forward slashes, ie. the 
+		#	number of path elements, and only add those from the response to the result
+		#	which have count+1 path elements.
+
+		sid = resource._structuredResourceID()
+		count = sid.count('/') + 1
+
+		for ri in ris:
+			if ri.count('/') == count:	# <- hack s.o.
+				subResource = _newResourceFromRID(type, ri, resource)
+				subResource.retrieveFromCSE()
+				result.append(subResource)
+
+		# Still a hack: sort the list by the ct attribute
+		result.sort(key=lambda x: x.creationTime)
+
+	return result
+
+
+# Find a resource from a list by its resource name
+def _findResourceInList(resources, resourceName):
+	if resources and len(resources)>0:
+		for res in resources:
+			if res.resourceName == resourceName:
+				return res
+	return None
+
+
+# Create a new resource object with a given type, RI and parent
+def _newResourceFromRID(type, ri, parent):
+	res = _newResourceFromType(type, parent)
+	if res:
+		res.resourceID = ri
+	return res
+
+
+def _newResourceFromType(type, parent):
+	if type == CON.Type_ContentInstance:	return onem2mlib.ContentInstance(parent)
+	elif type == CON.Type_Container:		return onem2mlib.Container(parent)
+	elif type == CON.Type_AE:				return onem2mlib.AE(parent)
+	elif type == CON.Type_Group:			return onem2mlib.Group(parent)
+	elif type == CON.Type_ACP:				return onem2mlib.AccessControlPolicy(parent)
+	return None
+
+
+def _newResourceFromTypeString(typeString, parent):
+	if typeString == 'cin':		return _newResourceFromType(CON.Type_ContentInstance, parent)
+	elif typeString == 'cnt':	return _newResourceFromType(CON.Type_Container, parent)
+	elif typeString == 'ae':	return _newResourceFromType(CON.Type_AE, parent)
+	elif typeString == 'grp':	return _newResourceFromType(CON.Type_Group, parent)
+	elif typeString == 'acp':	return _newResourceFromType(CON.Type_ACP, parent)
+	return None
+
+
+# Get a resource from the CSE by its resourceName
+def _getResourceFromCSEByResourceName(type, rn, parent):
+	res = None
+	if type == CON.Type_ContentInstance:		res = onem2mlib.ContentInstance(parent, resourceName=rn)
+	elif type == CON.Type_Container:			res = onem2mlib.Container(parent, resourceName=rn)
+	elif type == CON.Type_AE:					res = onem2mlib.AE(parent, resourceName=rn)
+	elif type == CON.Type_Group:				res = onem2mlib.Group(parent, resourceName=rn)
+	elif type == CON.Type_ACP:					res = onem2mlib.AccessControlPolicy(parent, resourceName=rn)
+	if res is not None and res.retrieveFromCSE():
+		return res
+	return None
+
 
 
 

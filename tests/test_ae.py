@@ -14,9 +14,7 @@ import unittest
 import os, sys
 sys.path.append('..')
 
-import onem2mlib.session as SE
-from onem2mlib.resources import *
-
+from onem2mlib import *
 from conf import *
 
 
@@ -26,10 +24,9 @@ class TestAE(unittest.TestCase):
 	ae = None
 	ae2 = None
 
-
 	@classmethod
 	def setUpClass(self):
-		TestAE.session = SE.Session(host, originator, encoding)
+		TestAE.session = Session(host, originator, encoding)
 		TestAE.cse = CSEBase(TestAE.session, CSE_ID)
 		if not TestAE.session.connected:
 			print('*** Not connected to CSE')
@@ -61,6 +58,7 @@ class TestAE(unittest.TestCase):
 		self.assertEqual(TestAE.ae.type, CON.Type_AE)
 		self.assertTrue(TestAE.ae.createInCSE())
 		self.assertEqual(TestAE.ae.resourceName, AE_NAME)
+
 
 
 	def test_retrieveAE(self):

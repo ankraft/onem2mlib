@@ -13,9 +13,7 @@ import unittest
 import os, sys, time
 sys.path.append('..')
 
-import onem2mlib.session as SE
-from onem2mlib.resources import *
-
+from onem2mlib import *
 from conf import *
 
 
@@ -30,7 +28,7 @@ class TestACP(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestACP.session = SE.Session(host, originator, encoding)
+		TestACP.session = Session(host, originator, encoding)
 		TestACP.cse = CSEBase(TestACP.session, CSE_ID)
 		if not TestACP.session.connected:
 			print('*** Not connected to CSE')
@@ -116,7 +114,7 @@ class TestACP(unittest.TestCase):
 
 	def test_createAELimited1(self):
 		# create a limited session, try to ceate an AE with that. This should fail
-		sessionLimited = SE.Session(host, ACP_LIMITED)
+		sessionLimited = Session(host, ACP_LIMITED)
 		self.assertIsNotNone(sessionLimited)
 		cseLimited = CSEBase(sessionLimited, CSE_ID)
 		self.assertIsNotNone(cseLimited)
@@ -135,7 +133,7 @@ class TestACP(unittest.TestCase):
 		self.assertTrue(TestACP.ae.createInCSE())
 
 		# Now try to retrieve it with a limited acp
-		sessionLimited = SE.Session(host, ACP_LIMITED)
+		sessionLimited = Session(host, ACP_LIMITED)
 		self.assertIsNotNone(sessionLimited)
 		cseLimited = CSEBase(sessionLimited, CSE_ID)
 		self.assertIsNotNone(cseLimited)

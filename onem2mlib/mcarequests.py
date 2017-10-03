@@ -8,7 +8,7 @@
 #
 
 import requests
-import onem2mlib.internal as INT
+import onem2mlib.internal
 import onem2mlib.constants as CON
 
 
@@ -105,9 +105,9 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
 	if response and response.status_code == 200:
 		#print(response.text)
 		if resource.session.encoding == CON.Encoding_XML:
-			return INT.getElement(INT.responseToXML(response), 'm2m:uril', default=[])	# setting default because: Make sure that the result is a list
+			return onem2mlib.internal.getElement(onem2mlib.internal.responseToXML(response), 'm2m:uril', default=[])	# setting default because: Make sure that the result is a list
 		elif resource.session.encoding == CON.Encoding_JSON:
-			return INT.getElementJSON(response.json(), 'm2m:uril', default=[])
+			return onem2mlib.internal.getElementJSON(response.json(), 'm2m:uril', default=[])
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
 	lastError = str(response.status_code) + ' - ' + response.text

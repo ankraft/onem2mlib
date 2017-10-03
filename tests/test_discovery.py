@@ -12,12 +12,9 @@ import unittest
 import os, sys, time
 sys.path.append('..')
 
-import onem2mlib.session as SE
+from onem2mlib import *
 import onem2mlib.constants as CON
-from onem2mlib.resources import *
-import onem2mlib.exceptions
 import onem2mlib.utilities as UT
-
 from conf import *
 
 
@@ -31,10 +28,9 @@ class TestDiscovery(unittest.TestCase):
 	c1n3 = None
 	cin4 = None
 
-
 	@classmethod
 	def setUpClass(self):
-		TestDiscovery.session = SE.Session(host, originator, encoding)
+		TestDiscovery.session = Session(host, originator, encoding)
 		TestDiscovery.cse = CSEBase(TestDiscovery.session, CSE_ID)
 		if not TestDiscovery.session.connected:
 			print('*** Not connected to CSE')

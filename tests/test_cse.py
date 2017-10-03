@@ -13,9 +13,7 @@ import unittest
 import os, sys
 sys.path.append('..')
 
-import onem2mlib.session as SE
-from onem2mlib.resources import *
-
+from onem2mlib import *
 from conf import *
 
 
@@ -27,7 +25,7 @@ class TestCSE(unittest.TestCase,):
 
 	@classmethod
 	def setUpClass(self):
-		TestCSE.session = SE.Session(host, originator, encoding)
+		TestCSE.session = Session(host, originator, encoding)
 
 
 	@classmethod

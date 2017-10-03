@@ -13,9 +13,7 @@ import unittest
 import os, sys, time
 sys.path.append('..')
 
-import onem2mlib.session as SE
-from onem2mlib.resources import *
-
+from onem2mlib import *
 from conf import *
 
 
@@ -30,7 +28,7 @@ class TestContainer(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestContainer.session = SE.Session(host, originator, encoding)
+		TestContainer.session = Session(host, originator, encoding)
 		TestContainer.cse = CSEBase(TestContainer.session, CSE_ID)
 		if not TestContainer.session.connected:
 			print('*** Not connected to CSE')

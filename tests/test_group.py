@@ -12,11 +12,9 @@ import unittest
 import os, sys, time
 sys.path.append('..')
 
-import onem2mlib.session as SE
+from onem2mlib import *
 import onem2mlib.constants as CON
-from onem2mlib.resources import *
-import onem2mlib.exceptions
-
+import onem2mlib.exceptions as EXC
 from conf import *
 
 
@@ -31,7 +29,7 @@ class TestGroup(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(self):
-		TestGroup.session = SE.Session(host, originator, encoding)
+		TestGroup.session = Session(host, originator, encoding)
 		TestGroup.cse = CSEBase(TestGroup.session, CSE_ID)
 		if not TestGroup.session.connected:
 			print('*** Not connected to CSE')
@@ -117,7 +115,7 @@ class TestGroup(unittest.TestCase):
 			grp2 = TestGroup.ae.findGroup(GRP_NAME+'2')
 			self.assertIsNotNone(grp2)
 			self.assertEqual(grp.resourceID, grp2.resourceID)
-		except (AssertionError, onem2mlib.exceptions.CSEOperationError):
+		except (AssertionError, EXC.CSEOperationError):
 			print('WARNING: check om2m issue "allow empty mid" ... ', end='', flush=True)
 
 		if grp2:	# Only when group was created and found again
@@ -161,7 +159,7 @@ class TestGroup(unittest.TestCase):
 			# which is false. This is why the assert exception is caught here
 			self.assertIsNotNone(TestGroup.cnt2)
 
-		except (AssertionError, onem2mlib.exceptions.CSEOperationError):
+		except (AssertionError, EXC.CSEOperationError):
 			print('WARNING: check om2m issue "allow empty mid" ... ', end='', flush=True)
 
 		if grp:

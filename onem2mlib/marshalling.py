@@ -8,10 +8,9 @@
 #
 
 import json
+import onem2mlib
 import onem2mlib.internal as INT
-import onem2mlib.resources
 import onem2mlib.exceptions as EXC
-
 
 ###############################################################################
 #
@@ -106,7 +105,7 @@ def _accessControlPolicy_parseXML(obj, root):
 	if pv is not None and len(pv)>0:
 		acrs = INT.getElements(pv[0], 'acr', relative=True) # only the first element[0]
 		for a in acrs:
-			acr = onem2mlib.resources.AccessControlRule()
+			acr = onem2mlib.AccessControlRule()
 			acr._parseXML(a)
 			obj.privileges.append(acr)
 	obj.selfPrivileges = []
@@ -114,7 +113,7 @@ def _accessControlPolicy_parseXML(obj, root):
 	if pvs is not None and len(pvs)>0:
 		acrs = INT.getElements(pvs[0], 'acr', relative=True) # only the first element[0]
 		for a in acrs:
-			acr = onem2mlib.resources.AccessControlRule()
+			acr = onem2mlib.AccessControlRule()
 			acr._parseXML(a)
 			obj.selfPrivileges.append(acr)
 
@@ -146,7 +145,7 @@ def _accessControlPolicy_parseJSON(obj, jsn):
 		acrs = INT.getElementJSON(pv, 'acr')
 		if acrs:
 			for ajsn in acrs:
-				acr = onem2mlib.resources.AccessControlRule()
+				acr = onem2mlib.AccessControlRule()
 				acr._parseJSON(ajsn)	
 				obj.privileges.append(acr)	
 	obj.selfPrivileges = []
@@ -155,7 +154,7 @@ def _accessControlPolicy_parseJSON(obj, jsn):
 		acrs = INT.getElementJSON(pvs, 'acr')
 		if acrs:
 			for ajsn in acrs:
-				acr = onem2mlib.resources.AccessControlRule()
+				acr = onem2mlib.AccessControlRule()
 				acr._parseJSON(ajsn)
 				obj.selfPrivileges.append(acr)	
 

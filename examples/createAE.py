@@ -9,14 +9,13 @@
 
 import uuid, sys
 sys.path.append('..')
-import onem2mlib.session as SE
-from onem2mlib.resources import *
+from onem2mlib import *
 
 
 if __name__ == '__main__':
 
 	# Create session
-	session = SE.Session('http://localhost:8282', 'admin:admin')
+	session = Session('http://localhost:8282', 'admin:admin')
 
 	# Get the <CSEBase> resource
 	cse = CSEBase(session, 'mn-cse')

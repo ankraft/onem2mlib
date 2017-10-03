@@ -14,8 +14,7 @@ import unittest
 import os, sys
 sys.path.append('..')
 
-import onem2mlib.session as SE
-from onem2mlib.resources import *
+from onem2mlib import *
 
 from conf import *
 
@@ -25,7 +24,7 @@ class TestSession(unittest.TestCase):
 
 
 	def test_init(self): 
-		TestSession.session = SE.Session(host, originator, encoding)
+		TestSession.session = Session(host, originator, encoding)
 		self.assertIsNotNone(TestSession.session)
 		self.assertEqual(TestSession.session.address, host)
 		self.assertEqual(TestSession.session.originator, originator)
