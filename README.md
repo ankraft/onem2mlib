@@ -1,5 +1,5 @@
 # onem2mlib
-**Version 0.5**
+**Version 0.6**
 
 This Python3 module implements a library to access and manage resources on a oneM2M CSE.
 
@@ -64,16 +64,16 @@ The following sections provide some examples.
 First, create a session and then connect to a CSE.
 
 ```python
-session = SE.Session('http://host.com:8282', 'admin:admin').   # create a session
-cse = CSEBase(session, 'mn-cse')                               # get the <CSEBase> resource
+session = Session('http://host.com:8282', 'admin:admin').   # create a session
+cse = CSEBase(session, 'mn-cse')                            # get the <CSEBase> resource
 ```
 
 To use XML encoding, specify the encoding explicitly for a session.
 
 ```python
 from onem2mlib.constants import *
-session = SE.Session('http://host.com:8282', 'admin:admin', Encoding_XML).   # create a session with XML encoding
-cse = CSEBase(session, 'mn-cse')                                             # get the <CSEBase> resource
+session = Session('http://host.com:8282', 'admin:admin', Encoding_XML).   # create a session with XML encoding
+cse = CSEBase(session, 'mn-cse')                                          # get the <CSEBase> resource
 ```
 
 

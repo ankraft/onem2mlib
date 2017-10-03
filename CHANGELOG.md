@@ -1,6 +1,9 @@
 # CHANGELOG
 
-## Version 0.5 (xxxx-xx-xx)
+## Version 0.6 (xxxx-xx-xx)
+[CHANGE] Refactored module structure. The resources are now available directly.
+
+## Version 0.5 (2017-09-24)
 - [IMPROVEMENT] Added support for JSON encoding to communicate with a CSE. JSON is now the default encoding.
 - [IMPROVEMENT] Added better checks in various functions. Raising more exceptions when encounting wrong or empty resources.
 - [CHANGE] Moved marshalling functions to an extra source file.
