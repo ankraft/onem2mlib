@@ -202,7 +202,7 @@ class TestContainer(unittest.TestCase):
 
 	def test_addContentInstance2(self):
 		# Wait a moment before add a new contentInstance
-		time.sleep(1)
+		time.sleep(SLEEP_DELAY)
 
 		# Test number of contentInstances (1)
 		self.assertEqual(len(TestContainer.cnt.contentInstances()), 1)
@@ -245,7 +245,7 @@ class TestContainer(unittest.TestCase):
 		for i in range(0,max):
 			ci = ContentInstance(scnt, content=str(i))
 			self.assertTrue(ci.createInCSE())
-			time.sleep(1)
+			time.sleep(SLEEP_DELAY)
 
 		# check size, oldest, latest
 		cis = scnt.contentInstances()

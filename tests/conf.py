@@ -15,6 +15,7 @@ host		= 'http://localhost:8282'
 originator	= 'admin:admin'
 #encoding	= CON.Encoding_XML
 encoding	= CON.Encoding_JSON
+delayInSec	= 1
 
 CSE_NAME	= 'mn-name'
 CSE_ID		= 'mn-cse'

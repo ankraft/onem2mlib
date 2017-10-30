@@ -90,10 +90,10 @@ class TestDiscovery(unittest.TestCase):
 		self.assertIsNotNone(cins)
 		self.assertIsInstance(cins, list)
 		self.assertEqual(len(cins), 2)
-		self.assertIsInstance(cins[0], ContentInstance)
-		self.assertEqual(cins[0].resourceName, CIN_NAME+'1')
-		self.assertIsInstance(cins[1], ContentInstance)
-		self.assertEqual(cins[1].resourceName, CIN_NAME+'2')
+		for cin in cins:
+			self.assertIsInstance(cin, ContentInstance)
+		self.assertTrue(TestDiscovery._checkResourceInList(cins, CIN_NAME+'1'))
+		self.assertTrue(TestDiscovery._checkResourceInList(cins, CIN_NAME+'2'))
 
 
 	def test_discoverLabel2(self):
@@ -102,10 +102,10 @@ class TestDiscovery(unittest.TestCase):
 		self.assertIsNotNone(cins)
 		self.assertIsInstance(cins, list)
 		self.assertEqual(len(cins), 2)
-		self.assertIsInstance(cins[0], ContentInstance)
-		self.assertEqual(cins[0].resourceName, CIN_NAME+'1')
-		self.assertIsInstance(cins[1], ContentInstance)
-		self.assertEqual(cins[1].resourceName, CIN_NAME+'3')
+		for cin in cins:
+			self.assertIsInstance(cin, ContentInstance)
+		self.assertTrue(TestDiscovery._checkResourceInList(cins, CIN_NAME+'1'))
+		self.assertTrue(TestDiscovery._checkResourceInList(cins, CIN_NAME+'3'))
 
 
 	def test_discoverLabel3(self):
@@ -113,22 +113,26 @@ class TestDiscovery(unittest.TestCase):
 		cins = TestDiscovery.ae.discover( [UT.newLabelFilterCriteria(CIN_LABELS[0]), UT.newLabelFilterCriteria(CIN_LABELS[1])] )
 		self.assertIsNotNone(cins)
 		self.assertIsInstance(cins, list)
-		try:
-			self.assertEqual(len(cins), 3)
-			self.assertIsInstance(cins[0], ContentInstance)
-			self.assertEqual(cins[0].resourceName, CIN_NAME+'1')
-			self.assertIsInstance(cins[1], ContentInstance)
-			self.assertEqual(cins[1].resourceName, CIN_NAME+'2')
-			self.assertIsInstance(cins[2], ContentInstance)
-			self.assertEqual(cins[2].resourceName, CIN_NAME+'3')
-		except (AssertionError):
-			print('WARNING: discovery of multiple labels might be wrong in Eclipse om2m" ... ', end='', flush=True)
+		self.assertEqual(len(cins), 3)
+		for cin in cins:
+			self.assertIsInstance(cin, ContentInstance)
+		self.assertTrue(TestDiscovery._checkResourceInList(cins, CIN_NAME+'1'))
+		self.assertTrue(TestDiscovery._checkResourceInList(cins, CIN_NAME+'2'))
+		self.assertTrue(TestDiscovery._checkResourceInList(cins, CIN_NAME+'3'))
 
 
 	def test_finit(self):
 		self.assertIsNotNone(TestDiscovery.ae)
 		self.assertTrue(TestDiscovery.ae.deleteFromCSE())
 		TestDiscovery.ae = None
+
+
+	def _checkResourceInList(list, resourceName):
+		for cin in list:
+			if cin.resourceName == resourceName:
+				return True
+		return False
+
 
 
 if __name__ == '__main__':
