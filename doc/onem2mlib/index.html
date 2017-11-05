@@ -1105,11 +1105,14 @@ table {
           
   <ul>
     <li class="mono"><a href="#onem2mlib.Container.__init__">__init__</a></li>
+    <li class="mono"><a href="#onem2mlib.Container.addContent">addContent</a></li>
     <li class="mono"><a href="#onem2mlib.Container.containers">containers</a></li>
     <li class="mono"><a href="#onem2mlib.Container.contentInstances">contentInstances</a></li>
     <li class="mono"><a href="#onem2mlib.Container.findContainer">findContainer</a></li>
     <li class="mono"><a href="#onem2mlib.Container.findContentInstance">findContentInstance</a></li>
+    <li class="mono"><a href="#onem2mlib.Container.latestContent">latestContent</a></li>
     <li class="mono"><a href="#onem2mlib.Container.latestContentInstance">latestContentInstance</a></li>
+    <li class="mono"><a href="#onem2mlib.Container.oldestContent">oldestContent</a></li>
     <li class="mono"><a href="#onem2mlib.Container.oldestContentInstance">oldestContentInstance</a></li>
   </ul>
 
@@ -1148,6 +1151,8 @@ table {
     <li class="mono"><a href="#onem2mlib.ResourceBase.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.retrieveFromCSE">retrieveFromCSE</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.setAccessControlPolicies">setAccessControlPolicies</a></li>
+    <li class="mono"><a href="#onem2mlib.ResourceBase.subscribe">subscribe</a></li>
+    <li class="mono"><a href="#onem2mlib.ResourceBase.unsubscribe">unsubscribe</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.updateInCSE">updateInCSE</a></li>
   </ul>
 
@@ -1161,6 +1166,15 @@ table {
   </ul>
 
         </li>
+        <li class="mono">
+        <span class="class_name"><a href="#onem2mlib.Subscription">Subscription</a></span>
+        
+          
+  <ul>
+    <li class="mono"><a href="#onem2mlib.Subscription.__init__">__init__</a></li>
+  </ul>
+
+        </li>
       </ul>
     </li>
 
@@ -1168,6 +1182,7 @@ table {
       <ul>
         <li class="mono"><a href="constants.m.html">onem2mlib.constants</a></li>
         <li class="mono"><a href="exceptions.m.html">onem2mlib.exceptions</a></li>
+        <li class="mono"><a href="notifications.m.html">onem2mlib.notifications</a></li>
         <li class="mono"><a href="utilities.m.html">onem2mlib.utilities</a></li>
       </ul>
     </li>
@@ -1280,7 +1295,7 @@ application and the sub-structure of resources beneath it.</p></div>
             
   <div class="item">
     <div class="name def" id="onem2mlib.AE.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[], instantly=False)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[], instantly=True)</p>
     </div>
     
 
@@ -1410,7 +1425,7 @@ privileges to resources.</p>
             
   <div class="item">
     <div class="name def" id="onem2mlib.AccessControlPolicy.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, privileges=[], selfPrivileges=[], instantly=False)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, privileges=[], selfPrivileges=[], instantly=True)</p>
     </div>
     
 
@@ -1796,7 +1811,7 @@ resource. R/O.</p></div>
             
   <div class="item">
     <div class="name def" id="onem2mlib.Container.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], instantly=False)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], instantly=True)</p>
     </div>
     
 
@@ -1812,6 +1827,23 @@ resource. R/O.</p></div>
 <li>All other arguments initialize the status variables of the same name in the
         &lt;container&gt; instance or <a href="#onem2mlib.ResourceBase"><code>ResourceBase</code></a>.</li>
 </ul></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.Container.addContent">
+    <p>def <span class="ident">addContent</span>(</p><p>self, value, labels=[])</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Add a new value to a container. This is a convenience function that actually creates a new
+&lt;contentInstance&gt; resource for that value in the &lt;container&gt;. It returns the new
+<em>ContentInstance</em> object, or None.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1879,6 +1911,23 @@ resource. R/O.</p></div>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.Container.latestContent">
+    <p>def <span class="ident">latestContent</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return the value of the latest (newest) &lt;contentInstance&gt; sub-resource from this container, or None.
+This is a convenience function to access content values. It actually retrieves the latest &lt;contentInsnace&gt;
+resource from a CSE.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.Container.latestContentInstance">
     <p>def <span class="ident">latestContentInstance</span>(</p><p>self)</p>
     </div>
@@ -1887,6 +1936,23 @@ resource. R/O.</p></div>
     
   
     <div class="desc"><p>Return the latest (newest) &lt;contentInstance&gt; sub-resource from this container, or None.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.Container.oldestContent">
+    <p>def <span class="ident">oldestContent</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return the value of the oldest &lt;contentInstance&gt; sub-resource from this container, or None.
+This is a convenience function to access content values. It actually retrieves the oldest &lt;contentInsnace&gt;
+resource from a CSE.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1975,7 +2041,7 @@ state variable. R/O.</p></div>
             
   <div class="item">
     <div class="name def" id="onem2mlib.ContentInstance.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, content=None, contentInfo=None, resourceID=None, labels=[], instantly=False)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, content=None, contentInfo=None, resourceID=None, labels=[], instantly=True)</p>
     </div>
     
 
@@ -2138,7 +2204,7 @@ attribute of the &lt;group&gt; resource is not 'mixed', then this attribute shal
             
   <div class="item">
     <div class="name def" id="onem2mlib.Group.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=10, consistencyStrategy=1, groupName=None, labels=[], instantly=False)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=10, consistencyStrategy=1, groupName=None, labels=[], instantly=True)</p>
     </div>
     
 
@@ -2563,6 +2629,57 @@ support accessControlPolicies.</p></div>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.ResourceBase.subscribe">
+    <p>def <span class="ident">subscribe</span>(</p><p>self, callback=None)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Create a &lt;subscription&gt; to resource and receive notifications. For this, the notification
+sub-module must be enabled, ie. <a href="notifications.m.html#onem2mlib.notifications.setupNotifications"><code>onem2mlib.notifications.setupNotifications</code></a>() must have
+been called sucessfully. To stop notification from the resource and to remove the
+subscription, the <a href="#onem2mlib.ResourceBase.unsubscribe"><code>unsubscribe</code></a>() method must be called.</p>
+<p>This method might throw a <a href="exceptions.m.html#onem2mlib.exceptions.NotSupportedError"><code>onem2mlib.exceptions.NotSupportedError</code></a> exception in case
+the target resource type doesn't support subscriptions.</p>
+<p>Args:</p>
+<ul>
+<li><em>callback</em>: An optional reference to a callback functions that is called when a
+notification is received for the subscription. If this argument is ommitted then the
+default callback function, provided with <a href="notifications.m.html#onem2mlib.notifications.setupNotifiations"><code>onem2mlib.notifications.setupNotifiations</code></a>(),
+is called instead.</li>
+</ul>
+<p>The method returns a Boolean indicating whether the subscription was successfull.</p>
+<p><strong>Note</strong></p>
+<p>The &lt;subsription&gt; resource created with this method is only valid for the
+runtime of the calling program. The scubscription will be removed at least when the
+program terminates, or when <a href="notifications.m.html#onem2mlib.notifications.shutdownNotifications"><code>onem2mlib.notifications.shutdownNotifications</code></a>() is called.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.ResourceBase.unsubscribe">
+    <p>def <span class="ident">unsubscribe</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Unsubscripte from the notifications of a resource. The subscription must have
+been created before with the <a href="#onem2mlib.ResourceBase.subscribe"><code>subscribe</code></a>() method.</p>
+<p>This method might throw a <a href="exceptions.m.html#onem2mlib.exceptions.NotSupportedError"><code>onem2mlib.exceptions.NotSupportedError</code></a> exception in case
+the target resource type doesn't support subscriptions.</p>
+<p>The method returns a Boolean indicating whether the subscription was successfull.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.ResourceBase.updateInCSE">
     <p>def <span class="ident">updateInCSE</span>(</p><p>self)</p>
     </div>
@@ -2672,6 +2789,148 @@ Session instances.</p>
   
       </div>
       </div>
+      
+      <div class="item">
+      <p id="onem2mlib.Subscription" class="name">class <span class="ident">Subscription</span></p>
+      
+  
+    <div class="desc"><p>This class implements the oneM2M &lt;subscription&gt; resource. </p>
+<p>It is used to manage targets for notifications sent whenever a subscribed-to resource
+is changed.</p></div>
+  <div class="source_cont">
+</div>
+
+
+      <div class="class">
+      
+          <h3>Parent Classes</h3>
+          <ul class="class_list">
+            <li><a href="#onem2mlib.ResourceBase">ResourceBase</a></li>
+          </ul>
+          <h3>Instance variables</h3>
+            <div class="item">
+            <p id="onem2mlib.Subscription.expirationCounter" class="name">var <span class="ident">expirationCounter</span></p>
+            
+
+            
+  
+    <div class="desc"><p>This attribute indicates that the life of this subscription is set to a limit of a
+maximum number of notifications. After thix maximum number is reached, the subscription
+is deleted.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.Subscription.groupID" class="name">var <span class="ident">groupID</span></p>
+            
+
+            
+  
+    <div class="desc"><p>The ID of a &lt;group&gt; resource in case the subscription is made through a group.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.Subscription.latestNotify" class="name">var <span class="ident">latestNotify</span></p>
+            
+
+            
+  
+    <div class="desc"><p>This attribute indicates if the subscriber wants only the latest notification. 
+If multiple notifications of this subscription are buffered, and if the value of
+this attribute is set to true, then only the last notification shall be sent and 
+it shall have the Event Category value set to "latest".</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.Subscription.notificationContentType" class="name">var <span class="ident">notificationContentType</span></p>
+            
+
+            
+  
+    <div class="desc"><p>This attribute indicates a notification content type that shall be contained in
+notifications. The allowed values are one of the following constants:</p>
+<ul>
+<li>Sub_AllAttributes (the default)</li>
+<li>Sub_ModefiedAttributes</li>
+<li>Sub_ResourceID</li>
+</ul></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.Subscription.notificationForwardingURI" class="name">var <span class="ident">notificationForwardingURI</span></p>
+            
+
+            
+  
+    <div class="desc"><p>The attribute is a forwarding attribute that is present only for group related 
+subscriptions. It represents the resource subscriber notificationtarget.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.Subscription.notificationURI" class="name">var <span class="ident">notificationURI</span></p>
+            
+
+            
+  
+    <div class="desc"><p>A list consisting of one or more targets that the Hosting CSE shall send notifications to. 
+A target is either a oneM2M compliant Resource-ID (either structured or unstructured),
+or as a URL with one of oneM2M supported protocol binding, e.g. http.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.Subscription.subscriberURI" class="name">var <span class="ident">subscriberURI</span></p>
+            
+
+            
+  
+    <div class="desc"><p>This attribute is configured with the target of the subscriber. The target is used by the
+CSE to determine where to send a notification when the subscription is deleted. 
+A target is either a oneM2M compliant Resource-ID (either structured or unstructured),
+or as a URL with one of oneM2M supported protocol binding, e.g. http.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+          <h3>Static methods</h3>
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.Subscription.__init__">
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, notificationURI=[], labels=[], instantly=True)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Initialize the &lt;subscription&gt; resource. </p>
+<p>Args:</p>
+<ul>
+<li><em>parent</em>: The parent resource object in which the &lt;contentInstance&gt; resource
+        will be created.</li>
+<li><em>notificationURI</em>: A list consisting of one or more targets that the Hosting CSE
+shall send notifications to.</li>
+<li><em>instantly</em>: The resource will be instantly retrieved from or created on the CSE. This might throw
+        a <a href="exceptions.m.html#onem2mlib.exceptions.CSEOperationError"><code>onem2mlib.exceptions.CSEOperationError</code></a> exception in case of an error.</li>
+<li>All other arguments initialize the status variables of the same name in
+        &lt;subscription&gt; instance or <a href="#onem2mlib.ResourceBase"><code>ResourceBase</code></a>.</li>
+</ul></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+      </div>
+      </div>
 
     <h2 class="section-title" id="header-submodules">Sub-modules</h2>
       <div class="item">
@@ -2686,6 +2945,16 @@ Session instances.</p>
       
   
     <div class="desc"><p>This sub-module defines the exceptions used in the onem2mlib module.</p></div>
+
+      </div>
+      <div class="item">
+      <p class="name"><a href="notifications.m.html">onem2mlib.notifications</a></p>
+      
+  
+    <div class="desc"><p>This sub-module defines the end-point and server for notification as well as support
+functions to handle and manage notifications from CSE resources.</p>
+<p>Before receiving notifications, one must setup the notification sub-module by calling
+the <a href="notifications.m.html#onem2mlib.notifications.setupNotifications"><code>onem2mlib.notifications.setupNotifications</code></a>() method. This...</p></div>
 
       </div>
       <div class="item">

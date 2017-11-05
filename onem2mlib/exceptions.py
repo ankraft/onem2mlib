@@ -70,3 +70,14 @@ class EncodingError(OneM2MLibError):
         self.message = message
         """ Explanation of the error. """
 
+
+class ConfigurationError(OneM2MLibError):
+    """
+    Exception raised when encountering a missing or wrong configuration, e.g. of one
+    if the library's components.
+    """
+
+    def __init__(self, message):
+        self.message = message
+        """ Explanation of the error. """
+

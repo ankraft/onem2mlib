@@ -372,7 +372,6 @@ def _Group_createXML(obj, isUpdate):
 
 
 def _Group_parseJSON(obj, jsn):
-	#print(json.dumps(jsn, sort_keys=True, indent=4))
 	if 'm2m:grp' not in jsn:
 		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_jsn = jsn['m2m:grp']
@@ -401,3 +400,71 @@ def _Group_createJSON(obj, isUpdate):
 	INT.addToElementJSON(data, 'gn', obj.groupName)
 	return {'m2m:grp' : data}
 
+
+
+###############################################################################
+#
+#	Subscription
+#
+
+def _Subscription_parseXML(obj, root):
+	_resourceBase_parseXML(obj, root)
+	obj.notificationURI = INT.getElement(root, 'nu', obj.notificationURI)
+	obj.notificationContentType = INT.toInt(INT.getElement(root, 'nct', obj.notificationContentType))
+	obj.expirationCounter = INT.toInt(INT.getElement(root, 'exc', obj.expirationCounter))
+	obj.latestNotify = INT.getElement(root, 'ln', obj.latestNotify)
+	obj.groupID = INT.getElement(root, 'gpi', obj.groupID)
+	obj.notificationForwardingURI = INT.getElement(root, 'nfu', obj.notificationForwardingURI)
+	obj.subscriberURI = INT.getElement(root, 'su', obj.subscriberURI)
+
+
+def _Subscription_createXML(obj, isUpdate=False):
+	root = INT.createElement('sub', namespace='m2m')
+	_resourceBase_createXML(obj, root, isUpdate)
+	INT.addToElement(root, 'nu', obj.notificationURI)
+	INT.addToElement(root, 'nct', obj.notificationContentType)
+	if obj.expirationCounter != -1:
+		INT.addToElement(root, 'exc', obj.expirationCounter)
+	if obj.latestNotify:
+		INT.addToElement(root, 'ln', obj.latestNotify)
+	if obj.groupID:
+		INT.addToElement(root, 'gpi', obj.groupID)
+	if obj.notificationForwardingURI:
+		INT.addToElement(root, 'nfu', obj.notificationForwardingURI)
+	if obj.subscriberURI:
+		INT.addToElement(root, 'su', obj.subscriberURI)
+	return root
+
+
+def _Subscription_parseJSON(obj, jsn):
+	if 'm2m:sub' not in jsn:
+		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
+	_jsn = jsn['m2m:sub']
+	if _jsn is None:
+		raise EXC.EncodingError('Wrong encoding: ' + jsn)
+	_resourceBase_parseJSON(obj, _jsn)
+	obj.notificationURI = INT.getElementJSON(_jsn, 'nu', obj.notificationURI)
+	obj.notificationContentType = INT.getElementJSON(_jsn, 'nct', obj.notificationContentType)
+	obj.expirationCounter = INT.getElementJSON(_jsn, 'exc', obj.expirationCounter)
+	obj.latestNotify = INT.getElementJSON(_jsn, 'ln', obj.latestNotify)
+	obj.groupID = INT.getElementJSON(_jsn, 'gpi', obj.groupID)
+	obj.notificationForwardingURI = INT.getElementJSON(_jsn, 'nfu', obj.notificationForwardingURI)
+	obj.subscriberURI = INT.getElementJSON(_jsn, 'su', obj.subscriberURI)
+
+
+def _Subscription_createJSON(obj, isUpdate=False):
+	data = {}
+	_resourceBase_createJSON(obj, data, isUpdate)
+	INT.addToElementJSON(data, 'nu', obj.notificationURI)
+	INT.addToElementJSON(data, 'nct', obj.notificationContentType)
+	if obj.expirationCounter != -1:
+		INT.addToElementJSON(data, 'exc', obj.expirationCounter)
+	if obj.latestNotify:
+		INT.addToElementJSON(data, 'ln', obj.latestNotify)
+	if obj.groupID:
+		INT.addToElementJSON(data, 'gpi', obj.groupID)
+	if obj.notificationForwardingURI:
+		INT.addToElementJSON(data, 'nfu', obj.notificationForwardingURI)
+	if obj.subscriberURI:
+		INT.addToElementJSON(data, 'su', obj.subscriberURI)
+	return {'m2m:sub' : data}

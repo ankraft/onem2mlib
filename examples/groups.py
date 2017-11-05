@@ -22,14 +22,14 @@ if __name__ == '__main__':
 
 	# create an <AE> resource
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName, instantly=True)
+	ae = AE(cse, resourceName=aeName)
 
 	# create two <container>'s' and add them to the <AE>
-	cnt1 = Container(ae, resourceName='container1', instantly=True)
-	cnt2 = Container(ae, resourceName='container2', instantly=True)
+	cnt1 = Container(ae, resourceName='container1')
+	cnt2 = Container(ae, resourceName='container2')
 
 	# create a <group> reosurce that contains both containers, and add it to the <ae>
-	grp = Group(ae, resourceName='myGroup', resources=[cnt1, cnt2], instantly=True)
+	grp = Group(ae, resourceName='myGroup', resources=[cnt1, cnt2],)
 
 	# print the group
 	print(grp)
@@ -38,7 +38,7 @@ if __name__ == '__main__':
 	# Note, that we just create a <contentInstance, but we don't set a parent for this
 	# <contentInstance>, or send it to the CSE (yet). This is done when assigning it
 	# to the whole group.
-	cin = ContentInstance(content='Some value')
+	cin = ContentInstance(content='Some value', instantly=False)
 	grp.createGroupResources(cin)
 
 	# Check whether the <contentIntsance>'s do actually contain the same value

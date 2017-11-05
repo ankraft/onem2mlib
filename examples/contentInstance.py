@@ -22,17 +22,22 @@ if __name__ == '__main__':
 
 	# create an <AE> resource
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName, instantly=True)
+	ae = AE(cse, resourceName=aeName)
 
 	# create a <container> and add it to the <AE>
-	cnt = Container(ae, instantly=True)
+	cnt = Container(ae)
 
 	# add a <contentInstance> to the <container>, with labels
-	cin = ContentInstance(cnt, content='Some value', labels=['label1/example', 'label2/anotherExample'], instantly=True)
+	cin = ContentInstance(cnt, content='Some value', labels=['label1/example', 'label2/anotherExample'])
+
+	# or do the same a bit more conventient
+	cnt.addContent('Some Value', ['label1/example', 'label2/anotherExample'])
 
 	# retrieve the <contentInstance> via the <container>.latest and print it
-	cin2 = cnt.latestContentInstance()
-	print(cin2)
+	print(cnt.latestContentInstance())
+
+	# The same, but only the <contentInstance>'s value.
+	print(cnt.latestContent())
 
 	# delete the <AE> to clean up everything
 	ae.deleteFromCSE()

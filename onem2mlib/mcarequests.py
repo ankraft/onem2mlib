@@ -10,6 +10,7 @@
 import requests
 import onem2mlib.internal
 import onem2mlib.constants as CON
+import onem2mlib.exceptions as EXC
 
 
 ###############################################################################
@@ -35,8 +36,9 @@ def retrieveFromCSE(resource):
 	if response and response.status_code == 200:
 		resource._parseResponse(response)
 		return True
-	lastError = str(response.status_code) + ' - ' + response.text
-	#print(str(response.status_code) + ' - ' + response.text)
+	if response:
+		lastError = str(response.status_code) + ' - ' + response.text
+		#print(str(response.status_code) + ' - ' + response.text)
 	return False
 
 
@@ -52,8 +54,9 @@ def createInCSE(resource, type):
 	if response and response.status_code == 201:
 		resource._parseResponse(response)	# update own fields with response
 		return True
-	lastError = str(response.status_code) + ' - ' + response.text
-	#print(str(response.status_code) + ' - ' + response.text)
+	if response:
+		lastError = str(response.status_code) + ' - ' + response.text
+		#print(str(response.status_code) + ' - ' + response.text)
 	return False
 
 
@@ -67,8 +70,9 @@ def deleteFromCSE(resource):
 	response = delete(resource.session, resource.resourceID)
 	if response and response.status_code == 200:
 		return True
-	lastError = str(response.status_code) + ' - ' + response.text
-	#print(response.status_code)
+	if response:
+		lastError = str(response.status_code) + ' - ' + response.text
+		#print(response.status_code)
 	return False
 
 
@@ -84,8 +88,9 @@ def updateInCSE(resource, type):
 	if response and response.status_code == 200:
 		resource._parseResponse(response)	# update own fields with response
 		return True
-	lastError = str(response.status_code) + ' - ' + response.text
-	#print(response.status_code)
+	if response:
+		lastError = str(response.status_code) + ' - ' + response.text
+		#print(response.status_code)
 	return False
 
 
@@ -110,7 +115,10 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
 			return onem2mlib.internal.getElementJSON(response.json(), 'm2m:uril', default=[])
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
-	lastError = str(response.status_code) + ' - ' + response.text
+	if response:
+		lastError = str(response.status_code) + ' - ' + response.text
+	else:
+		raise EXC.CSEOperationError('Response from CSE must not be None.')
 	return None
 
 

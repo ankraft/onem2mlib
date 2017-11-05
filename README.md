@@ -82,22 +82,22 @@ cse = CSEBase(session, 'mn-cse')                                          # get 
 The first example creates a new &lt;AE> resource or, if an &lt;AE> resource with the same name already exists in the CSE, that &lt;AE> is returned. This method to get/create a resource is usually sufficient in most cases.
 
 ```python
-ae = AE(cse, resourceName='aeName', instantly=True)
+ae = AE(cse, resourceName='aeName')
 ```
 
 The second example is similar to the first, but offers the possibility to modify the resource object before sending it to the CSE.
 In general, the *get()* method creates a new or retrieves an existing resource.
 
 ```python
-ae = AE(cse, resourceName='aeName')
+ae = AE(cse, resourceName='aeName', instantly=False)
 # set more attributes here
 ae.get()
 ```
 
-The last example also creates a new &lt;AE> resource in the CSE, but does it explicitly. It fails (ie. returns *None*) in case a resource with the same name already exists.
+The last example also creates a new &lt;AE> resource in the CSE, but does it explicitly. It fails (ie. returns *False*) in case a resource with the same name already exists.
 
 ```python
-ae = AE(cse, resourceName='aeName')
+ae = AE(cse, resourceName='aeName', instantly=False)
 # set more attributes here
 ae.createInCSE()
 ```
@@ -106,7 +106,7 @@ ae.createInCSE()
 Add a container to an &lt;AE> resource.
 
 ```python
-container = Container(ae, resourceName='myContainer', instantly=True)
+container = Container(ae, resourceName='myContainer')
 ```
 
 ### Get all &lt;container> resources of an &lt;AE>
@@ -117,9 +117,14 @@ And add a &lt;contentInstances> to each of them.
 for cnt in ae.containers():
 	print(cnt)
 	# Create and add a new <contentInstance> in one step 
-	cin = ContentInstance(cnt, content='some Value', instantly=True)    
+	ContentInstance(cnt, content='Some value')    
 ```
 
+There is also a  shortcut for adding a new &lt;contentInstance> to a &lt;container>. So, the last line in this example could also be written like this:
+
+```python
+	cnt.addContent('Some value')
+``` 
 ### Retrieve the latest &lt;contentInstance> from a &lt;container> resource
 And print it.
 
@@ -133,6 +138,25 @@ if cin is not None:
 Delete an &lt;AE> resource and all its sub-resource from a CSE.
 
 	ae.deleteFromCSE()
+
+### Subscribe to Notifications
+Add a subscription to a resource and receive notifications when the resource changes.
+
+```python
+def myCallback(resource):		# Called for notifications
+	# do something with the updated resource
+	...
+
+# In main:
+setupNotifications(callback=myCallback)	# Setup the notification sub-module
+...
+cnt = Container(ae)						# Create a container
+cnt.subscribe()							# Subscribe to changes
+cnt.addContent('Some value')			# Add a new contentInstance
+										# This also triggers a call to 'myCallback'
+```
+
+
 
 ## Supported Features & Limitations
 

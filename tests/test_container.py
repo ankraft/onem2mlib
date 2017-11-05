@@ -57,7 +57,7 @@ class TestContainer(unittest.TestCase):
 
 
 	def test_createContainer(self):
-		TestContainer.cnt = Container(TestContainer.ae, resourceName=CNT_NAME, labels=CNT_LABELS)
+		TestContainer.cnt = Container(TestContainer.ae, resourceName=CNT_NAME, labels=CNT_LABELS, instantly=False)
 		self.assertEqual(TestContainer.cnt.type, CON.Type_Container)
 		self.assertTrue(TestContainer.cnt.createInCSE())
 		self.assertEqual(TestContainer.cnt.resourceName, CNT_NAME)
@@ -66,14 +66,14 @@ class TestContainer(unittest.TestCase):
 	def test_retrieveContainer(self):
 		id = TestContainer.cnt.resourceID
 		TestContainer.cnt = None
-		TestContainer.cnt = Container(TestContainer.ae, resourceID=id)
+		TestContainer.cnt = Container(TestContainer.ae, resourceID=id, instantly=False)
 		self.assertTrue(TestContainer.cnt.retrieveFromCSE())
 		self.assertEqual(TestContainer.cnt.resourceName, CNT_NAME)
 
 
 	def test_findContentInstance(self):
 		# Create contentInstance
-		TestContainer.cin = ContentInstance(TestContainer.cnt, CIN_NAME, content=CIN_CONTENT)
+		TestContainer.cin = ContentInstance(TestContainer.cnt, CIN_NAME, content=CIN_CONTENT, instantly=False)
 		self.assertTrue(TestContainer.cin.createInCSE())
 
 		# then find the CI
@@ -119,7 +119,7 @@ class TestContainer(unittest.TestCase):
 		self.assertEqual(len(TestContainer.cnt.containers()), 0)
 
 		# Add a sub-container
-		scnt = Container(TestContainer.cnt, CNT_NAME + '1')
+		scnt = Container(TestContainer.cnt, CNT_NAME + '1', instantly=False)
 		self.assertTrue(scnt.createInCSE())
 		self.assertEqual(scnt.resourceName, CNT_NAME + '1')
 		self.assertEqual(len(TestContainer.cnt.containers()), 1)
@@ -135,7 +135,7 @@ class TestContainer(unittest.TestCase):
 		self.assertIsNone(TestContainer.ae.findContainer(CNT_NAME+'2'))
 
 		# create a <container> by using the get() method
-		TestContainer.cnt2 = Container(TestContainer.ae, resourceName=CNT_NAME+'2')
+		TestContainer.cnt2 = Container(TestContainer.ae, resourceName=CNT_NAME+'2', instantly=False)
 		self.assertIsNotNone(TestContainer.cnt2)
 		self.assertTrue(TestContainer.cnt2.get())
 
@@ -173,7 +173,7 @@ class TestContainer(unittest.TestCase):
 		self.assertEqual(len(TestContainer.cnt.contentInstances()), 0)
 
 		# Create contentInstance
-		TestContainer.cin = ContentInstance(TestContainer.cnt, CIN_NAME, content=CIN_CONTENT)
+		TestContainer.cin = ContentInstance(TestContainer.cnt, CIN_NAME, content=CIN_CONTENT, instantly=False)
 		self.assertTrue(TestContainer.cin.createInCSE())
 
 		# Test number of contentInstances (1)
@@ -202,13 +202,13 @@ class TestContainer(unittest.TestCase):
 
 	def test_addContentInstance2(self):
 		# Wait a moment before add a new contentInstance
-		time.sleep(SLEEP_DELAY)
+		time.sleep(delayInSec)
 
 		# Test number of contentInstances (1)
 		self.assertEqual(len(TestContainer.cnt.contentInstances()), 1)
 
 		# Create another contentInstance
-		cin = ContentInstance(TestContainer.cnt,content=CIN_CONTENT)
+		cin = ContentInstance(TestContainer.cnt,content=CIN_CONTENT, instantly=False)
 		self.assertTrue(cin.createInCSE())
 
 		# Test number of contentInstances (2)
@@ -238,14 +238,14 @@ class TestContainer(unittest.TestCase):
 	def test_maxContentInstances(self):
 		max = 5
 		# create an empty sub-container with max 'max' ci
-		scnt = Container(TestContainer.cnt, maxNrOfInstances=max)
+		scnt = Container(TestContainer.cnt, maxNrOfInstances=max, instantly=False)
 		self.assertTrue(scnt.createInCSE())
 		self.assertEquals(scnt.maxNrOfInstances, max)
 
 		for i in range(0,max):
-			ci = ContentInstance(scnt, content=str(i))
+			ci = ContentInstance(scnt, content=str(i), instantly=False)
 			self.assertTrue(ci.createInCSE())
-			time.sleep(SLEEP_DELAY)
+			time.sleep(delayInSec)
 
 		# check size, oldest, latest
 		cis = scnt.contentInstances()
@@ -258,7 +258,7 @@ class TestContainer(unittest.TestCase):
 		self.assertEqual(la.content, cis[max-1].content)
 
 		# add another ci
-		ci = ContentInstance(scnt, content=str(max))
+		ci = ContentInstance(scnt, content=str(max), instantly=False)
 		self.assertTrue(ci.createInCSE())
 
 		# check size, oldest, latest

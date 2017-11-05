@@ -57,7 +57,7 @@ class TestCSE(unittest.TestCase,):
 
 
 	def test_createAEInCSE(self):
-		TestCSE.ae = AE(TestCSE.cse, resourceName=AE_NAME, labels=AE_LABELS)
+		TestCSE.ae = AE(TestCSE.cse, resourceName=AE_NAME, labels=AE_LABELS, instantly=False)
 		self.assertTrue(TestCSE.ae.createInCSE())
 		self.assertEqual(TestCSE.ae.resourceName, AE_NAME)
 

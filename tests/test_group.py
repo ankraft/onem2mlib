@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3
 
 #
 #	test_group.py
@@ -38,13 +39,9 @@ class TestGroup(unittest.TestCase):
 			print('*** AE with name "' + AE_NAME + '" already present in CSE. Please remove it first.')
 			exit()
 		TestGroup.ae = AE(TestGroup.cse, resourceName=AE_NAME)
-		TestGroup.ae.createInCSE()
 		TestGroup.cnt0 = Container(TestGroup.ae, resourceName=CNT_NAME+'0')
-		TestGroup.cnt0.createInCSE()
 		TestGroup.cnt1 = Container(TestGroup.ae, resourceName=CNT_NAME+'1')
-		TestGroup.cnt1.createInCSE()
 		TestGroup.cnt2 = Container(TestGroup.ae, resourceName=CNT_NAME+'2')
-		TestGroup.cnt2.createInCSE()
 
 
 	@classmethod
@@ -73,7 +70,7 @@ class TestGroup(unittest.TestCase):
 		containers = TestGroup.ae.containers()
 		self.assertIsNotNone(containers)
 		self.assertTrue(len(containers) == 3)
-		TestGroup.grp = Group(TestGroup.ae, resourceName=GRP_NAME, resources=containers)
+		TestGroup.grp = Group(TestGroup.ae, resourceName=GRP_NAME, resources=containers, instantly=False)
 		self.assertEqual(TestGroup.grp.type, CON.Type_Group)
 		TestGroup.grp.createInCSE()
 		self.assertEqual(TestGroup.grp.resourceName, GRP_NAME)
@@ -107,12 +104,12 @@ class TestGroup(unittest.TestCase):
 		
 		try:
 			# create a <group> by using the get() method
-			grp = Group(TestGroup.ae, resourceName=GRP_NAME+'2')
+			grp = Group(TestGroup.ae, resourceName=GRP_NAME+'2', instantly=False)
 			self.assertIsNotNone(grp)
 			self.assertTrue(grp.get())
 
 			# Check whether it was really created in the CSE
-			grp2 = TestGroup.ae.findGroup(GRP_NAME+'2')
+			grp2 = TestGroup.ae.findGroup(GRP_NAME+'2', instantly=False)
 			self.assertIsNotNone(grp2)
 			self.assertEqual(grp.resourceID, grp2.resourceID)
 		except (AssertionError, EXC.CSEOperationError):
@@ -201,7 +198,7 @@ class TestGroup(unittest.TestCase):
 		self.assertIsNotNone(TestGroup.grp)
 		self.assertTrue(TestGroup.cnt0.retrieveFromCSE())	# <container> cnt0 and cnt1 should be retrievable
 		self.assertTrue(TestGroup.cnt1.retrieveFromCSE())
-		cnt = Container()
+		cnt = Container(instantly=False)
 		cnt.maxNrOfInstances = 99
 		self.assertIsNotNone(TestGroup.grp.updateGroupResources(cnt))
 		self.assertTrue(TestGroup.cnt0.retrieveFromCSE())	# Retrieve updated versions from the CSE
@@ -212,7 +209,7 @@ class TestGroup(unittest.TestCase):
 
 	def test_createGroupResources(self):
 		self.assertIsNotNone(TestGroup.grp)
-		cin = ContentInstance(content=CIN_CONTENT)
+		cin = ContentInstance(content=CIN_CONTENT,instantly=False)
 		self.assertIsNotNone(cin)
 		cins = TestGroup.grp.createGroupResources(cin)
 		cin0 = TestGroup.cnt0.latestContentInstance()

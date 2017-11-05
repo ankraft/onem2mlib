@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3
 
 #
 #	test_discovery.py
@@ -49,13 +50,11 @@ class TestDiscovery(unittest.TestCase):
 
 	def test_init(self):
 		TestDiscovery.ae = AE(TestDiscovery.cse, resourceName=AE_NAME)
-		TestDiscovery.ae.createInCSE()
 		TestDiscovery.cnt = Container(TestDiscovery.ae, resourceName=CNT_NAME)
-		TestDiscovery.cnt.createInCSE()
-		TestDiscovery.cin1 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'1', content='value1', labels=[CIN_LABELS[0], CIN_LABELS[1]], instantly=True)	# both labels
-		TestDiscovery.cin2 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'2', content='value2', labels=[CIN_LABELS[0]], instantly=True)				# only label 1
-		TestDiscovery.cin3 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'3', content='value3', labels=[CIN_LABELS[1]], instantly=True)				# only label 2
-		TestDiscovery.cin4 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'4', content='value4', instantly=True) 										# no label
+		TestDiscovery.cin1 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'1', content='value1', labels=[CIN_LABELS[0], CIN_LABELS[1]])	# both labels
+		TestDiscovery.cin2 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'2', content='value2', labels=[CIN_LABELS[0]])				# only label 1
+		TestDiscovery.cin3 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'3', content='value3', labels=[CIN_LABELS[1]])				# only label 2
+		TestDiscovery.cin4 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'4', content='value4') 										# no label
 		self.assertTrue(TestDiscovery.session.connected)
 		self.assertIsNotNone(TestDiscovery.session)
 		self.assertIsNotNone(TestDiscovery.cse)

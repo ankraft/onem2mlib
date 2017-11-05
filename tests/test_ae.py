@@ -54,7 +54,7 @@ class TestAE(unittest.TestCase):
 
 
 	def test_createAE(self):
-		TestAE.ae = AE(TestAE.cse, resourceName=AE_NAME, labels=AE_LABELS)
+		TestAE.ae = AE(TestAE.cse, resourceName=AE_NAME, labels=AE_LABELS, instantly=False)
 		self.assertEqual(TestAE.ae.type, CON.Type_AE)
 		self.assertTrue(TestAE.ae.createInCSE())
 		self.assertEqual(TestAE.ae.resourceName, AE_NAME)
@@ -64,7 +64,7 @@ class TestAE(unittest.TestCase):
 	def test_retrieveAE(self):
 		id = TestAE.ae.resourceID
 		TestAE.ae = None
-		TestAE.ae = AE(TestAE.cse, resourceID=id)
+		TestAE.ae = AE(TestAE.cse, resourceID=id, instantly=False)
 		self.assertEqual(TestAE.ae.type, CON.Type_AE)
 		self.assertTrue(TestAE.ae.retrieveFromCSE())
 		self.assertEqual(TestAE.ae.resourceName, AE_NAME)
@@ -74,7 +74,7 @@ class TestAE(unittest.TestCase):
 		self.assertIsNotNone(TestAE.cse)
 
 		# create an <AE> by using the get() method
-		TestAE.ae2 = AE(TestAE.cse, resourceName=AE_NAME+'1')
+		TestAE.ae2 = AE(TestAE.cse, resourceName=AE_NAME+'1', instantly=False)
 		self.assertIsNotNone(TestAE.ae2)
 		self.assertTrue(TestAE.ae2.get())
 
@@ -119,10 +119,10 @@ class TestAE(unittest.TestCase):
 		self.assertTrue(len(cnts) == 0) 
 
 		# Create some containers
-		cnt1 = Container(TestAE.ae, CNT_NAME+'_1')
+		cnt1 = Container(TestAE.ae, CNT_NAME+'_1', instantly=False)
 		self.assertIsNotNone(cnt1)
 		self.assertTrue(cnt1.createInCSE())
-		cnt2 = Container(TestAE.ae, CNT_NAME+'_2')
+		cnt2 = Container(TestAE.ae, CNT_NAME+'_2', instantly=False)
 		self.assertIsNotNone(cnt2)
 		self.assertTrue(cnt2.createInCSE())
 
@@ -142,10 +142,10 @@ class TestAE(unittest.TestCase):
 		self.assertTrue(len(fcnts) == 0) 
 
 		# Create some flexContainers
-		fcnt1 = FlexContainer(TestAE.ae, FCNT_NAME+'_1')
+		fcnt1 = FlexContainer(TestAE.ae, FCNT_NAME+'_1', instantly=False)
 		self.assertIsNotNone(fcnt1)
 		self.assertTrue(fcnt1.createInCSE())
-		fcnt2 = FlexContainer(TestAE.ae, FCNT_NAME+'_2')
+		fcnt2 = FlexContainer(TestAE.ae, FCNT_NAME+'_2', instantly=False)
 		self.assertIsNotNone(fcnt2)
 		self.assertTrue(fcnt2.createInCSE())
 
@@ -156,7 +156,7 @@ class TestAE(unittest.TestCase):
 
 
 	def test_groupsInAE(self):
-		grp = Group(TestAE.ae, resourceName=GRP_NAME, resources=TestAE.ae.containers())
+		grp = Group(TestAE.ae, resourceName=GRP_NAME, resources=TestAE.ae.containers(), instantly=False)
 		self.assertTrue(grp.createInCSE())
 		grps = TestAE.ae.groups()
 		self.assertIsNotNone(grps)

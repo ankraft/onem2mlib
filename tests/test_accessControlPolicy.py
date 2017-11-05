@@ -66,7 +66,7 @@ class TestACP(unittest.TestCase):
 
 
 	def test_createAcp(self):
-		TestACP.acp = AccessControlPolicy(TestACP.cse, resourceName=ACP_NAME, privileges=TestACP.privileges, selfPrivileges=TestACP.selfPrivileges)
+		TestACP.acp = AccessControlPolicy(TestACP.cse, resourceName=ACP_NAME, privileges=TestACP.privileges, selfPrivileges=TestACP.selfPrivileges, instantly=False)
 		self.assertIsNotNone(TestACP.acp)
 		self.assertEqual(TestACP.acp.type, CON.Type_ACP)
 		self.assertTrue(TestACP.acp.createInCSE())
@@ -119,7 +119,7 @@ class TestACP(unittest.TestCase):
 		cseLimited = CSEBase(sessionLimited, CSE_ID)
 		self.assertIsNotNone(cseLimited)
 		self.assertTrue(sessionLimited.connected)
-		aeLimited = AE(cseLimited, resourceName=AE_NAME+'L')
+		aeLimited = AE(cseLimited, resourceName=AE_NAME+'L', instantly=False)
 		self.assertIsNotNone(aeLimited)
 		#aeLimited.accessControlPolicyIDs = [ TestACP.acp ]
 		self.assertFalse(aeLimited.createInCSE())
@@ -127,7 +127,7 @@ class TestACP(unittest.TestCase):
 
 	def test_createAELimited2(self):
 		# create an AE with the ACP assigned.
-		TestACP.ae = AE(TestACP.cse, resourceName=AE_NAME)
+		TestACP.ae = AE(TestACP.cse, resourceName=AE_NAME, instantly=False)
 		self.assertIsNotNone(TestACP.ae)
 		TestACP.ae.setAccessControlPolicies(TestACP.acp)
 		self.assertTrue(TestACP.ae.createInCSE())
@@ -157,7 +157,7 @@ class TestACP(unittest.TestCase):
 		return
 
 		self.assertIsNotNone(TestACP.acp)
-		rule = AccessControlRule(['another:another'], CON.Acp_RETRIEVE)
+		rule = AccessControlRule(['another:another'], CON.Acp_RETRIEVE, instantly=False)
 		TestACP.acp.privileges.append(rule)
 		TestACP.acp.updateInCSE()
 		#print(TestACP.acp)

@@ -37,9 +37,7 @@ class TestContentInstance(unittest.TestCase):
 			print('*** AE with name "' + AE_NAME + '" already present in CSE. Please remove it first.')
 			exit()
 		TestContentInstance.ae = AE(TestContentInstance.cse, resourceName=AE_NAME)
-		TestContentInstance.ae.createInCSE()
 		TestContentInstance.cnt = Container(TestContentInstance.ae, resourceName=CNT_NAME)
-		TestContentInstance.cnt.createInCSE()
 
 
 	@classmethod
@@ -61,7 +59,7 @@ class TestContentInstance(unittest.TestCase):
 
 
 	def test_createContentInstance(self):
-		TestContentInstance.cin = ContentInstance(TestContentInstance.cnt, resourceName=CIN_NAME, content=CIN_CONTENT, labels=CIN_LABELS)
+		TestContentInstance.cin = ContentInstance(TestContentInstance.cnt, resourceName=CIN_NAME, content=CIN_CONTENT, labels=CIN_LABELS, instantly=False)
 		self.assertEqual(TestContentInstance.cin.type, CON.Type_ContentInstance)
 		self.assertTrue(TestContentInstance.cin.createInCSE())
 		self.assertEqual(TestContentInstance.cin.resourceName, CIN_NAME)
@@ -69,7 +67,7 @@ class TestContentInstance(unittest.TestCase):
 
 
 	def test_retrieveContentInstance(self):
-		cin = ContentInstance(TestContentInstance.cnt, resourceID=TestContentInstance.cin. resourceID)
+		cin = ContentInstance(TestContentInstance.cnt, resourceID=TestContentInstance.cin. resourceID, instantly=False)
 		self.assertTrue(cin.retrieveFromCSE())
 		self.assertEqual(cin.content, CIN_CONTENT)
 
@@ -85,7 +83,7 @@ class TestContentInstance(unittest.TestCase):
 		self.assertIsNotNone(TestContentInstance.ae)
 
 		# create a <contentInstane> by using the get() method
-		cin = ContentInstance(TestContentInstance.cnt, content=CIN_CONTENT)
+		cin = ContentInstance(TestContentInstance.cnt, content=CIN_CONTENT, instantly=False)
 		self.assertIsNotNone(cin)
 		self.assertTrue(cin.get())
 

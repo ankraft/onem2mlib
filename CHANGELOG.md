@@ -1,7 +1,11 @@
 # CHANGELOG
 
 ## Version 0.6 (xxxx-xx-xx)
-[CHANGE] Refactored module structure. The resources are now available directly.
+- [CHANGE] Refactored module structure. The resources are now available directly.
+- [CHANGE] Resources are now created or retrieved instantly. If one wants to make further changes to a resource object (beside of the initialization), the object must be created with the *instantly* attribute set to *False*.
+- [IMPROVEMENT] Added convenience functions to *Container* to add and retrieve content values more easily.
+- [IMPROVEMENT] Added support for &lt>subscription> resources.
+- [IMPROVEMENT] Added notification support. A script can now subscribe to changes of resources and is notified when those happen.
 
 ## Version 0.5 (2017-09-24)
 - [IMPROVEMENT] Added support for JSON encoding to communicate with a CSE. JSON is now the default encoding.

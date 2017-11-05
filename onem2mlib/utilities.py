@@ -47,6 +47,7 @@ def newTypeFilterCriteria(type):
 	"""
 	if type not in [CON.Type_Mixed, CON.Type_ACP, CON.Type_AE, CON.Type_Container, \
 					CON.Type_ContentInstance, CON.Type_CSEBase, CON.Type_Group, CON.Type_RemoteCSE, \
+					CON.Type_Subscription, \
 					CON.Type_FlexContainer]:
 		raise EXC.ParameterError('Wrong or unsupported type: ' + str(type))
 	return ('ty', str(type))

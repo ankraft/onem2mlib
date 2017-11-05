@@ -264,11 +264,12 @@ def _newResourceFromRID(type, ri, parent):
 
 
 def _newResourceFromType(type, parent):
-	if type == CON.Type_ContentInstance:	return onem2mlib.ContentInstance(parent)
-	elif type == CON.Type_Container:		return onem2mlib.Container(parent)
-	elif type == CON.Type_AE:				return onem2mlib.AE(parent)
-	elif type == CON.Type_Group:			return onem2mlib.Group(parent)
-	elif type == CON.Type_ACP:				return onem2mlib.AccessControlPolicy(parent)
+	if type == CON.Type_ContentInstance:	return onem2mlib.ContentInstance(parent, instantly=False)
+	elif type == CON.Type_Container:		return onem2mlib.Container(parent, instantly=False)
+	elif type == CON.Type_AE:				return onem2mlib.AE(parent, instantly=False)
+	elif type == CON.Type_Group:			return onem2mlib.Group(parent, instantly=False)
+	elif type == CON.Type_ACP:				return onem2mlib.AccessControlPolicy(parent, instantly=False)
+	elif type == CON.Type_Subscription:		return onem2mlib.Subscription(parent, instantly=False)
 	return None
 
 
@@ -278,17 +279,19 @@ def _newResourceFromTypeString(typeString, parent):
 	elif typeString == 'ae':	return _newResourceFromType(CON.Type_AE, parent)
 	elif typeString == 'grp':	return _newResourceFromType(CON.Type_Group, parent)
 	elif typeString == 'acp':	return _newResourceFromType(CON.Type_ACP, parent)
+	elif typeString == 'sub':	return _newResourceFromType(CON.Type_Subscription, parent)
 	return None
 
 
 # Get a resource from the CSE by its resourceName
 def _getResourceFromCSEByResourceName(type, rn, parent):
 	res = None
-	if type == CON.Type_ContentInstance:		res = onem2mlib.ContentInstance(parent, resourceName=rn)
-	elif type == CON.Type_Container:			res = onem2mlib.Container(parent, resourceName=rn)
-	elif type == CON.Type_AE:					res = onem2mlib.AE(parent, resourceName=rn)
-	elif type == CON.Type_Group:				res = onem2mlib.Group(parent, resourceName=rn)
-	elif type == CON.Type_ACP:					res = onem2mlib.AccessControlPolicy(parent, resourceName=rn)
+	if type == CON.Type_ContentInstance:		res = onem2mlib.ContentInstance(parent, resourceName=rn, instantly=False)
+	elif type == CON.Type_Container:			res = onem2mlib.Container(parent, resourceName=rn, instantly=False)
+	elif type == CON.Type_AE:					res = onem2mlib.AE(parent, resourceName=rn, instantly=False)
+	elif type == CON.Type_Group:				res = onem2mlib.Group(parent, resourceName=rn, instantly=False)
+	elif type == CON.Type_ACP:					res = onem2mlib.AccessControlPolicy(parent, resourceName=rn, instantly=False)
+	elif type == CON.Type_Subscription:			res = onem2mlib.Subscription(parent, resourceName=rn, instantly=False)
 	if res is not None and res.retrieveFromCSE():
 		return res
 	return None

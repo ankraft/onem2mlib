@@ -31,6 +31,8 @@ Type_Group =  9
 """ The &lt;group> resource type. """
 Type_RemoteCSE = 16
 """ The &lt;remoteCSE> resource type. """
+Type_Subscription = 23
+""" The &lt;Subscription> resource type"""
 Type_FlexContainer = 24
 """ The &lt;flexContainer> resource type. """
 
@@ -92,6 +94,18 @@ Dsc_AND = 1
 """ Used to define the filter operation. Perform a logical conjunction (logical AND) on all filter criteria. """
 Dsc_OR = 2
 """ Used to define the filter operation. Perform a logical disjunction (logical OR) on all filter criteria. """
+
+
+#
+#	Subscriptions
+#
+Sub_AllAttributes = 1
+""" Constant for notificationContentType: Send all the resource's attributes in a notification. """
+Sub_ModefiedAttributes = 2
+""" Constant for notificationContentType: Send only the modified resource's attributes in a notification. """
+Sub_ResourceID = 3
+""" Constant for notificationContentType: Send only the  resource's ID in a notification. """
+
 
 #
 #	Network configurations

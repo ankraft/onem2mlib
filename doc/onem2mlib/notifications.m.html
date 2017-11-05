@@ -3,8 +3,9 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 
-    <title>onem2mlib.constants API documentation</title>
-    <meta name="description" content="This sub-module defines various constants used in the onem2mlib module." />
+    <title>onem2mlib.notifications API documentation</title>
+    <meta name="description" content="This sub-module defines the end-point and server for notification as well as support
+functions to ha..." />
 
   <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
   
@@ -1040,45 +1041,22 @@ table {
   <div id="sidebar">
     <h1>Index</h1>
     <ul id="index">
-    <li class="set"><h3><a href="#header-variables">Module variables</a></h3>
+
+    <li class="set"><h3><a href="#header-functions">Functions</a></h3>
       
   <ul>
-    <li class="mono"><a href="#onem2mlib.constants.Acp_ALL">Acp_ALL</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Acp_CREATE">Acp_CREATE</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Acp_DELETE">Acp_DELETE</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Acp_DISCOVER">Acp_DISCOVER</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Acp_NOTIFY">Acp_NOTIFY</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Acp_RETRIEVE">Acp_RETRIEVE</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Acp_UPDATE">Acp_UPDATE</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Cse_Type_ASN">Cse_Type_ASN</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Cse_Type_IN">Cse_Type_IN</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Cse_Type_MN">Cse_Type_MN</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Dsc_AND">Dsc_AND</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Dsc_OR">Dsc_OR</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Encoding_JSON">Encoding_JSON</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Encoding_XML">Encoding_XML</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Grp_ABANDON_GROUP">Grp_ABANDON_GROUP</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Grp_ABANDON_MEMBER">Grp_ABANDON_MEMBER</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Grp_SET_MIXED">Grp_SET_MIXED</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Grp_def_maxNrOfMembers">Grp_def_maxNrOfMembers</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.NETWORK_REQUEST_TIMEOUT">NETWORK_REQUEST_TIMEOUT</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Sub_AllAttributes">Sub_AllAttributes</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Sub_ModefiedAttributes">Sub_ModefiedAttributes</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Sub_ResourceID">Sub_ResourceID</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Type_ACP">Type_ACP</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Type_AE">Type_AE</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Type_CSEBase">Type_CSEBase</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Type_Container">Type_Container</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Type_ContentInstance">Type_ContentInstance</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Type_FlexContainer">Type_FlexContainer</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Type_Group">Type_Group</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Type_Mixed">Type_Mixed</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Type_RemoteCSE">Type_RemoteCSE</a></li>
-    <li class="mono"><a href="#onem2mlib.constants.Type_Subscription">Type_Subscription</a></li>
+    <li class="mono"><a href="#onem2mlib.notifications.addSubscription">addSubscription</a></li>
+    <li class="mono"><a href="#onem2mlib.notifications.disableNotifications">disableNotifications</a></li>
+    <li class="mono"><a href="#onem2mlib.notifications.enableNotifications">enableNotifications</a></li>
+    <li class="mono"><a href="#onem2mlib.notifications.getNotificationURI">getNotificationURI</a></li>
+    <li class="mono"><a href="#onem2mlib.notifications.isNotificationEnabled">isNotificationEnabled</a></li>
+    <li class="mono"><a href="#onem2mlib.notifications.removeAllSubscriptions">removeAllSubscriptions</a></li>
+    <li class="mono"><a href="#onem2mlib.notifications.removeSubscription">removeSubscription</a></li>
+    <li class="mono"><a href="#onem2mlib.notifications.setupNotifications">setupNotifications</a></li>
+    <li class="mono"><a href="#onem2mlib.notifications.shutdownNotifications">shutdownNotifications</a></li>
   </ul>
 
     </li>
-
 
 
     </ul>
@@ -1092,306 +1070,201 @@ table {
 
 
   <header id="section-intro">
-  <h1 class="title"><span class="name">onem2mlib.constants</span> module</h1>
-  <p>This sub-module defines various constants used in the onem2mlib module.</p>
+  <h1 class="title"><span class="name">onem2mlib.notifications</span> module</h1>
+  <p>This sub-module defines the end-point and server for notification as well as support
+functions to handle and manage notifications from CSE resources.</p>
+<p>Before receiving notifications, one must setup the notification sub-module by calling
+the <a href="#onem2mlib.notifications.setupNotifications"><code>setupNotifications</code></a>() method. This starts also a http server
+that receives notifications from the respective CSE.</p>
+<p>One can provide callback functions, either for general handling, or specific for each
+subscription. The callback function must have the form <code>function(resource)</code> where
+<em>resource</em> is the changed resource from the notification. It is up to this callback function
+to determine the correct type by consulting the <code>onem2mlib.ResourceBase.type</code> attribute.</p>
+<p>A program can now subscribe to resources by calling the <code>onem2mlib.ResourceBase.subscribe</code>()
+method. It is notified through the callback function every time that resource is modified.</p>
+<p>The sub-module is shutdown by calling <code>onem2mlib.notifications.shutdownNotifications</code>().
+This method also automatically shuts down the server when the parent program terminates.</p>
   
 
   </header>
 
   <section id="section-items">
-    <h2 class="section-title" id="header-variables">Module variables</h2>
-      <div class="item">
-      <p id="onem2mlib.constants.Acp_ALL" class="name">var <span class="ident">Acp_ALL</span></p>
+
+    <h2 class="section-title" id="header-functions">Functions</h2>
       
+  <div class="item">
+    <div class="name def" id="onem2mlib.notifications.addSubscription">
+    <p>def <span class="ident">addSubscription</span>(</p><p>resource, callback=None)</p>
+    </div>
+    
+
+    
   
-    <div class="desc"><p>Shortcut for all privileges.</p></div>
+    <div class="desc"><p>Add a subscription to the given resource. This creates a &lt;subscription&gt; resource for
+that resource.</p>
+<p>This method might throw a <a href="exceptions.m.html#onem2mlib.exceptions.NotSupportedError"><code>onem2mlib.exceptions.NotSupportedError</code></a> exception in case
+the target resource type doesn't support subscriptions.</p>
+<p>Args:</p>
+<ul>
+<li><em>resource</em>: Resource to add the resource to.</li>
+<li><em>callback</em>: Optional reference to a callback function. This function is called instead of
+the one provided with the <a href="#onem2mlib.notifications.setupNotifications"><code>setupNotifications</code></a>() function.</li>
+</ul>
+<p>The method returns a Boolean indicating whether the subscription was successfully added.</p></div>
   <div class="source_cont">
 </div>
 
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Acp_CREATE" class="name">var <span class="ident">Acp_CREATE</span></p>
-      
+  </div>
   
-    <div class="desc"><p>Privilege to create a child resource.</p></div>
+      
+  <div class="item">
+    <div class="name def" id="onem2mlib.notifications.disableNotifications">
+    <p>def <span class="ident">disableNotifications</span>(</p><p>)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Disable the notification handling for a short time. This does <strong>not</strong> shut down the
+http server or removes subscriptions from resources in the CSE. It just stops the 
+processing of notifications and the calling of the callback functions.</p>
+<p>Processing and callback can be re-enabled with the <a href="#onem2mlib.notifications.enableNotifications"><code>enableNotifications</code></a>()
+method.</p></div>
   <div class="source_cont">
 </div>
 
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Acp_DELETE" class="name">var <span class="ident">Acp_DELETE</span></p>
-      
+  </div>
   
-    <div class="desc"><p>Privilege to delete an addressed resource.</p></div>
+      
+  <div class="item">
+    <div class="name def" id="onem2mlib.notifications.enableNotifications">
+    <p>def <span class="ident">enableNotifications</span>(</p><p>)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Enable the notification handling again, after disabling them with the
+<a href="#onem2mlib.notifications.disableNotifications"><code>disableNotifications</code></a>() method.</p></div>
   <div class="source_cont">
 </div>
 
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Acp_DISCOVER" class="name">var <span class="ident">Acp_DISCOVER</span></p>
-      
+  </div>
   
-    <div class="desc"><p>Privilege to discover the resource.</p></div>
+      
+  <div class="item">
+    <div class="name def" id="onem2mlib.notifications.getNotificationURI">
+    <p>def <span class="ident">getNotificationURI</span>(</p><p>)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>String. Return the current notificationURI, or None when notifications are disabled.</p></div>
   <div class="source_cont">
 </div>
 
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Acp_NOTIFY" class="name">var <span class="ident">Acp_NOTIFY</span></p>
-      
+  </div>
   
-    <div class="desc"><p>Privilege to receive a notification.</p></div>
+      
+  <div class="item">
+    <div class="name def" id="onem2mlib.notifications.isNotificationEnabled">
+    <p>def <span class="ident">isNotificationEnabled</span>(</p><p>)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Boolean. Return the status whether notifications are currently enabled.</p></div>
   <div class="source_cont">
 </div>
 
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Acp_RETRIEVE" class="name">var <span class="ident">Acp_RETRIEVE</span></p>
-      
+  </div>
   
-    <div class="desc"><p>Privilege to retrieve the content of an addressed resource.</p></div>
+      
+  <div class="item">
+    <div class="name def" id="onem2mlib.notifications.removeAllSubscriptions">
+    <p>def <span class="ident">removeAllSubscriptions</span>(</p><p>)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Remove all the subscriptions that have been added through the 
+<a href="#onem2mlib.notifications.addSubscription"><code>addSubscription</code></a>() function.</p></div>
   <div class="source_cont">
 </div>
 
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Acp_UPDATE" class="name">var <span class="ident">Acp_UPDATE</span></p>
-      
+  </div>
   
-    <div class="desc"><p>Privilege to update the content of an addressed resource.</p></div>
+      
+  <div class="item">
+    <div class="name def" id="onem2mlib.notifications.removeSubscription">
+    <p>def <span class="ident">removeSubscription</span>(</p><p>resource)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Remove a subscription added prior by the <a href="#onem2mlib.notifications.addSubscription"><code>addSubscription</code></a>()
+method. After calling this function no notifications for that resource are received
+or processed anymore.</p>
+<p>Args:</p>
+<ul>
+<li><em>resource</em>: The resource from which the subscription should be removed.</li>
+</ul>
+<p>The method returns a Boolean indicating whether the subscription was successfully removed.</p></div>
   <div class="source_cont">
 </div>
 
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Cse_Type_ASN" class="name">var <span class="ident">Cse_Type_ASN</span></p>
-      
+  </div>
   
-    <div class="desc"><p>Used for the &lt;CSEBase&gt; resource's <em>cseType</em> attribute. In indicates an ASN-CSE.</p></div>
+      
+  <div class="item">
+    <div class="name def" id="onem2mlib.notifications.setupNotifications">
+    <p>def <span class="ident">setupNotifications</span>(</p><p>host=&#39;localhost&#39;, port=1400, callback=None)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Setup the notification sub-module. This also starts a http server listening on the
+specified interface and port.</p>
+<p>Args:</p>
+<ul>
+<li><em>host</em>: String. The interface on which the http server will listen. Optional, the
+default is 'localhost'.</li>
+<li><em>port</em>: Integer. The port on which the http server will listen. Optional, the
+default is 1400.</li>
+<li><em>callback</em>: A reference to a function that is called whenever a valid notification
+is receiced. This function will receive the notification's resource as the only argument.
+This callback function is only a default and can be overriden by the callback function
+in the <a href="ResourceBase.m.html#onem2mlib.ResourceBase.subscribe"><code>onem2mlib.ResourceBase.subscribe</code></a>() method.</li>
+</ul></div>
   <div class="source_cont">
 </div>
 
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Cse_Type_IN" class="name">var <span class="ident">Cse_Type_IN</span></p>
-      
+  </div>
   
-    <div class="desc"><p>Used for the &lt;CSEBase&gt; resource's <em>cseType</em> attribute. In indicates an IN-CSE.</p></div>
+      
+  <div class="item">
+    <div class="name def" id="onem2mlib.notifications.shutdownNotifications">
+    <p>def <span class="ident">shutdownNotifications</span>(</p><p>)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Shutdown the notification sub-module and the http server. It also removes subscriptions
+created through the <a href="ResourceBase.m.html#onem2mlib.ResourceBase.subscribe"><code>onem2mlib.ResourceBase.subscribe</code></a>() method. After this no more 
+notifications can be received through the sub-module.</p>
+<p><strong>Note</strong></p>
+<p>This function is automatically called when the parent program terminates.</p></div>
   <div class="source_cont">
 </div>
 
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Cse_Type_MN" class="name">var <span class="ident">Cse_Type_MN</span></p>
-      
+  </div>
   
-    <div class="desc"><p>Used for the &lt;CSEBase&gt; resource's <em>cseType</em> attribute. In indicates an MN-CSE.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Dsc_AND" class="name">var <span class="ident">Dsc_AND</span></p>
-      
-  
-    <div class="desc"><p>Used to define the filter operation. Perform a logical conjunction (logical AND) on all filter criteria.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Dsc_OR" class="name">var <span class="ident">Dsc_OR</span></p>
-      
-  
-    <div class="desc"><p>Used to define the filter operation. Perform a logical disjunction (logical OR) on all filter criteria.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Encoding_JSON" class="name">var <span class="ident">Encoding_JSON</span></p>
-      
-  
-    <div class="desc"><p>Specify JSON as the request encoding format.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Encoding_XML" class="name">var <span class="ident">Encoding_XML</span></p>
-      
-  
-    <div class="desc"><p>Specify XML as the request encoding format.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Grp_ABANDON_GROUP" class="name">var <span class="ident">Grp_ABANDON_GROUP</span></p>
-      
-  
-    <div class="desc"><p>Used for the &lt;group&gt; resource's <em>consistencyStrategy</em> attribute. Abandon the whole group when
-there are members that don't match the group type.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Grp_ABANDON_MEMBER" class="name">var <span class="ident">Grp_ABANDON_MEMBER</span></p>
-      
-  
-    <div class="desc"><p>Used for the &lt;group&gt; resource's <em>consistencyStrategy</em> attribute. Abandon group members that 
-don't match the groups type.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Grp_SET_MIXED" class="name">var <span class="ident">Grp_SET_MIXED</span></p>
-      
-  
-    <div class="desc"><p>Used for the &lt;group&gt; resource's <em>consistencyStrategy</em> attribute. Set the group's type to <em>mixed</em>
-when there are member that don't match the group type.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Grp_def_maxNrOfMembers" class="name">var <span class="ident">Grp_def_maxNrOfMembers</span></p>
-      
-  
-    <div class="desc"><p>Default for the &lt;group&gt; resource's <em>maxNrOfMembers</em> attribute.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.NETWORK_REQUEST_TIMEOUT" class="name">var <span class="ident">NETWORK_REQUEST_TIMEOUT</span></p>
-      
-  
-    <div class="desc"><p>Timeout after n seconds in requests.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Sub_AllAttributes" class="name">var <span class="ident">Sub_AllAttributes</span></p>
-      
-  
-    <div class="desc"><p>Constant for notificationContentType: Send all the resource's attributes in a notification.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Sub_ModefiedAttributes" class="name">var <span class="ident">Sub_ModefiedAttributes</span></p>
-      
-  
-    <div class="desc"><p>Constant for notificationContentType: Send only the modified resource's attributes in a notification.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Sub_ResourceID" class="name">var <span class="ident">Sub_ResourceID</span></p>
-      
-  
-    <div class="desc"><p>Constant for notificationContentType: Send only the  resource's ID in a notification.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Type_ACP" class="name">var <span class="ident">Type_ACP</span></p>
-      
-  
-    <div class="desc"><p>The &amp;lt&gt;ACP&gt; resource type,</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Type_AE" class="name">var <span class="ident">Type_AE</span></p>
-      
-  
-    <div class="desc"><p>The &lt;AE&gt; resource type.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Type_CSEBase" class="name">var <span class="ident">Type_CSEBase</span></p>
-      
-  
-    <div class="desc"><p>The &lt;CSE&gt; resource type.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Type_Container" class="name">var <span class="ident">Type_Container</span></p>
-      
-  
-    <div class="desc"><p>The &lt;container&gt; resource type.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Type_ContentInstance" class="name">var <span class="ident">Type_ContentInstance</span></p>
-      
-  
-    <div class="desc"><p>The &lt;contentInstance&gt; resource type.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Type_FlexContainer" class="name">var <span class="ident">Type_FlexContainer</span></p>
-      
-  
-    <div class="desc"><p>The &lt;flexContainer&gt; resource type.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Type_Group" class="name">var <span class="ident">Type_Group</span></p>
-      
-  
-    <div class="desc"><p>The &lt;group&gt; resource type.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Type_Mixed" class="name">var <span class="ident">Type_Mixed</span></p>
-      
-  
-    <div class="desc"><p>The <em>Mixed</em> type, e.g. for &lt;group&gt; resources that point to resources of various types.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Type_RemoteCSE" class="name">var <span class="ident">Type_RemoteCSE</span></p>
-      
-  
-    <div class="desc"><p>The &lt;remoteCSE&gt; resource type.</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-      <div class="item">
-      <p id="onem2mlib.constants.Type_Subscription" class="name">var <span class="ident">Type_Subscription</span></p>
-      
-  
-    <div class="desc"><p>The &lt;Subscription&gt; resource type</p></div>
-  <div class="source_cont">
-</div>
-
-      </div>
-
 
 
   </section>

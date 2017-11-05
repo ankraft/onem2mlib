@@ -26,7 +26,7 @@ if __name__ == '__main__':
 	# is created or, if it already exsists, the existing resource is returned.
 	#
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName, instantly=True)	# create or retrieve
+	ae = AE(cse, resourceName=aeName)	# create or retrieve
 	print(ae)	# This should be the same <AE> as before
 
 	#
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 	# creating it in the CSE
 	#
 	aeName2 = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae2 = AE(cse, resourceName=aeName2, instantly=True)
+	ae2 = AE(cse, resourceName=aeName2)
 	print(ae2)
 
 

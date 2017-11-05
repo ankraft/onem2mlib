@@ -5,7 +5,7 @@ This Python3 module implements a library to access and manage resources on a one
 Licensed under the BSD 3-Clause License. See the LICENSE file for further details.
 
 """
-import json
+import json, uuid
 
 import onem2mlib.constants as CON
 import onem2mlib.exceptions
@@ -14,12 +14,14 @@ import onem2mlib.marshalling as M
 import onem2mlib.mcarequests as MCA
 import onem2mlib.internal as INT
 import onem2mlib.exceptions as EXC
+import onem2mlib.notifications as NOT
 
 
 
-__all__ = [	'CSEBase', 'AccessControlPolicy', 'AccessControlRule', 'AE', 'Container', 'ContentInstance', 'Group',
+__all__ = [	'CSEBase', 'AccessControlPolicy', 'AccessControlRule', 'AE', 'Container',
+			'ContentInstance', 'Group', 'Subscription',
 			'ResourceBase', 'Session',
-			'constants', 'exceptions', 'utilities', 
+			'constants', 'exceptions', 'utilities', 'notifications',
 			'retrieveResourceFromCSE']
 
 
@@ -28,7 +30,7 @@ __all__ = [	'CSEBase', 'AccessControlPolicy', 'AccessControlRule', 'AE', 'Contai
 
 class Session:
 	""" The Session class is used when connecting to a oneM2M CSE."""
-	#def __init__(self, address=None,  username=None, password=None, originator=None):
+
 	def __init__(self, address,  originator, encoding=CON.Encoding_JSON):
 		"""
 		Initialize a Session object. 
@@ -291,6 +293,54 @@ class ResourceBase:
 		return [ retrieveResourceFromCSE(self, id) for id in rids ]
 
 
+	def subscribe(self, callback=None):
+		"""
+		Create a &lt;subscription> to resource and receive notifications. For this, the notification
+		sub-module must be enabled, ie. `onem2mlib.notifications.setupNotifications`() must have
+		been called sucessfully. To stop notification from the resource and to remove the
+		subscription, the `onem2mlib.ResourceBase.unsubscribe`() method must be called.
+
+		This method might throw	a `onem2mlib.exceptions.NotSupportedError` exception in case
+		the target resource type doesn't support subscriptions.
+
+		Args:
+
+		- *callback*: An optional reference to a callback functions that is called when a
+		notification is received for the subscription. If this argument is ommitted then the
+		default callback function, provided with `onem2mlib.notifications.setupNotifiations`(),
+		is called instead.
+
+		The method returns a Boolean indicating whether the subscription was successfull.
+
+		**Note**
+
+		The &lt;subsription> resource created with this method is only valid for the
+		runtime of the calling program. The scubscription will be removed at least when the
+		program terminates, or when `onem2mlib.notifications.shutdownNotifications`() is called.
+
+		"""
+		if self.type not in NOT._allowedSubscriptionResources:
+			raise EXC.NotSupportedError('Subscription not supported for this resource type')
+		if not NOT.isNotificationEnabled():
+			return False
+		return NOT.addSubscription(self, callback)
+
+
+	def unsubscribe(self):
+		"""
+		Unsubscripte from the notifications of a resource. The subscription must have
+		been created before with the `onem2mlib.ResourceBase.subscribe`() method.
+
+		This method might throw	a `onem2mlib.exceptions.NotSupportedError` exception in case
+		the target resource type doesn't support subscriptions.
+
+		The method returns a Boolean indicating whether the subscription was successfull.
+		"""
+		if self.type not in NOT._subscriptionResources:
+			raise EXC.NotSupportedError('Subscription not supported for this resource type')
+		return NOT.removeSubscription(self)
+
+
 	# Recursivly construct a structured resourceName
 	def _structuredResourceID(self):
 		if self.type == CON.Type_CSEBase:		# CSEBase means end of recursion
@@ -456,7 +506,7 @@ class AccessControlPolicy(ResourceBase):
 	**Note**: Delete associated resources first before deleting the	&lt;accessControlPolicy> resource.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, privileges = [], selfPrivileges=[], instantly=False):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, privileges = [], selfPrivileges=[], instantly=True):
 		"""
 		Initialize the &lt;accessControlPolicy> resource. 
 
@@ -585,7 +635,7 @@ class AE(ResourceBase):
 	application and the sub-structure of resources beneath it.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[], instantly=False):
+	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[], instantly=True):
 		"""
 		Initialize the &lt;AE> resource. 
 
@@ -705,7 +755,7 @@ class Container(ResourceBase):
 	It is usually a sub-resource of the &lt;AE> or other resources.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], instantly=False):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], instantly=True):
 		"""
 		Initialize the &lt;container> resource. 
 
@@ -811,11 +861,45 @@ class Container(ResourceBase):
 		return self._getContentInstance(self.oldest)
 
 
+	def latestContent(self):
+		"""
+		Return the value of the latest (newest) &lt;contentInstance> sub-resource from this container, or None.
+		This is a convenience function to access content values. It actually retrieves the latest &lt;contentInsnace>
+		resource from a CSE.
+		"""
+		cin = self.latestContentInstance()
+		if cin:
+			return cin.content
+		return None
+
+
+	def oldestContent(self):
+		"""
+		Return the value of the oldest &lt;contentInstance> sub-resource from this container, or None.
+		This is a convenience function to access content values. It actually retrieves the oldest &lt;contentInsnace>
+		resource from a CSE.
+		"""
+		cin = self.oldestContentInstance()
+		if cin:
+			return cin.content
+		return None
+
+
+	def addContent(self, value, labels=[]):
+		"""
+		Add a new value to a container. This is a convenience function that actually creates a new
+		&lt;contentInstance> resource for that value in the &lt;container>. It returns the new
+		*ContentInstance* object, or None.
+		"""
+		return ContentInstance(self, content=value, labels=labels)
+
+
+
 	def _getContentInstance(self, path):
 		if not self.session or not self.session.connected or not path: return None
 		response = MCA.get(self.session, path)
 		if response and response.status_code == 200:
-			contentInstance = ContentInstance(self)
+			contentInstance = ContentInstance(self, instantly=False)
 			contentInstance._parseResponse(response)
 			return contentInstance
 		return None
@@ -870,7 +954,7 @@ class ContentInstance(ResourceBase):
 	"""
 
 
-	def __init__(self, parent=None, resourceName=None, content=None, contentInfo=None, resourceID=None, labels = [], instantly=False):
+	def __init__(self, parent=None, resourceName=None, content=None, contentInfo=None, resourceID=None, labels = [], instantly=True):
 		"""
 		Initialize the &lt;contentInstance> resource. 
 
@@ -946,7 +1030,7 @@ class Group(ResourceBase):
 	the group and the &lt;fanOutPoint> virtual resource that enables generic operations to be applied 
 	to all the resources represented by those members.
 	"""
-	def __init__(self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], instantly=False):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], instantly=True):
 		"""
 		Initialize the &lt;group> resource. 
 
@@ -1170,114 +1254,136 @@ class Group(ResourceBase):
 ###############################################################################
 
 
-# class Subscription(ResourceBase):
-# 	"""
-# 	This class implements the oneM2M &lt;subscription> resource. 
-# 	"""
+class Subscription(ResourceBase):
+	"""
+	This class implements the oneM2M &lt;subscription> resource. 
 
-# 	def __init__(self, parent=None, resourceName=None, resourceID=None, labels = [], instantly=False):
-# 		"""
-# 		TODO
+	It is used to manage targets for notifications sent whenever a subscribed-to resource
+	is changed.
+	"""
 
-# 		"""	
-# 		super().__init__(parent, resourceName, resourceID, CON.Type_Subscription, labels=labels)
+	def __init__(self, parent=None, resourceName=None, resourceID=None, notificationURI=[], labels = [], instantly=True):
+		"""
+		Initialize the &lt;subscription> resource. 
 
+		Args:
 
-# 		if instantly:
-# 			if not self.get():
-# 				raise EXC.CSEOperationError('Cannot get or create Container. '  + MCA.lastError)
+		- *parent*: The parent resource object in which the &lt;contentInstance> resource
+			will be created.
+		- *notificationURI*: A list consisting of one or more targets that the Hosting CSE
+		shall send notifications to.
+		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
+			a `onem2mlib.exceptions.CSEOperationError` exception in case of an error.
+		- All other arguments initialize the status variables of the same name in
+			&lt;subscription> instance or `onem2mlib.ResourceBase`.
+		"""
+	
+		super().__init__(parent, resourceName, resourceID, CON.Type_Subscription, labels=labels)
 
+		self.notificationURI = notificationURI
+		"""
+		A list consisting of one or more targets that the Hosting CSE shall send notifications to. 
+		A target is either a oneM2M compliant Resource-ID (either structured or unstructured),
+		or as a URL with one of oneM2M supported protocol binding, e.g. http.
+		"""
 
-# 	def __str__(self):
-# 		result = 'Container:\n'
-# 		result += super().__str__()
-# 		result += INT.strResource('maxNrOfInstances', 'mni', self.maxNrOfInstances)
-# 		result += INT.strResource('maxByteSize', 'mbs', self.maxByteSize)
-# 		result += INT.strResource('maxInstanceAge', 'mia', self.maxInstanceAge)
-# 		result += INT.strResource('currentNrOfInstances', 'cni', self.currentNrOfInstances)
-# 		result += INT.strResource('currentByteSize', 'cbs', self.currentByteSize)
-# 		result += INT.strResource('oldest', 'ol', self.oldest)
-# 		result += INT.strResource('latest', 'la', self.latest)
-# 		return result
+		self.notificationContentType = CON.Sub_AllAttributes
+		"""
+		This attribute indicates a notification content type that shall be contained in
+		notifications. The allowed values are one of the following constants:
 
+		- Sub_AllAttributes (the default)
+		- Sub_ModefiedAttributes
+		- Sub_ResourceID 
+		"""
 
-# 	def containers(self):
-# 		"""
-# 		Return all &lt;container> sub-resources from this container, or an empty list.
-# 		"""
-# 		return _findSubResource(self, CON.Type_Container)
+		self.expirationCounter = -1
+		"""
+		This attribute indicates that the life of this subscription is set to a limit of a
+		maximum number of notifications. After thix maximum number is reached, the subscription
+		is deleted.
+		"""
 
+		self.latestNotify = None
+		"""
+		This attribute indicates if the subscriber wants only the latest notification. 
+		If multiple notifications of this subscription are buffered, and if the value of
+		this attribute is set to true, then only the last notification shall be sent and 
+		it shall have the Event Category value set to "latest".
+		"""
 
-# 	def contentInstances(self):
-# 		"""
-# 		Return all &lt;contentInstance> sub-resources from this container, or an empty list.
-# 		"""
-# 		return _findSubResource(self, CON.Type_ContentInstance)
+		self.groupID = None
+		"""
+		
+		The ID of a &lt;group> resource in case the subscription is made through a group.
+		"""
 
+		self.notificationForwardingURI = None
+		"""
+		The attribute is a forwarding attribute that is present only for group related 
+		subscriptions. It represents the resource subscriber notificationtarget. 
+		"""
 
-# 	def findContainer(self, resourceName):
-# 		"""
-# 		Find a &lt;container> resource by its *resourceName*, or None.
-# 		"""
-# 		return _getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
-
-
-# 	def findContentInstance(self, resourceName):
-# 		"""
-# 		Find a &lt;ContentInstance> resource by its *resourceName*, or None.
-# 		"""
-# 		return _getResourceFromCSEByResourceName(CON.Type_ContentInstance, resourceName, self)
-
-
-# 	def latestContentInstance(self):
-# 		"""
-# 		Return the latest (newest) &lt;contentInstance> sub-resource from this container, or None.
-# 		"""
-# 		return self._getContentInstance(self.latest)
-
-
-# 	def oldestContentInstance(self):
-# 		"""
-# 		Return the oldest &lt;contentInstance> sub-resource from this container, or None.
-# 		"""
-# 		return self._getContentInstance(self.oldest)
-
-
-# 	def _getContentInstance(self, path):
-# 		if not self.session or not self.session.connected or not path: return None
-# 		response = MCA.get(self.session, path)
-# 		if response and response.status_code == 200:
-# 			contentInstance = ContentInstance(self)
-# 			contentInstance._parseResponse(response)
-# 			return contentInstance
-# 		return None
+		self.subscriberURI = None
+		"""
+		This attribute is configured with the target of the subscriber. The target is used by the
+		CSE to determine where to send a notification when the subscription is deleted. 
+		A target is either a oneM2M compliant Resource-ID (either structured or unstructured),
+		or as a URL with one of oneM2M supported protocol binding, e.g. http.
+		"""
 
 
-# 	def _parseXML(self, root):
-# 		M._Container_parseXML(self, root)
+		# TODO: determine NotificationURi automatically
+		#if not self.notificationURI or len(self.notificationURI) == 0:
+		#	self.notificationURI = [ 'http://localhost:1400' + '?ri=' + parent.resourceID + '&nonce=' + str(uuid.uuid4().hex) ]
+
+		if instantly:
+			if not self.get():
+				raise EXC.CSEOperationError('Cannot get or create Subscription. '  + MCA.lastError)
 
 
-# 	def _createXML(self, isUpdate=False):
-# 		return M._Container_createXML(self, isUpdate)
+	def __str__(self):
+		result = 'Subscription:\n'
+		result += super().__str__()
+		result += INT.strResource('notificationURI', 'nu', self.notificationURI)
+		result += INT.strResource('notificationContentType', 'nct', self.notificationContentType)
+		if self.expirationCounter != -1:
+			result += INT.strResource('expirationCounter', 'exc', self.expirationCounter)
+		if self.latestNotify:
+			result += INT.strResource('latestNotify', 'ln', self.latestNotify)
+		if self.groupID:
+			result += INT.strResource('groupID', 'gpi', self.groupID)
+		if self.notificationForwardingURI:
+			result += INT.strResource('notificationForwardingURI', 'nfu', self.notificationForwardingURI)
+		if self.subscriberURI:
+			result += INT.strResource('subscriberURI', 'su', self.subscriberURI)
+		return result
 
 
-# 	def _parseJSON(self, jsn):
-# 		M._Container_parseJSON(self, jsn)
+	def _parseXML(self, root):
+		M._Subscription_parseXML(self, root)
 
 
-# 	def _createJSON(self, isUpdate=False):
-# 		return M._Container_createJSON(self, isUpdate)
+	def _createXML(self, isUpdate=False):
+ 		return M._Subscription_createXML(self, isUpdate)
 
 
-# 	def _copy(self, resource):
-# 		super()._copy(resource)
-# 		self.maxNrOfInstances = resource.maxNrOfInstances
-# 		self.maxByteSize = resource.maxByteSize
-# 		self.maxInstanceAge = resource.maxInstanceAge
-# 		self.currentNrOfInstances = resource.currentNrOfInstances
-# 		self.currentByteSize = resource.currentByteSize
-# 		self.oldest = resource.oldest
-# 		self.latest = resource.latest
+	def _parseJSON(self, jsn):
+		M._Subscription_parseJSON(self, jsn)
+
+
+	def _createJSON(self, isUpdate=False):
+		return M._Subscription_createJSON(self, isUpdate)
+
+
+	def _copy(self, resource):
+		super()._copy(resource)
+		self.notificationURI = resource.notificationURI
+		self.notificationContentType = resource.notificationContentType
+		self.expirationCounter = resource.expirationCounter
+		self.latestNotify = resource.latestNotify
+		self.groupID = resource.groupID
+		self.notificationForwardingURI = resource.notificationForwardingURI
 
 
 
@@ -1325,6 +1431,8 @@ __pdoc__['CSEBase.retrieveFromCSE']                      = None
 __pdoc__['CSEBase.get']                                  = None
 __pdoc__['CSEBase.discover']                             = None
 __pdoc__['CSEBase.setAccessControlPolicies']             = None
+__pdoc__['CSEBase.subscribe']                            = None
+__pdoc__['CSEBase.unsubscribe']                          = None
 
 __pdoc__['AE.createInCSE']                               = None
 __pdoc__['AE.deleteFromCSE']                             = None
@@ -1333,6 +1441,8 @@ __pdoc__['AE.retrieveFromCSE']                           = None
 __pdoc__['AE.get']                                       = None
 __pdoc__['AE.discover']                                  = None
 __pdoc__['AE.setAccessControlPolicies']                  = None
+__pdoc__['AE.subscribe']                                 = None
+__pdoc__['AE.unsubscribe']                               = None
 
 __pdoc__['AccessControlPolicy.createInCSE']              = None
 __pdoc__['AccessControlPolicy.deleteFromCSE']            = None
@@ -1341,6 +1451,8 @@ __pdoc__['AccessControlPolicy.retrieveFromCSE']          = None
 __pdoc__['AccessControlPolicy.get']                      = None
 __pdoc__['AccessControlPolicy.discover']                 = None
 __pdoc__['AccessControlPolicy.setAccessControlPolicies'] = None
+__pdoc__['AccessControlPolicy.subscribe']                = None
+__pdoc__['AccessControlPolicy.unsubscribe']              = None
 
 __pdoc__['Container.createInCSE']                        = None
 __pdoc__['Container.deleteFromCSE']                      = None
@@ -1349,6 +1461,8 @@ __pdoc__['Container.retrieveFromCSE']                    = None
 __pdoc__['Container.get']                                = None
 __pdoc__['Container.discover']                           = None
 __pdoc__['Container.setAccessControlPolicies']           = None
+__pdoc__['Container.subscribe']                          = None
+__pdoc__['Container.unsubscribe']                        = None
 
 __pdoc__['ContentInstance.createInCSE']                  = None
 __pdoc__['ContentInstance.deleteFromCSE']                = None
@@ -1357,6 +1471,8 @@ __pdoc__['ContentInstance.retrieveFromCSE']              = None
 __pdoc__['ContentInstance.get']                          = None
 __pdoc__['ContentInstance.discover']                     = None
 __pdoc__['ContentInstance.setAccessControlPolicies']     = None
+__pdoc__['ContentInstance.subscribe']                    = None
+__pdoc__['ContentInstance.unsubscribe']                  = None
 
 __pdoc__['Group.createInCSE']                            = None
 __pdoc__['Group.deleteFromCSE']                          = None
@@ -1364,7 +1480,19 @@ __pdoc__['Group.updateInCSE']                            = None
 __pdoc__['Group.retrieveFromCSE']                        = None
 __pdoc__['Group.get']                                    = None
 __pdoc__['Group.discover']                               = None
-__pdoc__['Group.setAccessControlPolicies']               = None
+__pdoc__['Group.setAccessControlPolicies']       		 = None
+__pdoc__['Group.subscribe']                              = None
+__pdoc__['Group.unsubscribe']                            = None
+
+__pdoc__['Subscription.createInCSE']         		     = None
+__pdoc__['Subscription.deleteFromCSE']  		         = None
+__pdoc__['Subscription.updateInCSE']     		         = None
+__pdoc__['Subscription.retrieveFromCSE'] 		         = None
+__pdoc__['Subscription.get']              			     = None
+__pdoc__['Subscription.discover']            		     = None
+__pdoc__['Subscription.setAccessControlPolicies']		 = None
+__pdoc__['Subscription.subscribe']                       = None
+__pdoc__['Subscription.unsubscribe']                     = None
 
 
 
