@@ -50,6 +50,7 @@ def createInCSE(resource, type):
 		lastError = 'Invalid resource'
 		return False
 	content = resource._createContent(False)
+	#print(content)
 	response =  create(resource.session, resource.parent.resourceID, type, content)
 	if response and response.status_code == 201:
 		resource._parseResponse(response)	# update own fields with response
@@ -84,6 +85,7 @@ def updateInCSE(resource, type):
 		lastError = 'Invalid resource'
 		return False
 	content = resource._createContent(True)
+	#print(content)
 	response = update(resource.session, resource.resourceID, type, content)
 	if response and response.status_code == 200:
 		resource._parseResponse(response)	# update own fields with response
@@ -192,8 +194,9 @@ def _getPath(session, path):
 
 def _isValidResource(resource):
 	return	(resource.type == CON.Type_CSEBase and resource.session) or \
-			(resource.parent is not None and resource.parent.resourceID is not None and \
-				resource.session is not None and resource.session.connected is not None)
+			(resource.session is not None and resource.session.connected is not None and ( \
+				(resource.parent is not None and resource.parent.resourceID is not None)\
+			) )
 
 
 

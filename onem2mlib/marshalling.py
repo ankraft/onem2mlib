@@ -222,8 +222,10 @@ def _AE_parseXML(obj, root):
 def _AE_createXML(obj, isUpdate=False):
 	root = INT.createElement('ae', namespace='m2m')
 	_resourceBase_createXML(obj, root, isUpdate)
-	if obj.appID and not isUpdate: 	# No api when updating
+	if obj.appID and not isUpdate: 		# No api when updating
 		INT.addToElement(root, 'api', obj.appID)
+	if obj.AEID and not isUpdate:	# No api when updating
+		INT.addToElement(root, 'aei', obj.AEID)
 	INT.addToElement(root, 'rr', obj.requestReachability)
 	INT.addToElement(root, 'poa', obj.pointOfAccess)
 	return root
@@ -245,8 +247,10 @@ def _AE_parseJSON(obj, jsn):
 def _AE_createJSON(obj, isUpdate=False):
 	data = {}
 	_resourceBase_createJSON(obj, data, isUpdate)
-	if obj.appID and not isUpdate: 	# No api when updating
+	if obj.appID and not isUpdate: 		# No api when updating
 		INT.addToElementJSON(data, 'api', obj.appID)
+	if obj.AEID and not isUpdate:	# No api when updating
+		INT.addToElementJSON(data, 'aei', obj.AEID)
 	INT.addToElementJSON(data, 'rr', obj.requestReachability)
 	INT.addToElementJSON(data, 'poa', obj.pointOfAccess)
 	return {'m2m:ae' : data}

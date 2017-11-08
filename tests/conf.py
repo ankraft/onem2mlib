@@ -21,9 +21,12 @@ CSE_NAME	= 'mn-name'
 CSE_ID		= 'mn-cse'
 
 AE_NAME		= 'TEST_AE'
+AE_APPID	= 'test_appid'
+AE_AEID		= None
 AE_LABELS	= ['test/test', 'aLabel/Another%20Label']
 
 ACP_NAME	= 'TEST_ACP'
+
 ACP_LIMITED = 'limited:limited'
 
 

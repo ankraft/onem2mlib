@@ -55,6 +55,9 @@ class TestAE(unittest.TestCase):
 
 	def test_createAE(self):
 		TestAE.ae = AE(TestAE.cse, resourceName=AE_NAME, labels=AE_LABELS, instantly=False)
+		TestAE.ae.appID = AE_APPID
+		if AE_AEID:
+			TestAE.ae.AEID = AE_AEID
 		self.assertEqual(TestAE.ae.type, CON.Type_AE)
 		self.assertTrue(TestAE.ae.createInCSE())
 		self.assertEqual(TestAE.ae.resourceName, AE_NAME)
