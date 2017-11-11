@@ -1148,10 +1148,12 @@ table {
     <li class="mono"><a href="#onem2mlib.ResourceBase.createInCSE">createInCSE</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.deleteFromCSE">deleteFromCSE</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.discover">discover</a></li>
+    <li class="mono"><a href="#onem2mlib.ResourceBase.findSubscription">findSubscription</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.retrieveFromCSE">retrieveFromCSE</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.setAccessControlPolicies">setAccessControlPolicies</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.subscribe">subscribe</a></li>
+    <li class="mono"><a href="#onem2mlib.ResourceBase.subscriptions">subscriptions</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.unsubscribe">unsubscribe</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.updateInCSE">updateInCSE</a></li>
   </ul>
@@ -2571,6 +2573,23 @@ to be used for different condition tags. The default value is logical AND.</li>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.ResourceBase.findSubscription">
+    <p>def <span class="ident">findSubscription</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a specific &lt;subscription&gt; resource by its <em>resourceName</em>, or None otherwise.</p>
+<p>This method might throw a <a href="exceptions.m.html#onem2mlib.exceptions.NotSupportedError"><code>onem2mlib.exceptions.NotSupportedError</code></a> exception in case
+the target resource type doesn't support subscriptions.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.ResourceBase.get">
     <p>def <span class="ident">get</span>(</p><p>self)</p>
     </div>
@@ -2654,6 +2673,23 @@ is called instead.</li>
 <p>The &lt;subsription&gt; resource created with this method is only valid for the
 runtime of the calling program. The scubscription will be removed at least when the
 program terminates, or when <a href="notifications.m.html#onem2mlib.notifications.shutdownNotifications"><code>onem2mlib.notifications.shutdownNotifications</code></a>() is called.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.ResourceBase.subscriptions">
+    <p>def <span class="ident">subscriptions</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return a list of &lt;subscription&gt; resources of a rersource, or an empty list.</p>
+<p>This method might throw a <a href="exceptions.m.html#onem2mlib.exceptions.NotSupportedError"><code>onem2mlib.exceptions.NotSupportedError</code></a> exception in case
+the target resource type doesn't support subscriptions.</p></div>
   <div class="source_cont">
 </div>
 
