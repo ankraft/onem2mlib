@@ -341,6 +341,28 @@ class ResourceBase:
 		return NOT.removeSubscription(self)
 
 
+	def subscriptions(self):
+		"""
+		Return a list of &lt;subscription> resources of a rersource, or an empty list.
+
+		This method might throw	a `onem2mlib.exceptions.NotSupportedError` exception in case
+		the target resource type doesn't support subscriptions.
+		"""
+		if self.type not in NOT._allowedSubscriptionResources:
+			raise EXC.NotSupportedError('Subscription not supported for this resource type')
+		return INT._findSubResource(self, CON.Type_Subscription)
+
+
+	def findSubscription(self, resourceName):
+		"""
+		Find a specific &lt;subscription> resource by its *resourceName*, or None otherwise.
+
+		This method might throw	a `onem2mlib.exceptions.NotSupportedError` exception in case
+		the target resource type doesn't support subscriptions.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_Subscription, resourceName, self)
+
+
 	# Recursivly construct a structured resourceName
 	def _structuredResourceID(self):
 		if self.type == CON.Type_CSEBase:		# CSEBase means end of recursion
@@ -1433,6 +1455,8 @@ __pdoc__['CSEBase.discover']                             = None
 __pdoc__['CSEBase.setAccessControlPolicies']             = None
 __pdoc__['CSEBase.subscribe']                            = None
 __pdoc__['CSEBase.unsubscribe']                          = None
+__pdoc__['CSEBase.subscriptions']                        = None
+__pdoc__['CSEBase.findSubscription']                     = None
 
 __pdoc__['AE.createInCSE']                               = None
 __pdoc__['AE.deleteFromCSE']                             = None
@@ -1443,6 +1467,8 @@ __pdoc__['AE.discover']                                  = None
 __pdoc__['AE.setAccessControlPolicies']                  = None
 __pdoc__['AE.subscribe']                                 = None
 __pdoc__['AE.unsubscribe']                               = None
+__pdoc__['AE.subscriptions']                             = None
+__pdoc__['AE.findSubscription']                          = None
 
 __pdoc__['AccessControlPolicy.createInCSE']              = None
 __pdoc__['AccessControlPolicy.deleteFromCSE']            = None
@@ -1453,6 +1479,8 @@ __pdoc__['AccessControlPolicy.discover']                 = None
 __pdoc__['AccessControlPolicy.setAccessControlPolicies'] = None
 __pdoc__['AccessControlPolicy.subscribe']                = None
 __pdoc__['AccessControlPolicy.unsubscribe']              = None
+__pdoc__['AccessControlPolicy.subscriptions']            = None
+__pdoc__['AccessControlPolicy.findSubscription']         = None
 
 __pdoc__['Container.createInCSE']                        = None
 __pdoc__['Container.deleteFromCSE']                      = None
@@ -1463,6 +1491,8 @@ __pdoc__['Container.discover']                           = None
 __pdoc__['Container.setAccessControlPolicies']           = None
 __pdoc__['Container.subscribe']                          = None
 __pdoc__['Container.unsubscribe']                        = None
+__pdoc__['Container.subscriptions']                      = None
+__pdoc__['Container.findSubscription']                   = None
 
 __pdoc__['ContentInstance.createInCSE']                  = None
 __pdoc__['ContentInstance.deleteFromCSE']                = None
@@ -1473,6 +1503,8 @@ __pdoc__['ContentInstance.discover']                     = None
 __pdoc__['ContentInstance.setAccessControlPolicies']     = None
 __pdoc__['ContentInstance.subscribe']                    = None
 __pdoc__['ContentInstance.unsubscribe']                  = None
+__pdoc__['ContentInstance.subscriptions']                = None
+__pdoc__['ContentInstance.findSubscription']             = None
 
 __pdoc__['Group.createInCSE']                            = None
 __pdoc__['Group.deleteFromCSE']                          = None
@@ -1483,6 +1515,8 @@ __pdoc__['Group.discover']                               = None
 __pdoc__['Group.setAccessControlPolicies']       		 = None
 __pdoc__['Group.subscribe']                              = None
 __pdoc__['Group.unsubscribe']                            = None
+__pdoc__['Group.subscriptions']                          = None
+__pdoc__['Group.findSubscription']                       = None
 
 __pdoc__['Subscription.createInCSE']         		     = None
 __pdoc__['Subscription.deleteFromCSE']  		         = None
@@ -1493,7 +1527,8 @@ __pdoc__['Subscription.discover']            		     = None
 __pdoc__['Subscription.setAccessControlPolicies']		 = None
 __pdoc__['Subscription.subscribe']                       = None
 __pdoc__['Subscription.unsubscribe']                     = None
-
+__pdoc__['Subscription.subscriptions']                   = None
+__pdoc__['Subscription.findSubscription']                = None
 
 
 

@@ -269,7 +269,8 @@ class HTTPNotificationHandler(BaseHTTPRequestHandler):
 	# Handle incoming notifications (POST requests)
 	def do_POST(self):
 			# Construct return header
-			self.send_response(2001)
+			self.send_response(200)
+			self.send_header('X-M2M-RSC', '2000')
 			self.end_headers()
 
 			# Get headers and content data
@@ -278,14 +279,13 @@ class HTTPNotificationHandler(BaseHTTPRequestHandler):
 			post_data = self.rfile.read(length)
 			#print(post_data)
 
-			if not _isEnabled:
-				return
-
-			# Handle notification in the background when enabled
-			if contentType.lower().startswith('application/xml'):
-				threading.Thread(target=self._handleXML(post_data), args=(post_data)).start()
-			elif contentType.lower().startswith('application/json'):
-				threading.Thread(target=self._handleJSON(post_data), args=(post_data)).start()
+			if _isEnabled:
+				# Handle notification in the background when enabled
+				if contentType.lower().startswith('application/xml'):
+					threading.Thread(target=self._handleXML(post_data), args=(post_data)).start()
+				elif contentType.lower().startswith('application/json'):
+					threading.Thread(target=self._handleJSON(post_data), args=(post_data)).start()
+			
 
 	# Catch and ignore all log messages
 	def log_message(self, format, *args):
