@@ -272,6 +272,28 @@ class TestContainer(unittest.TestCase):
 		self.assertEqual(la.content, cis[max-1].content)
 
 
+	def test_contents(self):
+		max = 5
+
+		# create an empty sub-container
+		scnt = Container(TestContainer.cnt)
+		self.assertIsNotNone(scnt)
+
+		# add 5 contentInstances
+		for i in range(0,max):
+			self.assertTrue(scnt.addContent(str(i)))
+			time.sleep(delayInSec)
+
+		# retrieve the content
+		contents = scnt.contents()
+		self.assertIsNotNone(contents)
+		self.assertEqual(len(contents), max)
+
+		# check ol and la
+		self.assertEqual(contents[0], scnt.oldestContent())
+		self.assertEqual(contents[-1], scnt.latestContent())
+
+
 	def test_finit(self):
 		self.assertIsNotNone(TestContainer.cnt)
 		self.assertIsNotNone(TestContainer.ae)
@@ -303,5 +325,6 @@ if __name__ == '__main__':
 	suite.addTest(TestContainer('test_testOldest2'))
 	suite.addTest(TestContainer('test_testLatestOldest2'))
 	suite.addTest(TestContainer('test_maxContentInstances'))
+	suite.addTest(TestContainer('test_contents'))
 	suite.addTest(TestContainer('test_finit'))
 	unittest.TextTestRunner(verbosity=2, failfast=True).run(suite)

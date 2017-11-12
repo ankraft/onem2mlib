@@ -855,6 +855,13 @@ class Container(ResourceBase):
 		return INT._findSubResource(self, CON.Type_ContentInstance)
 
 
+	def contents(self):
+		"""
+		Return all content from all &lt;contentInstance>'s in list, or an empty list.
+		"""
+		return [cin.content for cin in self.contentInstances()]
+
+
 	def findContainer(self, resourceName):
 		"""
 		Find a &lt;container> resource by its *resourceName*, or None.

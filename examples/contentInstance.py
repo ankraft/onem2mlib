@@ -31,13 +31,16 @@ if __name__ == '__main__':
 	cin = ContentInstance(cnt, content='Some value', labels=['label1/example', 'label2/anotherExample'])
 
 	# or do the same a bit more conventient
-	cnt.addContent('Some Value', ['label1/example', 'label2/anotherExample'])
+	cnt.addContent('Some other Value', ['label1/example', 'label2/anotherExample'])
 
 	# retrieve the <contentInstance> via the <container>.latest and print it
 	print(cnt.latestContentInstance())
 
 	# The same, but only the <contentInstance>'s value.
 	print(cnt.latestContent())
+
+	# Get the time series content in an array
+	print(cnt.contents())
 
 	# delete the <AE> to clean up everything
 	ae.deleteFromCSE()
