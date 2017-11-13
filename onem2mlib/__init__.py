@@ -1424,10 +1424,11 @@ class Subscription(ResourceBase):
 def retrieveResourceFromCSE(parent, resourceID):
 	"""
 	Retrieve a resource by its *resourceID* from the CSE. Any valid *parent* resource
-	instance from that CSE must be given to pass on various internal attributes. 
-	The type of the resource is unknown and determined during retrieval.
+	instance from that CSE must be given as the first parameter to pass on various internal
+	attributes. 
+	The type of the resource is determined during retrieval.
 
-	When successful, this method returns the resource as an object, or None otherwise.
+	When successful, this method returns the retrieved resource, or None otherwise.
 	"""
 	if not parent.session or not parent.session.connected or not resourceID or not len(resourceID):
 		return False
