@@ -61,9 +61,6 @@ class Session:
 		if self.encoding not in [CON.Encoding_XML, CON.Encoding_JSON]:
 			raise EXC.NotSupportedError('Unsupported encoding: ' + str(self.encoding))
 
-		self.connected = False
-		""" Boolean. This flag indicates whether the session is successfully connected to a CSE. """
-
 		if not self.originator:
 			raise EXC.AuthenticationError('Missing accessControlOriginator.')
 
@@ -72,7 +69,6 @@ class Session:
 		result = 'Session:\n'
 		result += INT.strResource('address', None, self.address)
 		result += INT.strResource('originator', None, self.originator)
-		result += INT.strResource('connected', None, self.connected)
 		return result
 
 
@@ -415,7 +411,7 @@ class CSEBase(ResourceBase):
 	CSE immediatly.
 	"""
 
-	def __init__(self, session=None, cseID=None):
+	def __init__(self, session=None, cseID=None, resourceName=None, instantly=True):
 		"""
 		Initialize a CSEBase object.
 
@@ -427,7 +423,7 @@ class CSEBase(ResourceBase):
 		Internally, the *cseID* is assigned to the `onem2mlib.ResourceBase.resourceID` attribute, and the *csename* is handled
 		by the *resourceName*. 
 		"""
-		super().__init__(None, None, cseID, CON.Type_CSEBase)
+		super().__init__(None, resourceName, cseID, CON.Type_CSEBase)
 
 		self.session = session # Must assign session manually.
 		
@@ -442,10 +438,9 @@ class CSEBase(ResourceBase):
 		""" List of String. A list of physical addresses to be used by remote CSEs to connect to this CSE.
 			Assigned by the CSE. R/O. """
 
-		if self.retrieveFromCSE():
-			session.connected = True
-		else:
-			raise EXC.CSEOperationError('Cannot get CSEBase. ' + MCA.lastError)
+		if instantly:
+			if not self.retrieveFromCSE():
+				raise EXC.CSEOperationError('Cannot get CSEBase. ' + MCA.lastError)
 
 
 	def __str__(self):
@@ -923,9 +918,8 @@ class Container(ResourceBase):
 		return ContentInstance(self, content=value, labels=labels)
 
 
-
 	def _getContentInstance(self, path):
-		if not self.session or not self.session.connected or not path: return None
+		if not self.session or not path: return None
 		response = MCA.get(self.session, path)
 		if response and response.status_code == 200:
 			contentInstance = ContentInstance(self, instantly=False)
@@ -1175,6 +1169,10 @@ class Group(ResourceBase):
 		"""
 		Update the resources that are managed by this &lt;group> resource.
 
+		Args:
+
+		- *resource*: A resource object that acts as a template to update the group resources.
+
 		It returns a list of the updated resources, or *None* in case of an error.
 		Please note, that in the returned resource instances only the properties are set that have been
 		updated either by the update operation or as a side effect by the CSE, such as the
@@ -1264,7 +1262,7 @@ class Group(ResourceBase):
 
 
 	def _isValidFanOutPoint(self):
-		return  self.fanOutPoint and len(self.fanOutPoint) > 0 and self.session and self.session.connected
+		return  self.fanOutPoint and len(self.fanOutPoint) > 0 and self.session
 
 
 	def _copy(self, resource):
@@ -1430,7 +1428,7 @@ def retrieveResourceFromCSE(parent, resourceID):
 
 	When successful, this method returns the retrieved resource, or None otherwise.
 	"""
-	if not parent.session or not parent.session.connected or not resourceID or not len(resourceID):
+	if not parent.session or not resourceID or not len(resourceID):
 		return False
 	result = None
 	response = MCA.get(parent.session, resourceID)

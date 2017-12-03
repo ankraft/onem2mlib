@@ -30,9 +30,6 @@ class TestACP(unittest.TestCase):
 	def setUpClass(self):
 		TestACP.session = Session(host, originator, encoding)
 		TestACP.cse = CSEBase(TestACP.session, CSE_ID)
-		if not TestACP.session.connected:
-			print('*** Not connected to CSE')
-			exit()
 		if TestACP.cse.findAE(AE_NAME):
 			print('*** AE with name "' + AE_NAME + '" already present in CSE. Please remove it first.')
 			exit()
@@ -52,7 +49,6 @@ class TestACP(unittest.TestCase):
 
 
 	def test_init(self): 
-		self.assertTrue(TestACP.session.connected)
 		self.assertIsNotNone(TestACP.session)
 		self.assertIsNotNone(TestACP.cse)
 		self.assertIsNotNone(TestACP.cse.resourceID)
@@ -118,7 +114,6 @@ class TestACP(unittest.TestCase):
 		self.assertIsNotNone(sessionLimited)
 		cseLimited = CSEBase(sessionLimited, CSE_ID)
 		self.assertIsNotNone(cseLimited)
-		self.assertTrue(sessionLimited.connected)
 		aeLimited = AE(cseLimited, resourceName=AE_NAME+'L', instantly=False)
 		self.assertIsNotNone(aeLimited)
 		#aeLimited.accessControlPolicyIDs = [ TestACP.acp ]
@@ -137,7 +132,6 @@ class TestACP(unittest.TestCase):
 		self.assertIsNotNone(sessionLimited)
 		cseLimited = CSEBase(sessionLimited, CSE_ID)
 		self.assertIsNotNone(cseLimited)
-		self.assertTrue(sessionLimited.connected)
 		aeLimited = AE(cseLimited, resourceName=AE_NAME)
 		self.assertTrue(aeLimited.retrieveFromCSE())
 

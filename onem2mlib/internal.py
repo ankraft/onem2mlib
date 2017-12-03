@@ -219,7 +219,7 @@ def toInt(value):
 
 # Find a sub-resource
 def _findSubResource(resource, type):
-	if not resource or not resource.session or not resource.resourceID or not resource.session.connected: 
+	if not resource or not resource.session or not resource.resourceID: 
 		return None
 	result = []
 	ris = onem2mlib.mcarequests.discoverInCSE(resource, filter=[UT.newTypeFilterCriteria(int(type))], structuredResult=True)

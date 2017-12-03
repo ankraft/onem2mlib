@@ -37,7 +37,6 @@ class TestCSE(unittest.TestCase,):
 
 	def test_init(self):
 		self.assertIsNotNone(TestCSE.session)
-		self.assertFalse(TestCSE.session.connected)
 		self.assertEqual(TestCSE.session.address, host)
 		self.assertEqual(TestCSE.session.originator, originator)
 		self.assertEqual(TestCSE.session.encoding, encoding)
@@ -45,15 +44,10 @@ class TestCSE(unittest.TestCase,):
 
 	def test_cseGet(self):
 		TestCSE.cse = CSEBase(TestCSE.session, CSE_ID)
-		self.assertTrue(TestCSE.session.connected)
 		self.assertIsNotNone(TestCSE.cse)
 		self.assertEqual(TestCSE.cse.type, CON.Type_CSEBase)
 		if TestCSE.cse.findAE(AE_NAME):
 			self.fail('*** AE with name "' + AE_NAME + '" already present in CSE. Please remove it first.')
-
-
-	def test_isConnectedAfterwards(self):
-		self.assertTrue(TestCSE.session.connected)
 
 
 	def test_createAEInCSE(self):
@@ -89,7 +83,6 @@ if __name__ == '__main__':
 	suite = unittest.TestSuite()
 	suite.addTest(TestCSE('test_init'))
 	suite.addTest(TestCSE('test_cseGet'))
-	suite.addTest(TestCSE('test_isConnectedAfterwards'))
 	suite.addTest(TestCSE('test_createAEInCSE'))
 	suite.addTest(TestCSE('test_findAEInCSE'))
 	suite.addTest(TestCSE('test_aesInCSE'))

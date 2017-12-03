@@ -3,6 +3,7 @@
 ## Version 0.6 (xxxx-xx-xx)
 - [CHANGE] Refactored module structure. The resources are now available directly.
 - [CHANGE] Resources are now created or retrieved instantly. If one wants to make further changes to a resource object (beside of the initialization), the object must be created with the *instantly* attribute set to *False*.
+- [CHANGE] Allow that the CSEBase resource does not need to be retrieved in order to retrieve sub-resources. Removed the *connected* attribute from the *Session* class.
 - [IMPROVEMENT] Added convenience functions to *Container* to add and retrieve content values more easily.
 - [IMPROVEMENT] Added support for &lt>subscription> resources.
 - [IMPROVEMENT] Added notification support. A script can now subscribe to changes of resources and is notified when those happen.

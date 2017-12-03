@@ -28,14 +28,11 @@ class TestSession(unittest.TestCase):
 		self.assertIsNotNone(TestSession.session)
 		self.assertEqual(TestSession.session.address, host)
 		self.assertEqual(TestSession.session.originator, originator)
-		self.assertFalse(TestSession.session.connected)
 
 
 	def test_connect(self):
 		cse = CSEBase(TestSession.session, CSE_ID)
 		self.assertIsNotNone(cse)
-		self.assertTrue(TestSession.session.connected)
-
 
 
 if __name__ == '__main__':

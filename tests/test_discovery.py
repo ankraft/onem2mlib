@@ -33,9 +33,6 @@ class TestDiscovery(unittest.TestCase):
 	def setUpClass(self):
 		TestDiscovery.session = Session(host, originator, encoding)
 		TestDiscovery.cse = CSEBase(TestDiscovery.session, CSE_ID)
-		if not TestDiscovery.session.connected:
-			print('*** Not connected to CSE')
-			exit()
 		if TestDiscovery.cse.findAE(AE_NAME):
 			print('*** AE with name "' + AE_NAME + '" already present in CSE. Please remove it first.')
 			exit()
@@ -55,7 +52,6 @@ class TestDiscovery(unittest.TestCase):
 		TestDiscovery.cin2 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'2', content='value2', labels=[CIN_LABELS[0]])				# only label 1
 		TestDiscovery.cin3 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'3', content='value3', labels=[CIN_LABELS[1]])				# only label 2
 		TestDiscovery.cin4 = ContentInstance(TestDiscovery.cnt, resourceName=CIN_NAME+'4', content='value4') 										# no label
-		self.assertTrue(TestDiscovery.session.connected)
 		self.assertIsNotNone(TestDiscovery.session)
 		self.assertIsNotNone(TestDiscovery.cse)
 		self.assertIsNotNone(TestDiscovery.cse.resourceID)

@@ -32,9 +32,6 @@ class TestGroup(unittest.TestCase):
 	def setUpClass(self):
 		TestGroup.session = Session(host, originator, encoding)
 		TestGroup.cse = CSEBase(TestGroup.session, CSE_ID)
-		if not TestGroup.session.connected:
-			print('*** Not connected to CSE')
-			exit()
 		if TestGroup.cse.findAE(AE_NAME):
 			print('*** AE with name "' + AE_NAME + '" already present in CSE. Please remove it first.')
 			exit()
@@ -52,7 +49,6 @@ class TestGroup(unittest.TestCase):
 
 
 	def test_init(self):
-		self.assertTrue(TestGroup.session.connected)
 		self.assertIsNotNone(TestGroup.session)
 		self.assertIsNotNone(TestGroup.cse)
 		self.assertIsNotNone(TestGroup.cse.resourceID)

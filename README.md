@@ -61,7 +61,7 @@ The following sections provide some examples.
 
 ### Connect to a CSE
 
-First, create a session and then connect to a CSE.
+First, create a session and then retrieve a &lt;CSEBase> resource from a CSE. The session holds, for example, the authentication information to access the CSE.
 
 ```python
 session = Session('http://host.com:8282', 'admin:admin').   # create a session
@@ -76,6 +76,13 @@ session = Session('http://host.com:8282', 'admin:admin', Encoding_XML).   # crea
 cse = CSEBase(session, 'mn-cse')                                          # get the <CSEBase> resource
 ```
 
+To access resources on a CSE it is not necessary to retrieve the &lt;CSEBase> resource from the CSE (for example, when one has only limited access to resources on the CSE). But one must have at least a *CSEBase* instance that represents the CSE and holds the session information as shown above. This *CSEBase* instance can be used as usuall in subsequent calls.
+The following example creates a *CSEBase* instance without actually retrieving the &lt;CSEBase> resource. Note the explicit setting of the *resourceName* attribute in the constructor. The *instantly=False* argument prevents the instant retrieval of the actual resource.
+
+```python
+session = Session('http://host.com:8282', 'admin:admin').                 # create a session
+cse = CSEBase(session, 'mn-cse', resourceName='mn-name', instantly=False) # create a CSEBase object, without retrieving it
+```
 
 ### Create an &lt;AE> resource in a CSE
 
@@ -134,6 +141,12 @@ if cin is not None:
 	print(cin)
 ```
 
+There is a short-cut in case you are only interested in the content.
+
+```python 
+print(container.latestContent())
+```
+
 ### Delete an &lt;AE> from a CSE
 Delete an &lt;AE> resource and all its sub-resource from a CSE.
 
@@ -144,17 +157,27 @@ Add a subscription to a resource and receive notifications when the resource cha
 
 ```python
 def myCallback(resource):		# Called for notifications
+								# The parameter is the updated resource
 	# do something with the updated resource
 	...
 
-# In main:
-setupNotifications(callback=myCallback)	# Setup the notification sub-module
+# In the main program:
+setupNotifications(callback=myCallback) # Initialize the notification sub-module
 ...
-cnt = Container(ae)						# Create a container
-cnt.subscribe()							# Subscribe to changes
-cnt.addContent('Some value')			# Add a new contentInstance
-										# This also triggers a call to 'myCallback'
+cnt = Container(ae)                     # Create a container
+cnt.subscribe()                         # Subscribe to changes
+cnt.addContent('Some value')            # Add a new contentInstance
+                                        # This implicitly triggers a call to 'myCallback'
 ```
+
+There could also individual callbacks for each subscription. Provide a function in the *subscribe()* method call.
+
+```python
+...
+cnt.subscribe(anotherCallback)          # Subscribe to changes and provide a different callback function
+...
+```
+
 
 
 
@@ -171,6 +194,7 @@ The following resource types are supported in this version.
 - [&lt;contentInstance>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.ContentInstance)
 - [&lt;group>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.Group)
 - [&lt;accessControlPolicy>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.AccessControlPolicy)
+- [&lt;subscription>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.Subscription)
 
 ### Features
 - **Discovery**: 

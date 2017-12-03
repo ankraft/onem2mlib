@@ -40,6 +40,12 @@ CIN_CONTENT	= 'Hello, World'
 
 GRP_NAME	= 'TEST_GROUP'
 
+SUB_NAME	= 'TEST_SUBSCRIPTION'
+
+NOT_HOST	= 'localhost'
+NOT_PORT	= 1400
+NOT_NU		= 'http://' + NOT_HOST + ':' + str(NOT_PORT)
+
 
 FCNT_NAME	= 'TEST_FLEXCONTAINER'
 

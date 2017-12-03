@@ -17,8 +17,9 @@ if __name__ == '__main__':
 	# create session 
 	session = Session('http://localhost:8282', 'admin:admin')
 
-	# get the <CSEBase> resource
-	cse = CSEBase(session, 'mn-cse')
+	# get the <CSEBase> resource.
+	# This time we *don't* retrieve the CSEBase resource, but only hold the
+	cse = CSEBase(session, 'mn-cse', resourceName='mn-name', instantly=False)
 
 	# create an <AE> resource
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
@@ -32,9 +33,10 @@ if __name__ == '__main__':
 
 	# or do the same a bit more conventient
 	cnt.addContent('Some other Value', ['label1/example', 'label2/anotherExample'])
+	print('ContentInstances in the Container: ' + str([cnt.resourceID for cnt in cnt.contentInstances()]))
 
 	# retrieve the <contentInstance> via the <container>.latest and print it
-	print(cnt.latestContentInstance())
+	print('Latest ' + str(cnt.latestContentInstance()))
 
 	# The same, but only the <contentInstance>'s value.
 	print(cnt.latestContent())

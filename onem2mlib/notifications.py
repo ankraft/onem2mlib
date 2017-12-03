@@ -67,12 +67,15 @@ def setupNotifications(host='localhost', port=1400, callback=None):
 	is receiced. This function will receive the notification's resource as the only argument.
 	This callback function is only a default and can be overriden by the callback function
 	in the `onem2mlib.ResourceBase.subscribe`() method.
+
+	The function returns a Boolean value that indicates whether the notification sub-module
+	was successfully started.
 	"""
 
 	global _host, _port, _callback, _notificationURI
 
 	if _notificationURI:
-		return
+		return True
 	
 	# Initialize configuration, possible a new configuration
 
@@ -86,6 +89,7 @@ def setupNotifications(host='localhost', port=1400, callback=None):
 	_notificationURI = 'http://' + _host + ':' + str(_port)
 	_startNotificationServer()
 	enableNotifications()
+	return True
 
 
 def enableNotifications():

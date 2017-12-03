@@ -30,9 +30,6 @@ class TestContainer(unittest.TestCase):
 	def setUpClass(self):
 		TestContainer.session = Session(host, originator, encoding)
 		TestContainer.cse = CSEBase(TestContainer.session, CSE_ID)
-		if not TestContainer.session.connected:
-			print('*** Not connected to CSE')
-			exit()
 		if TestContainer.cse.findAE(AE_NAME):
 			print('*** AE with name "' + AE_NAME + '" already present in CSE. Please remove it first.')
 			exit()
@@ -48,7 +45,6 @@ class TestContainer(unittest.TestCase):
 
 
 	def test_init(self): 
-		self.assertTrue(TestContainer.session.connected)
 		self.assertIsNotNone(TestContainer.session)
 		self.assertIsNotNone(TestContainer.cse)
 		self.assertIsNotNone(TestContainer.cse.resourceID)
