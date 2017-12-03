@@ -24,17 +24,18 @@ def callback(resource):
 if __name__ == '__main__':
 
 	# Setup the notification sub-system
-	NOT.setupNotifications('localhost', 1400, callback)
+	print('Setting up notifications...')
+	NOT.setupNotifications(callback)
 
 	# Create session
-	session = Session('http://localhost:8282', 'admin:admin', encoding=CON.Encoding_JSON)
+	session = Session('http://localhost:8282', 'admin:admin')
 
 	# Get the <CSEBase> resource
 	cse = CSEBase(session, 'mn-cse')
 
 	# create an <AE> resource
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName)
+	ae = AE(cse, aeName)
 
 	# create a <container> and add it to the <AE>
 	cnt = Container(ae)
@@ -52,6 +53,7 @@ if __name__ == '__main__':
 	time.sleep(2)
 
 	# Shutdown the notification sub-system (actually not really necessary)
+	print('Shutting down notifications...')
 	NOT.shutdownNotifications()
 
 	# Cleanup

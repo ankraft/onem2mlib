@@ -1108,6 +1108,7 @@ table {
     <li class="mono"><a href="#onem2mlib.Container.addContent">addContent</a></li>
     <li class="mono"><a href="#onem2mlib.Container.containers">containers</a></li>
     <li class="mono"><a href="#onem2mlib.Container.contentInstances">contentInstances</a></li>
+    <li class="mono"><a href="#onem2mlib.Container.contents">contents</a></li>
     <li class="mono"><a href="#onem2mlib.Container.findContainer">findContainer</a></li>
     <li class="mono"><a href="#onem2mlib.Container.findContentInstance">findContentInstance</a></li>
     <li class="mono"><a href="#onem2mlib.Container.latestContent">latestContent</a></li>
@@ -1220,9 +1221,10 @@ Licensed under the BSD 3-Clause License. See the LICENSE file for further detail
     
   
     <div class="desc"><p>Retrieve a resource by its <em>resourceID</em> from the CSE. Any valid <em>parent</em> resource
-instance from that CSE must be given to pass on various internal attributes. 
-The type of the resource is unknown and determined during retrieval.</p>
-<p>When successful, this method returns the resource as an object, or None otherwise.</p></div>
+instance from that CSE must be given as the first parameter to pass on various internal
+attributes. 
+The type of the resource is determined during retrieval.</p>
+<p>When successful, this method returns the retrieved resource, or None otherwise.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1593,7 +1595,7 @@ Assigned by the CSE. R/O.</p></div>
             
   <div class="item">
     <div class="name def" id="onem2mlib.CSEBase.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, session=None, cseID=None)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, session=None, cseID=None, resourceName=None, instantly=True)</p>
     </div>
     
 
@@ -1876,6 +1878,21 @@ resource. R/O.</p></div>
     
   
     <div class="desc"><p>Return all &lt;contentInstance&gt; sub-resources from this container, or an empty list.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.Container.contents">
+    <p>def <span class="ident">contents</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return all content from all &lt;contentInstance&gt;'s in list, or an empty list.</p></div>
   <div class="source_cont">
 </div>
 
@@ -2287,6 +2304,10 @@ the resources, or <em>None</em>.</p></div>
     
   
     <div class="desc"><p>Update the resources that are managed by this &lt;group&gt; resource.</p>
+<p>Args:</p>
+<ul>
+<li><em>resource</em>: A resource object that acts as a template to update the group resources.</li>
+</ul>
 <p>It returns a list of the updated resources, or <em>None</em> in case of an error.
 Please note, that in the returned resource instances only the properties are set that have been
 updated either by the update operation or as a side effect by the CSE, such as the
@@ -2757,17 +2778,6 @@ must be set to a valid value.</p></div>
   
     <div class="desc"><p>String. The URL of the CSE host to connect to. The address includes the protocol, hostname, 
 port number, and any API prefix etc.</p></div>
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="onem2mlib.Session.connected" class="name">var <span class="ident">connected</span></p>
-            
-
-            
-  
-    <div class="desc"><p>Boolean. This flag indicates whether the session is successfully connected to a CSE.</p></div>
   <div class="source_cont">
 </div>
 

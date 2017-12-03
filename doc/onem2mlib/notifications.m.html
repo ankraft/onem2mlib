@@ -1222,7 +1222,7 @@ or processed anymore.</p>
       
   <div class="item">
     <div class="name def" id="onem2mlib.notifications.setupNotifications">
-    <p>def <span class="ident">setupNotifications</span>(</p><p>host=&#39;localhost&#39;, port=1400, callback=None)</p>
+    <p>def <span class="ident">setupNotifications</span>(</p><p>callback=None, host=&#39;localhost&#39;, port=1400)</p>
     </div>
     
 
@@ -1240,7 +1240,9 @@ default is 1400.</li>
 is receiced. This function will receive the notification's resource as the only argument.
 This callback function is only a default and can be overriden by the callback function
 in the <a href="ResourceBase.m.html#onem2mlib.ResourceBase.subscribe"><code>onem2mlib.ResourceBase.subscribe</code></a>() method.</li>
-</ul></div>
+</ul>
+<p>The function returns a Boolean value that indicates whether the notification sub-module
+was successfully started.</p></div>
   <div class="source_cont">
 </div>
 

@@ -162,12 +162,12 @@ def myCallback(resource):		# Called for notifications
 	...
 
 # In the main program:
-setupNotifications(callback=myCallback) # Initialize the notification sub-module
+setupNotifications(myCallback)  # Initialize the notification sub-module
 ...
-cnt = Container(ae)                     # Create a container
-cnt.subscribe()                         # Subscribe to changes
-cnt.addContent('Some value')            # Add a new contentInstance
-                                        # This implicitly triggers a call to 'myCallback'
+cnt = Container(ae)             # Create a container
+cnt.subscribe()                 # Subscribe to changes
+cnt.addContent('Some value')    # Add a new contentInstance
+                                # This implicitly triggers a call to 'myCallback'
 ```
 
 There could also individual callbacks for each subscription. Provide a function in the *subscribe()* method call.

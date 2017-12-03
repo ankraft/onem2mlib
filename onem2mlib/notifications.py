@@ -52,7 +52,7 @@ _allowedSubscriptionResources = [
 ]
 
 
-def setupNotifications(host='localhost', port=1400, callback=None):
+def setupNotifications(callback=None, host='localhost', port=1400):
 	"""
 	Setup the notification sub-module. This also starts a http server listening on the
 	specified interface and port.
