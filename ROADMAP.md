@@ -4,18 +4,19 @@
 - FlexContainer
     - Support in &lt;AE>, &lt;Container>, &lt;flexContainers>
 - RemoteCSE
-- Subscription
+	- remoteCSE in CSEBase
 - Node
 
 ## Features 
 ### Soon
-- Subscription service
 - Add a setup.py for easier installation
+- CSEBase, RemoteCSE, AE
+	- nodelink attribute
 - Announced resources
-- CSE
-	- Children attribute (rcn=5)
 
 ### Sometime
 - Support offset, maxmimum number/size in retrievals
 - Lazy retrieval of remote resources 
 - Test with other oneM2M implementations (contributions needed)
+- Support more &lt;subscription> attributes
+	- eventNotificationCriteria, notificationStoragePriority, preSubscriptionNotify, pendingNotification, batchNotify, rateLimit, notificationEventCat,

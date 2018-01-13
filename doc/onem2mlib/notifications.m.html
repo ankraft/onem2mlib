@@ -4,8 +4,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 
     <title>onem2mlib.notifications API documentation</title>
-    <meta name="description" content="This sub-module defines the end-point and server for notification as well as support
-functions to ha..." />
+    <meta name="description" content="This sub-module defines the end-point and server for notifications as well as support
+functions to h..." />
 
   <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
   
@@ -1049,6 +1049,7 @@ table {
     <li class="mono"><a href="#onem2mlib.notifications.disableNotifications">disableNotifications</a></li>
     <li class="mono"><a href="#onem2mlib.notifications.enableNotifications">enableNotifications</a></li>
     <li class="mono"><a href="#onem2mlib.notifications.getNotificationURI">getNotificationURI</a></li>
+    <li class="mono"><a href="#onem2mlib.notifications.hasSubscription">hasSubscription</a></li>
     <li class="mono"><a href="#onem2mlib.notifications.isNotificationEnabled">isNotificationEnabled</a></li>
     <li class="mono"><a href="#onem2mlib.notifications.removeAllSubscriptions">removeAllSubscriptions</a></li>
     <li class="mono"><a href="#onem2mlib.notifications.removeSubscription">removeSubscription</a></li>
@@ -1071,10 +1072,10 @@ table {
 
   <header id="section-intro">
   <h1 class="title"><span class="name">onem2mlib.notifications</span> module</h1>
-  <p>This sub-module defines the end-point and server for notification as well as support
+  <p>This sub-module defines the end-point and server for notifications as well as support
 functions to handle and manage notifications from CSE resources.</p>
 <p>Before receiving notifications, one must setup the notification sub-module by calling
-the <a href="#onem2mlib.notifications.setupNotifications"><code>setupNotifications</code></a>() method. This starts also a http server
+the <a href="#onem2mlib.notifications.setupNotifications"><code>setupNotifications</code></a>() method. This starts also an http server
 that receives notifications from the respective CSE.</p>
 <p>One can provide callback functions, either for general handling, or specific for each
 subscription. The callback function must have the form <code>function(resource)</code> where
@@ -1161,6 +1162,28 @@ method.</p></div>
     
   
     <div class="desc"><p>String. Return the current notificationURI, or None when notifications are disabled.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="onem2mlib.notifications.hasSubscription">
+    <p>def <span class="ident">hasSubscription</span>(</p><p>resource)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Check whether a resource has a subscription attached, which is managed by the
+notification sub-service.</p>
+<p>Args:</p>
+<ul>
+<li><em>resource</em>: the resource to check.</li>
+</ul>
+<p>The method returns a Boolean indicating whether the resource is managed and
+has a subscription attached.</p></div>
   <div class="source_cont">
 </div>
 

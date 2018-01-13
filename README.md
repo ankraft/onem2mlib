@@ -76,8 +76,9 @@ session = Session('http://host.com:8282', 'admin:admin', Encoding_XML).   # crea
 cse = CSEBase(session, 'mn-cse')                                          # get the <CSEBase> resource
 ```
 
-To access resources on a CSE it is not necessary to retrieve the &lt;CSEBase> resource from the CSE (for example, when one has only limited access to resources on the CSE). But one must have at least a *CSEBase* instance that represents the CSE and holds the session information as shown above. This *CSEBase* instance can be used as usuall in subsequent calls.
-The following example creates a *CSEBase* instance without actually retrieving the &lt;CSEBase> resource. Note the explicit setting of the *resourceName* attribute in the constructor. The *instantly=False* argument prevents the instant retrieval of the actual resource.
+To access resources on a CSE it is not necessary to retrieve the &lt;CSEBase> resource from the CSE (for example, when one has only limited access to resources on the CSE). But one must have at least create a *CSEBase* **instance** that represents the CSE and holds the session information as shown above. This *CSEBase* instance can be used as usuall in subsequent calls.
+
+The following example creates a *CSEBase* **instance** without actually retrieving the &lt;CSEBase> **resource**. The *resourceName* attribute must be known and set explitly in the constructor. The *instantly=False* argument must also be set; it prevents the retrieval of the actual resource (which, as explained above, might fail when there is only limited access to the CSE).
 
 ```python
 session = Session('http://host.com:8282', 'admin:admin').                 # create a session
@@ -165,20 +166,26 @@ def myCallback(resource):		# Called for notifications
 setupNotifications(myCallback)  # Initialize the notification sub-module
 ...
 cnt = Container(ae)             # Create a container
-cnt.subscribe()                 # Subscribe to changes
+cnt.subscribe()                 # Subscribe to changes of this resource
 cnt.addContent('Some value')    # Add a new contentInstance
-                                # This implicitly triggers a call to 'myCallback'
+                                # This implicitly triggers a call to 'myCallback' when the value us changed in the CSE
 ```
 
-There could also individual callbacks for each subscription. Provide a function in the *subscribe()* method call.
+There could also be individual callbacks for each resource. Provide another function in the *subscribe()* method call.
 
 ```python
 ...
-cnt.subscribe(anotherCallback)          # Subscribe to changes and provide a different callback function
+cnt.subscribe(anotherCallback)          # Subscribe to changes of this resource, and provide a different callback function
 ...
 ```
 
+Remove a subscription by calling the *unsubscribe()* method:
 
+```python
+...
+cnt.unsubscribe()          # Notifications for this resource will stop
+...
+```
 
 
 ## Supported Features & Limitations

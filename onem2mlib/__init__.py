@@ -29,7 +29,10 @@ __all__ = [	'CSEBase', 'AccessControlPolicy', 'AccessControlRule', 'AE', 'Contai
 
 
 class Session:
-	""" The Session class is used when connecting to a oneM2M CSE."""
+	"""
+	A Session object is used when connecting to a oneM2M CSE. It holds various information
+	about the current session, such as the CSE endpoint, credentials, desired encoding, etc.
+	"""
 
 	def __init__(self, address,  originator, encoding=CON.Encoding_JSON):
 		"""
@@ -480,6 +483,38 @@ class CSEBase(ResourceBase):
 		return INT._getResourceFromCSEByResourceName(CON.Type_AE, resourceName, self)
 
 
+	def addAE(self, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[]):
+		"""
+		Add a new AE. This is a convenience function that actually creates a new
+		&lt;AE> resource in the &lt;CSEBase>. It returns the new
+		*AE* object, or None.
+		"""
+		return AE(self, resourceName, appID, AEID, resourceID, requestReachability, labels)
+
+
+	def containers(self):
+		"""
+		Return a list of all &lt;container> resources of this &lt;CSEBase>, or an empty list.
+		"""
+		return INT._findSubResource(self, CON.Type_Container)
+
+
+	def findContainer(self, resourceName):
+		"""
+		Find a &lt;container> resource by its *resourceName*, or None.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
+
+
+	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[]):
+		"""
+		Add a new container. This is a convenience function that actually creates a new
+		&lt;container> resource in the &lt;CSEBase>. It returns the new
+		*Container* object, or None.
+		"""
+		return Container(self, resourceName, maxNrOfInstances, maxByteSize, maxInstanceAge, labels)
+
+
 	def groups(self):
 		"""
 		Return a list of &lt;group> resources from this CSE, or an empty list.
@@ -491,9 +526,16 @@ class CSEBase(ResourceBase):
 		"""
 		Find a specific &lt;group> resource by its *resourceName*, or None.
 		"""
-		return _getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self)
+		return INT._getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self)
 
-# TODO Testcase for findgroup()
+
+	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], instantly=True):
+		"""
+		Add a new group. This is a convenience function that actually creates a new
+		&lt;group> resource in the &lt;CSEBase>. It returns the new
+		*Group* object, or None.
+		"""
+		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels)
 
 
 	def _parseXML(self, root):
@@ -710,6 +752,16 @@ class AE(ResourceBase):
 		return INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
 
 
+
+	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[]):
+		"""
+		Add a new container. This is a convenience function that actually creates a new
+		&lt;container> resource in the &lt;AE>. It returns the new
+		*Container* object, or None.
+		"""
+		return Container(self, resourceName, maxNrOfInstances, maxByteSize, maxInstanceAge, labels)
+
+
 	# def flexContainers(self):
 	# 	"""
 	# 	Return a list of all &lt;flexContainer> resources of this &lt;AE>, or an empty list.
@@ -736,6 +788,15 @@ class AE(ResourceBase):
 		Find a specific &lt;group> resource by its *resourceName*, or None.
 		"""
 		return INT._getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self)
+
+
+	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], instantly=True):
+		"""
+		Add a new group. This is a convenience function that actually creates a new
+		&lt;group> resource in the &lt;AE>. It returns the new
+		*Group* object, or None.
+		"""
+		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels)
 
 
 	def _parseXML(self, root):
@@ -843,11 +904,34 @@ class Container(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Container)
 
 
+	def findContainer(self, resourceName):
+		"""
+		Find a &lt;container> resource by its *resourceName*, or None.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
+
+
+	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[]):
+		"""
+		Add a new container. This is a convenience function that actually creates a new
+		&lt;container> resource in the &lt;container>. It returns the new
+		*Container* object, or None.
+		"""
+		return Container(self, resourceName, maxNrOfInstances, maxByteSize, maxInstanceAge, labels)
+
+
 	def contentInstances(self):
 		"""
 		Return all &lt;contentInstance> sub-resources from this container, or an empty list.
 		"""
 		return INT._findSubResource(self, CON.Type_ContentInstance)
+
+
+	def findContentInstance(self, resourceName):
+		"""
+		Find a &lt;ContentInstance> resource by its *resourceName*, or None.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_ContentInstance, resourceName, self)
 
 
 	def contents(self):
@@ -857,18 +941,13 @@ class Container(ResourceBase):
 		return [cin.content for cin in self.contentInstances()]
 
 
-	def findContainer(self, resourceName):
+	def addContent(self, value, labels=[]):
 		"""
-		Find a &lt;container> resource by its *resourceName*, or None.
+		Add a new value to a container. This is a convenience function that actually creates a new
+		&lt;contentInstance> resource for that value in the &lt;container>. It returns the new
+		*ContentInstance* object, or None.
 		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
-
-
-	def findContentInstance(self, resourceName):
-		"""
-		Find a &lt;ContentInstance> resource by its *resourceName*, or None.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_ContentInstance, resourceName, self)
+		return ContentInstance(self, content=value, labels=labels)
 
 
 	def latestContentInstance(self):
@@ -907,15 +986,6 @@ class Container(ResourceBase):
 		if cin:
 			return cin.content
 		return None
-
-
-	def addContent(self, value, labels=[]):
-		"""
-		Add a new value to a container. This is a convenience function that actually creates a new
-		&lt;contentInstance> resource for that value in the &lt;container>. It returns the new
-		*ContentInstance* object, or None.
-		"""
-		return ContentInstance(self, content=value, labels=labels)
 
 
 	def _getContentInstance(self, path):
@@ -1535,7 +1605,4 @@ __pdoc__['Subscription.subscribe']                       = None
 __pdoc__['Subscription.unsubscribe']                     = None
 __pdoc__['Subscription.subscriptions']                   = None
 __pdoc__['Subscription.findSubscription']                = None
-
-
-
 

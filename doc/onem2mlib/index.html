@@ -1059,6 +1059,8 @@ table {
           
   <ul>
     <li class="mono"><a href="#onem2mlib.AE.__init__">__init__</a></li>
+    <li class="mono"><a href="#onem2mlib.AE.addContainer">addContainer</a></li>
+    <li class="mono"><a href="#onem2mlib.AE.addGroup">addGroup</a></li>
     <li class="mono"><a href="#onem2mlib.AE.containers">containers</a></li>
     <li class="mono"><a href="#onem2mlib.AE.findContainer">findContainer</a></li>
     <li class="mono"><a href="#onem2mlib.AE.findGroup">findGroup</a></li>
@@ -1091,9 +1093,14 @@ table {
   <ul>
     <li class="mono"><a href="#onem2mlib.CSEBase.__init__">__init__</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.accessControlPolicies">accessControlPolicies</a></li>
+    <li class="mono"><a href="#onem2mlib.CSEBase.addAE">addAE</a></li>
+    <li class="mono"><a href="#onem2mlib.CSEBase.addContainer">addContainer</a></li>
+    <li class="mono"><a href="#onem2mlib.CSEBase.addGroup">addGroup</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.aes">aes</a></li>
+    <li class="mono"><a href="#onem2mlib.CSEBase.containers">containers</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.findAE">findAE</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.findAccessControlPolicy">findAccessControlPolicy</a></li>
+    <li class="mono"><a href="#onem2mlib.CSEBase.findContainer">findContainer</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.findGroup">findGroup</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.groups">groups</a></li>
   </ul>
@@ -1105,6 +1112,7 @@ table {
           
   <ul>
     <li class="mono"><a href="#onem2mlib.Container.__init__">__init__</a></li>
+    <li class="mono"><a href="#onem2mlib.Container.addContainer">addContainer</a></li>
     <li class="mono"><a href="#onem2mlib.Container.addContent">addContent</a></li>
     <li class="mono"><a href="#onem2mlib.Container.containers">containers</a></li>
     <li class="mono"><a href="#onem2mlib.Container.contentInstances">contentInstances</a></li>
@@ -1315,6 +1323,40 @@ application and the sub-structure of resources beneath it.</p></div>
 <li>All other arguments initialize the status variables of the same name in the
         &lt;AE&gt; instance or <a href="#onem2mlib.ResourceBase"><code>ResourceBase</code></a>.</li>
 </ul></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.AE.addContainer">
+    <p>def <span class="ident">addContainer</span>(</p><p>self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[])</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Add a new container. This is a convenience function that actually creates a new
+&lt;container&gt; resource in the &lt;AE&gt;. It returns the new
+<em>Container</em> object, or None.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.AE.addGroup">
+    <p>def <span class="ident">addGroup</span>(</p><p>self, resourceName=None, resources=[], maxNrOfMembers=10, consistencyStrategy=1, groupName=None, labels=[], instantly=True)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Add a new group. This is a convenience function that actually creates a new
+&lt;group&gt; resource in the &lt;AE&gt;. It returns the new
+<em>Group</em> object, or None.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1631,6 +1673,57 @@ by the <em>resourceName</em>.</p></div>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.CSEBase.addAE">
+    <p>def <span class="ident">addAE</span>(</p><p>self, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[])</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Add a new AE. This is a convenience function that actually creates a new
+&lt;AE&gt; resource in the &lt;CSEBase&gt;. It returns the new
+<em>AE</em> object, or None.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.CSEBase.addContainer">
+    <p>def <span class="ident">addContainer</span>(</p><p>self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[])</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Add a new container. This is a convenience function that actually creates a new
+&lt;container&gt; resource in the &lt;CSEBase&gt;. It returns the new
+<em>Container</em> object, or None.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.CSEBase.addGroup">
+    <p>def <span class="ident">addGroup</span>(</p><p>self, resourceName=None, resources=[], maxNrOfMembers=10, consistencyStrategy=1, groupName=None, labels=[], instantly=True)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Add a new group. This is a convenience function that actually creates a new
+&lt;group&gt; resource in the &lt;CSEBase&gt;. It returns the new
+<em>Group</em> object, or None.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.CSEBase.aes">
     <p>def <span class="ident">aes</span>(</p><p>self)</p>
     </div>
@@ -1639,6 +1732,21 @@ by the <em>resourceName</em>.</p></div>
     
   
     <div class="desc"><p>Return a list of &lt;AE&gt; resources from this CSE, or an empty list.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.CSEBase.containers">
+    <p>def <span class="ident">containers</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return a list of all &lt;container&gt; resources of this &lt;CSEBase&gt;, or an empty list.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1669,6 +1777,21 @@ by the <em>resourceName</em>.</p></div>
     
   
     <div class="desc"><p>Find a specific &lt;accessControlPolicy&gt; resource by its <em>resourceName</em>, or None.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.CSEBase.findContainer">
+    <p>def <span class="ident">findContainer</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a &lt;container&gt; resource by its <em>resourceName</em>, or None.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1831,6 +1954,23 @@ resource. R/O.</p></div>
 <li>All other arguments initialize the status variables of the same name in the
         &lt;container&gt; instance or <a href="#onem2mlib.ResourceBase"><code>ResourceBase</code></a>.</li>
 </ul></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.Container.addContainer">
+    <p>def <span class="ident">addContainer</span>(</p><p>self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[])</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Add a new container. This is a convenience function that actually creates a new
+&lt;container&gt; resource in the &lt;container&gt;. It returns the new
+<em>Container</em> object, or None.</p></div>
   <div class="source_cont">
 </div>
 
@@ -2762,7 +2902,8 @@ must be set to a valid value.</p></div>
       <p id="onem2mlib.Session" class="name">class <span class="ident">Session</span></p>
       
   
-    <div class="desc"><p>The Session class is used when connecting to a oneM2M CSE.</p></div>
+    <div class="desc"><p>A Session object is used when connecting to a oneM2M CSE. It holds various information
+about the current session, such as the CSE endpoint, credentials, desired encoding, etc.</p></div>
   <div class="source_cont">
 </div>
 
@@ -2997,10 +3138,10 @@ shall send notifications to.</li>
       <p class="name"><a href="notifications.m.html">onem2mlib.notifications</a></p>
       
   
-    <div class="desc"><p>This sub-module defines the end-point and server for notification as well as support
+    <div class="desc"><p>This sub-module defines the end-point and server for notifications as well as support
 functions to handle and manage notifications from CSE resources.</p>
 <p>Before receiving notifications, one must setup the notification sub-module by calling
-the <a href="notifications.m.html#onem2mlib.notifications.setupNotifications"><code>onem2mlib.notifications.setupNotifications</code></a>() method. This...</p></div>
+the <a href="notifications.m.html#onem2mlib.notifications.setupNotifications"><code>onem2mlib.notifications.setupNotifications</code></a>() method. Thi...</p></div>
 
       </div>
       <div class="item">
