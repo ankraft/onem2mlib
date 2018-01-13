@@ -41,7 +41,7 @@ if __name__ == '__main__':
 	# The same, but only the <contentInstance>'s value.
 	print(cnt.latestContent())
 
-	# Get the time series content in an array
+	# Get the time series content in a list
 	print(cnt.contents())
 
 	# delete the <AE> to clean up everything

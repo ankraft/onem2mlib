@@ -30,12 +30,10 @@ if __name__ == '__main__':
 	print(ae)	# This should be the same <AE> as before
 
 	#
-	# Create and print an <AE> resource on the CSE step-by-step. 
-	# This way one can make modifications to the ae object before 
-	# creating it in the CSE
+	# Create an <AE> with the convenient method and print it.
 	#
 	aeName2 = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae2 = AE(cse, resourceName=aeName2)
+	ae2 = cse.addAE(aeName2)
 	print(ae2)
 
 

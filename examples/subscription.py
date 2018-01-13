@@ -18,14 +18,17 @@ import onem2mlib.notifications as NOT
 # This is the callback function that is called for the notifications.
 # The parameter is the changed resource
 def callback(resource):
-	print(resource)
+	if resource.type == CON.Type_ContentInstance:
+		print(resource.content)
+	else:
+		print(resource)
 
 
 if __name__ == '__main__':
 
 	# Setup the notification sub-system
 	print('Setting up notifications...')
-	NOT.setupNotifications(callback)
+	NOT.setupNotifications(callbackp, host='localhost')
 
 	# Create session
 	session = Session('http://localhost:8282', 'admin:admin')
