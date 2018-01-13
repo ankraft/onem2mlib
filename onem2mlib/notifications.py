@@ -4,15 +4,16 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module defines the constants used in various modules.
+#	This sub-module defines the end-point and server for notifications as well
+#	support functions.
 #
 
 """
-This sub-module defines the end-point and server for notification as well as support
+This sub-module defines the end-point and server for notifications as well as support
 functions to handle and manage notifications from CSE resources.
 
 Before receiving notifications, one must setup the notification sub-module by calling
-the `onem2mlib.notifications.setupNotifications`() method. This starts also a http server
+the `onem2mlib.notifications.setupNotifications`() method. This starts also an http server
 that receives notifications from the respective CSE.
 
 One can provide callback functions, either for general handling, or specific for each
@@ -201,6 +202,23 @@ def removeSubscription(resource):
 	if not resource or not resource.resourceID:
 		return False
 	return _removeSubscriptionByID(resource.resourceID)
+
+
+def hasSubscription(resource):
+	"""
+	Check whether a resource has a subscription attached, which is managed by the
+	notification sub-service.
+
+	Args:
+
+	- *resource*: the resource to check.
+
+	The method returns a Boolean indicating whether the resource is managed and
+	has a subscription attached.
+	"""
+	if not resource or not resource.resourceID:
+		return False
+	return resource.resourceID in _subscriptions.keys()
 
 
 # Remove a subscription from the internal data structures
