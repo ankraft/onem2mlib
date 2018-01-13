@@ -29,7 +29,7 @@ class TestGroup(unittest.TestCase):
 	cnt2 = None
 
 	@classmethod
-	def setUpClass(self):
+	def setUpClass(cls):
 		TestGroup.session = Session(host, originator, encoding)
 		TestGroup.cse = CSEBase(TestGroup.session, CSE_ID)
 		if TestGroup.cse.findAE(AE_NAME):
@@ -42,7 +42,7 @@ class TestGroup(unittest.TestCase):
 
 
 	@classmethod
-	def tearDownClass(self):
+	def tearDownClass(cls):
 		if TestGroup.ae:
 			TestGroup.ae.deleteFromCSE()
 			TestGroup.ae = None

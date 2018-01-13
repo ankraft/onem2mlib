@@ -25,7 +25,7 @@ class TestAE(unittest.TestCase):
 	ae2 = None
 
 	@classmethod
-	def setUpClass(self):
+	def setUpClass(cls):
 		TestAE.session = Session(host, originator, encoding)
 		TestAE.cse = CSEBase(TestAE.session, CSE_ID)
 		if TestAE.cse.findAE(AE_NAME):
@@ -34,7 +34,7 @@ class TestAE(unittest.TestCase):
 
 
 	@classmethod
-	def tearDownClass(self):
+	def tearDownClass(cls):
 		if TestAE.ae:
 			TestAE.ae.deleteFromCSE()
 			TestAE.ae = None
@@ -163,6 +163,28 @@ class TestAE(unittest.TestCase):
 		self.assertEqual(grps[0].resourceID, grp.resourceID)
 
 
+	def test_addFindGroup(self):
+		self.assertIsNotNone(TestAE.ae)
+		# create a group
+		grp = TestAE.ae.addGroup(GRP_NAME, [TestAE.ae])
+		self.assertIsNotNone(grp)
+		# try to retrieve it
+		g = TestAE.ae.findGroup(GRP_NAME)
+		self.assertIsNotNone(g)
+		self.assertEqual(g.resourceID, grp.resourceID)
+
+
+	def test_addFindContainer(self):
+		self.assertIsNotNone(TestAE.ae)
+		# create a container
+		cnt = TestAE.ae.addContainer(CNT_NAME + '_1')
+		self.assertIsNotNone(cnt)
+		# try to retrieve it
+		c = TestAE.ae.findContainer(CNT_NAME + '_1')
+		self.assertIsNotNone(c)
+		self.assertEqual(c.resourceID, cnt.resourceID)
+
+
 	def test_finit(self):
 		self.assertIsNotNone(TestAE.ae)
 		self.assertTrue(TestAE.ae.deleteFromCSE())
@@ -181,5 +203,7 @@ if __name__ == '__main__':
 	suite.addTest(TestAE('test_groupsInAE'))
 	suite.addTest(TestAE('test_getAE'))
 	suite.addTest(TestAE('test_createInstantly'))
+	suite.addTest(TestAE('test_addFindGroup'))
+	suite.addTest(TestAE('test_addFindContainer'))
 	suite.addTest(TestAE('test_finit'))
 	unittest.TextTestRunner(verbosity=2, failfast=True).run(suite)

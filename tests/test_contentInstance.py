@@ -27,7 +27,7 @@ class TestContentInstance(unittest.TestCase):
 
 
 	@classmethod
-	def setUpClass(self):
+	def setUpClass(cls):
 		TestContentInstance.session = Session(host, originator, encoding)
 		TestContentInstance.cse = CSEBase(TestContentInstance.session, CSE_ID)
 		if TestContentInstance.cse.findAE(AE_NAME):
@@ -38,7 +38,7 @@ class TestContentInstance(unittest.TestCase):
 
 
 	@classmethod
-	def tearDownClass(self):
+	def tearDownClass(cls):
 		if TestContentInstance.ae:
 			TestContentInstance.ae.deleteFromCSE()
 			TestContentInstance.ae = None

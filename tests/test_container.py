@@ -27,7 +27,7 @@ class TestContainer(unittest.TestCase):
 
 
 	@classmethod
-	def setUpClass(self):
+	def setUpClass(cls):
 		TestContainer.session = Session(host, originator, encoding)
 		TestContainer.cse = CSEBase(TestContainer.session, CSE_ID)
 		if TestContainer.cse.findAE(AE_NAME):
@@ -38,7 +38,7 @@ class TestContainer(unittest.TestCase):
 
 
 	@classmethod
-	def tearDownClass(self):
+	def tearDownClass(cls):
 		if TestContainer.ae:
 			TestContainer.ae.deleteFromCSE()
 			TestContainer.ae = None
@@ -290,6 +290,21 @@ class TestContainer(unittest.TestCase):
 		self.assertEqual(contents[-1], scnt.latestContent())
 
 
+	def test_addContainer(self):
+		self.assertIsNotNone(TestContainer.cnt)
+		cnt = TestContainer.cnt.addContainer(CNT_NAME + '_1')
+		self.assertIsNotNone(cnt)
+		# check the container
+		cnts = TestContainer.cnt.containers()
+		self.assertTrue(len(cnts) > 0)
+		found = False
+		for c in cnts:
+			if c.resourceID == cnt.resourceID:
+				found = True
+				break
+		self.assertTrue(found)
+
+
 	def test_finit(self):
 		self.assertIsNotNone(TestContainer.cnt)
 		self.assertIsNotNone(TestContainer.ae)
@@ -322,5 +337,6 @@ if __name__ == '__main__':
 	suite.addTest(TestContainer('test_testLatestOldest2'))
 	suite.addTest(TestContainer('test_maxContentInstances'))
 	suite.addTest(TestContainer('test_contents'))
+	suite.addTest(TestContainer('test_addContainer'))
 	suite.addTest(TestContainer('test_finit'))
 	unittest.TextTestRunner(verbosity=2, failfast=True).run(suite)

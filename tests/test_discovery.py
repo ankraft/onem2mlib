@@ -29,8 +29,9 @@ class TestDiscovery(unittest.TestCase):
 	c1n3 = None
 	cin4 = None
 
+
 	@classmethod
-	def setUpClass(self):
+	def setUpClass(cls):
 		TestDiscovery.session = Session(host, originator, encoding)
 		TestDiscovery.cse = CSEBase(TestDiscovery.session, CSE_ID)
 		if TestDiscovery.cse.findAE(AE_NAME):
@@ -39,7 +40,7 @@ class TestDiscovery(unittest.TestCase):
 		
 
 	@classmethod
-	def tearDownClass(self):
+	def tearDownClass(cls):
 		if TestDiscovery.ae:
 			TestDiscovery.ae.deleteFromCSE()
 			TestDiscovery.ae = None

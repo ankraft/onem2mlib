@@ -27,7 +27,7 @@ class TestACP(unittest.TestCase):
 
 
 	@classmethod
-	def setUpClass(self):
+	def setUpClass(cls):
 		TestACP.session = Session(host, originator, encoding)
 		TestACP.cse = CSEBase(TestACP.session, CSE_ID)
 		if TestACP.cse.findAE(AE_NAME):
@@ -39,7 +39,7 @@ class TestACP(unittest.TestCase):
 
 
 	@classmethod
-	def tearDownClass(self):
+	def tearDownClass(cls):
 		if TestACP.ae:
 			TestACP.ae.deleteFromCSE()
 			TestACP.ae = None

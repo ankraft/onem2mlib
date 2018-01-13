@@ -10,6 +10,7 @@ python3 test_group.py
 python3 test_accessControlPolicy.py
 python3 test_discovery.py
 python3 test_subscription.py
+python3 test_notification.py
 
 endtime=`date +%s`
 

@@ -36,8 +36,8 @@ class TestSubscription(unittest.TestCase):
 			exit()
 		TestSubscription.ae = AE(TestSubscription.cse, resourceName=AE_NAME)
 		TestSubscription.cnt = Container(TestSubscription.ae, resourceName=CNT_NAME)
-		if not NOT.setupNotifications(NOT_HOST, NOT_PORT):	# simple notification setup
-			print('*** Cannot setup notification server at "' + NOT_HOST + ':' + str(NOT_PORT))
+		if not NOT.setupNotifications(None, NOT_HOST, NOT_PORT):	# simple notification setup
+			print('*** Cannot setup notification server at "' + NOT_HOST + ':' + NOT_PORT)
 			exit()
 
 
