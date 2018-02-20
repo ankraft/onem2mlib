@@ -34,6 +34,7 @@ def retrieveFromCSE(resource):
 	else:
 		response = get(resource.session, resource.resourceID)
 	if response and response.status_code == 200:
+		#print(response)
 		resource._parseResponse(response)
 		return True
 	if response:
@@ -53,6 +54,7 @@ def createInCSE(resource, type):
 	#print(content)
 	response =  create(resource.session, resource.parent.resourceID, type, content)
 	if response and response.status_code == 201:
+		#print(response)
 		resource._parseResponse(response)	# update own fields with response
 		return True
 	if response:
@@ -88,9 +90,11 @@ def updateInCSE(resource, type):
 	#print(content)
 	response = update(resource.session, resource.resourceID, type, content)
 	if response and response.status_code == 200:
+		#print(response)
 		resource._parseResponse(response)	# update own fields with response
 		return True
 	if response:
+		#print(response)
 		lastError = str(response.status_code) + ' - ' + response.text
 		#print(response.status_code)
 	return False

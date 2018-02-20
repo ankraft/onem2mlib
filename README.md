@@ -1,5 +1,5 @@
 # onem2mlib
-**Version 0.6**
+**Version 0.7**
 
 This Python3 module implements a library to access and manage resources on a oneM2M CSE.
 
@@ -19,25 +19,35 @@ For further information about oneM2M and its specifications see [http://www.onem
 
 -  [Eclipse om2m](http://www.eclipse.org/om2m/) (feature0 branch)
 
-More implementaions should follow.
+More implementations should follow.
 
-## Installation
+## Installation and Prerequisites
 
 This module requires Python3.
 
 Copy the *onem2mlib* directory to your project.
 
-### LXML
-In addition you need to install the [lxml](http://lxml.de) library:
+In addition you need to install the following modules:
 
-#### Using pip
-Install it with:
+- [requests](http://docs.python-requests.org/en/master/)
+- [lxml](http://lxml.de)
+
+### requests
+Install with pip3:
 
 ```bash
 pip3 install lxml
 ```
 
-You might need to install some additional libraries:
+### LXML
+
+Install with pip3:
+
+```bash
+pip3 install lxml
+```
+
+Depending on the OS and target environment you might need to install some additional libraries:
 
 ```bash
 apt-get install libxml2-dev libxslt1-dev
@@ -76,9 +86,9 @@ session = Session('http://host.com:8282', 'admin:admin', Encoding_XML).   # crea
 cse = CSEBase(session, 'mn-cse')                                          # get the <CSEBase> resource
 ```
 
-To access resources on a CSE it is not necessary to retrieve the &lt;CSEBase> resource from the CSE (for example, when one has only limited access to resources on the CSE). But one must have at least create a *CSEBase* **instance** that represents the CSE and holds the session information as shown above. This *CSEBase* instance can be used as usuall in subsequent calls.
+To access resources on a CSE it is not necessary to retrieve the &lt;CSEBase> resource from the CSE (for example, when one has only limited access to resources on the CSE). But one must have at least create a *CSEBase* **instance** that represents the CSE and holds the session information as shown above. This *CSEBase* instance can be used as usual in subsequent calls.
 
-The following example creates a *CSEBase* **instance** without actually retrieving the &lt;CSEBase> **resource**. The *resourceName* attribute must be known and set explitly in the constructor. The *instantly=False* argument must also be set; it prevents the retrieval of the actual resource (which, as explained above, might fail when there is only limited access to the CSE).
+The following example creates a *CSEBase* **instance** without actually retrieving the &lt;CSEBase> **resource**. The *resourceName* attribute must be known and set explicitly in the constructor. The *instantly=False* argument must also be set; it prevents the retrieval of the actual resource (which, as explained above, might fail when there is only limited access to the CSE).
 
 ```python
 session = Session('http://host.com:8282', 'admin:admin').                 # create a session
@@ -208,6 +218,7 @@ The following resource types are supported in this version.
 Currently, only *label* and *resourceType* are supported in filter criteria.
 - **Encodings**:
 JSON (the default), XML.
+- **Notifications**: A program can subscribe to resource changes, provide callback methods, and receive notifications from a CSE.
 
 ## License
 

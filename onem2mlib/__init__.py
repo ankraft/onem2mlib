@@ -943,10 +943,13 @@ class Container(ResourceBase):
 
 	def addContent(self, value, labels=[]):
 		"""
-		Add a new value to a container. This is a convenience function that actually creates a new
-		&lt;contentInstance> resource for that value in the &lt;container>. It returns the new
-		*ContentInstance* object, or None.
+		Add a new value to a container. The value is automatically converted to its string
+		representation.
+		This is a convenience function that actually creates a new&lt;contentInstance> resource
+		for that value in the &lt;container>. returns the new *ContentInstance* object, or None.
 		"""
+		if not isinstance(value, str):
+			value = str(value)
 		return ContentInstance(self, content=value, labels=labels)
 
 

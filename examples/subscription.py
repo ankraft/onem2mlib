@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
 	# Setup the notification sub-system
 	print('Setting up notifications...')
-	NOT.setupNotifications(callbackp, host='localhost')
+	NOT.setupNotifications(callback, host='localhost')
 
 	# Create session
 	session = Session('http://localhost:8282', 'admin:admin')

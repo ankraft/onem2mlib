@@ -182,8 +182,7 @@ def addSubscription(resource, callback=None):
 	sub = onem2mlib.Subscription(resource, notificationURI=[_notificationURI])
 	if not sub:
 		return False
-	_subscriptions[resource.resourceID] = (sub, resource, callback)
-	_subscriptionIDToParentResourceID[sub.resourceID] = resource.resourceID
+	_addSubscription(resource, sub, callback)
 	return True
 
 
@@ -221,10 +220,18 @@ def hasSubscription(resource):
 	return resource.resourceID in _subscriptions.keys()
 
 
+# Add a subscription to the internal data strucures
+def _addSubscription(resource, sub, callback):
+	_subscriptions[resource.resourceID] = (sub, resource, callback)
+	_subscriptionIDToParentResourceID[sub.resourceID] = resource.resourceID
+	_subscriptionIDToParentResourceID[sub._structuredResourceID()] = resource.resourceID
+
+
 # Remove a subscription from the internal data structures
 def _removeSubscriptionByID(resourceID):
 	(sub, _, _) = _subscriptions.pop(resourceID)
 	_subscriptionIDToParentResourceID.pop(sub.resourceID)
+	_subscriptionIDToParentResourceID.pop(sub._structuredResourceID())
 	return sub.deleteFromCSE()
 
 
@@ -256,8 +263,10 @@ def _startNotificationServer():
 	global _server, _thread
 	if _thread:
 		return
-	# Start processing requests in a separate thread
-	_server = HTTPNotificationServer((_host, _port), HTTPNotificationHandler)
+	# Start processing requests in a separate thread.
+	# Listen on any interface/IP address.
+	# TODO: Make this configurable
+	_server = HTTPNotificationServer(('', _port), HTTPNotificationHandler)
 	_thread = threading.Thread(target=_server.run)
 	_thread.start()
 
@@ -343,21 +352,22 @@ class HTTPNotificationHandler(BaseHTTPRequestHandler):
 	# Handle JSON notifications 
 	def _handleJSON(self, data):
 		jsn =  json.loads(data.decode('utf-8'))
+		#print(jsn)
 
 		# check verification request
-		vrq = INT.getALLSubElementsJSON(jsn, 'm2m:vrq')
+		vrq = INT.getALLSubElementsJSON(jsn, 'vrq')
 		if len(vrq) > 0 and vrq[0] == True:
 			return 	# do nothing
 
 		# get the sur first
-		sur = INT.getALLSubElementsJSON(jsn, 'm2m:sur')
+		sur = INT.getALLSubElementsJSON(jsn, 'sur')
 		if sur and len(sur) > 0:
 			sur = sur[0]
 		else:
 			return 	# must have a subscription ID
 
 		# get resource
-		rep = INT.getALLSubElementsJSON(jsn, 'm2m:rep')
+		rep = INT.getALLSubElementsJSON(jsn, 'rep')
 		if rep and len(rep) > 0:
 			jsn = rep[0]
 			type = INT.getALLSubElementsJSON(jsn, 'ty')
