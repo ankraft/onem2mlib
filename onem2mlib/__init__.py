@@ -18,8 +18,8 @@ import onem2mlib.notifications as NOT
 
 
 
-__all__ = [	'CSEBase', 'AccessControlPolicy', 'AccessControlRule', 'AE', 'Container',
-			'ContentInstance', 'Group', 'Subscription',
+__all__ = [	'AccessControlPolicy', 'AccessControlRule', 'AE', 'Container',
+			'ContentInstance', 'CSEBase', 'Group', 'RemoteCSE', 'Subscription', 
 			'ResourceBase', 'Session',
 			'constants', 'exceptions', 'utilities', 'notifications',
 			'retrieveResourceFromCSE']
@@ -53,6 +53,8 @@ class Session:
 		self.address = address
 		""" String. The URL of the CSE host to connect to. The address includes the protocol, hostname, 
 			port number, and any API prefix etc. """
+		while self.address is not None and self.address.endswith('/'):
+			self.address = self.address[:-1]
 
 		self.originator = originator
 		""" String. This specifies the originator for identification in access control policies. 
@@ -72,7 +74,9 @@ class Session:
 		result = 'Session:\n'
 		result += INT.strResource('address', None, self.address)
 		result += INT.strResource('originator', None, self.originator)
+		result += INT.strResource('encoding', None, self.encoding)
 		return result
+
 
 
 ###############################################################################
@@ -213,7 +217,7 @@ class ResourceBase:
 		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
 		must be set to a valid value.
 		"""
-		if self.type in [CON.Type_CSEBase]: # not allowed
+		if self.type in [CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
 			raise EXC.NotSupportedError('Resource doesn''t support deleting.')
 		return MCA.deleteFromCSE(self)
 
@@ -229,7 +233,7 @@ class ResourceBase:
 		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
 		must be set to a valid value.
 		"""
-		if self.type in [CON.Type_CSEBase]: # not allowed
+		if self.type in [CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
 			raise EXC.NotSupportedError('Resource doesn''t support updating.')
 		return MCA.createInCSE(self, self.type)
 
@@ -245,7 +249,7 @@ class ResourceBase:
 		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
 		must be set to a valid value.
 		"""
-		if self.type in [CON.Type_ContentInstance, CON.Type_CSEBase]: # not allowed
+		if self.type in [CON.Type_ContentInstance, CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
 			raise EXC.NotSupportedError('Resource doesn''t support updating.')
 		return MCA.updateInCSE(self, self.type)
 
@@ -519,7 +523,7 @@ class CSEBase(ResourceBase):
 		"""
 		Return a list of &lt;group> resources from this CSE, or an empty list.
 		"""
-		return _findSubResource(self, CON.Type_Group)
+		return INT._findSubResource(self, CON.Type_Group)
 
 
 	def findGroup(self, resourceName):
@@ -538,6 +542,20 @@ class CSEBase(ResourceBase):
 		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels)
 
 
+	def remoteCSEs(self):
+		"""
+		Return a list of &lt;remoteCSE> resources from this CSE, or an empty list.
+		"""
+		return INT._findSubResource(self, CON.Type_RemoteCSE)
+
+
+	def findRemoteCSE(self, resourceName):
+		"""
+		Find a specific &lt;remoteCSE> resource by its *resourceName*, or None.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_RemoteCSE, resourceName, self)
+
+
 	def _parseXML(self, root):
 		M._CSEBase_parseXML(self, root)
 
@@ -551,6 +569,125 @@ class CSEBase(ResourceBase):
 		self.cseType = resource.cseType
 		self.supportedResourceTypes = resource.supportedResourceTypes
 		self.pointOfAccess = self.pointOfAccess
+
+
+###############################################################################
+
+class RemoteCSE(ResourceBase):
+	"""
+	This class implements the oneM2M &lt;remoteCSE> resource. 
+
+	It is  a sub-resource of the &lt;CSEBase> resource, and it represents and grants access to a
+	remote CSE.
+	"""
+	def __init__(self, parent=None, resourceName=None, resourceID=None, requestReachability=None, instantly=True):
+	
+		"""
+		Initialize a RemoteCSE object.
+		Usually, objects of this class are created only by the onem2m lib..
+
+		Args:
+
+		- *parent*: The parent resource object in which the &lt;remoteCSE> resource
+			will be created. This must be a &lt;CSEBase>. This might throw a *ParameterError*
+			exception if this is not the case.
+		- *instantly*: The resource will be instantly retrieved from the CSE. This might throw
+			a *CSEOperationError* exception in case of an error.
+		- All other arguments initialize the status variables of the same name in the
+			&lt;remoteCSE> instance or `onem2mlib.ResourceBase`.
+		"""
+		super().__init__(parent, resourceName, resourceID, CON.Type_RemoteCSE)
+		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:
+			raise EXC.ParameterError('Parent must be <CSE> or <remoteCSE>.')
+
+		self.pointOfAccess = []
+		""" List of String. A list of physical addresses to be used by remote CSEs to connect to this CSE.
+			Assigned by the CSE. R/O. """
+
+		self.cseBase = None
+		""" URI. The address of the CSEBase resource represented by this &lt;remoteCSE> resource. """
+
+		self.cseID = None
+		""" String. The CSE identifier of a remote CSE in SP-relative CSE-ID format. """
+
+		self.requestReachability = requestReachability
+		""" Boolean. This indicates the reachability of the RemoteCSE. Assigned by the application or the CSE. """
+
+		if instantly:
+			if not self.get():
+				raise EXC.CSEOperationError('Cannot get remoteCSE.' + MCA.lastError)
+
+
+	def __str__(self):
+		result = 'RemoteCSE:\n'
+		result += super().__str__()
+		result += INT.strResource('requestReachability', 'rr', self.requestReachability)
+		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
+		result += INT.strResource('CSEBase', 'cb', self.cseBase)
+		result += INT.strResource('cse-ID', 'csi', self.cseID)
+		return result
+
+
+	def cseFromLocalCSE(self, instantly=True):
+		"""
+		Return a `onem2mlib.CSEBase` resource instance that grants access to the remote CSE via the local
+		(the CSE from which this &lt;RemoteCSE> resource originates). This means, that all requests to the
+		remote CSE are routed through the local CSE.
+
+		Args:
+
+		- *instantly*: The CSE resource will be instantly retrieved from the CSE. This might throw
+			a *CSEOperationError* exception in case of an error.
+		"""
+		return CSEBase(self.session, self.cseID, self.resourceName, instantly=instantly)
+
+
+	def cseFromRemoteCSE(self, session=None, instantly=True):
+		"""
+		Return a `onem2mlib.CSEBase` resource instance that grants direct access to the remote CSE.
+		This means, that all requests to the remote CSE are directly targeting the remote CSE.
+
+		This might throw a *CSEOperationError* exception if there is a problem with missing or wrong
+		parameters for the remote CSE.
+
+		Args:
+
+		- *session*: Optionally provide a `onem2mlib.Session` instance to use for the remote CSE.
+			Otherwise the current Session instance is used.
+		- *instantly*: The CSE resource will be instantly retrieved from the CSE. This might throw
+			a *CSEOperationError* exception in case of an error.
+		"""
+		if self.pointOfAccess == None or len(self.pointOfAccess) == 0:
+			raise EXC.CSEOperationError('Missing PointOfAccess of remote CSE.')
+
+		if session is None:
+			nSession = Session(self.pointOfAccess[0], self.session.originator, self.session.encoding)
+		else:
+			nSession = Session(self.pointOfAccess[0], session.originator, session.encoding)
+		return CSEBase(nSession, self.cseID, instantly=instantly)
+
+
+	def _parseXML(self, root):
+		M._remoteCSE_parseXML(self, root)
+
+
+	def _parseJSON(self, jsn):
+		M._remoteCSE_parseJSON(self, jsn)
+
+
+	def _copy(self, resource):
+		super()._copy(resource)
+		self.cseBase = resource.cseBase
+		self.cseID = resource.cseID
+		self.pointOfAccess = resource.pointOfAccess
+		self.requestReachability = resource.requestReachability
+
+
+# README
+
+
+
+
 
 
 ###############################################################################
@@ -1597,6 +1734,18 @@ __pdoc__['Group.unsubscribe']                            = None
 __pdoc__['Group.subscriptions']                          = None
 __pdoc__['Group.findSubscription']                       = None
 
+__pdoc__['RemoteCSE.createInCSE']         		 		 = None
+__pdoc__['RemoteCSE.deleteFromCSE']  		             = None
+__pdoc__['RemoteCSE.updateInCSE']     		             = None
+__pdoc__['RemoteCSE.retrieveFromCSE'] 		             = None
+__pdoc__['RemoteCSE.get']              			         = None
+__pdoc__['RemoteCSE.discover']            		         = None
+__pdoc__['RemoteCSE.setAccessControlPolicies']		     = None
+__pdoc__['RemoteCSE.subscribe']                          = None
+__pdoc__['RemoteCSE.unsubscribe']                        = None
+__pdoc__['RemoteCSE.subscriptions']                      = None
+__pdoc__['RemoteCSE.findSubscription']                   = None
+
 __pdoc__['Subscription.createInCSE']         		     = None
 __pdoc__['Subscription.deleteFromCSE']  		         = None
 __pdoc__['Subscription.updateInCSE']     		         = None
@@ -1606,6 +1755,6 @@ __pdoc__['Subscription.discover']            		     = None
 __pdoc__['Subscription.setAccessControlPolicies']		 = None
 __pdoc__['Subscription.subscribe']                       = None
 __pdoc__['Subscription.unsubscribe']                     = None
-__pdoc__['Subscription.subscriptions']                   = None
+__pdoc__['Subscription.subscriptions']       		     = None
 __pdoc__['Subscription.findSubscription']                = None
 

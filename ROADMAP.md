@@ -3,9 +3,8 @@
 ## Resource Types
 - FlexContainer
     - Support in &lt;AE>, &lt;Container>, &lt;flexContainers>
-- RemoteCSE
-	- remoteCSE in CSEBase
 - Node
+- ManagementObjects
 
 ## Features 
 ### Soon

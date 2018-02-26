@@ -74,7 +74,7 @@ class TestNotification(unittest.TestCase):
 	# define a callback function
 	def callback(self, resource):
 		global callbackResource
-		callbackResource = resource
+		TestNotification.callbackResource = resource
 
 
 	def test_addSubscription(self):
@@ -90,9 +90,9 @@ class TestNotification(unittest.TestCase):
 		# Wait a moment
 		time.sleep(delayInSec)
 		# and check whether the callback happened
-		self.assertIsNotNone(callbackResource)
-		self.assertEqual(callbackResource.resourceID, TestNotification.cin.resourceID)
-		self.assertEqual(callbackResource.content, CIN_CONTENT)
+		self.assertIsNotNone(TestNotification.callbackResource)
+		self.assertEqual(TestNotification.callbackResource.resourceID, TestNotification.cin.resourceID)
+		self.assertEqual(TestNotification.callbackResource.content, CIN_CONTENT)
 
 
 	def test_notifyFail(self):

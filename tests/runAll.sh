@@ -11,6 +11,7 @@ python3 test_accessControlPolicy.py
 python3 test_discovery.py
 python3 test_subscription.py
 python3 test_notification.py
+python3 test_remoteCSE.py
 
 endtime=`date +%s`
 

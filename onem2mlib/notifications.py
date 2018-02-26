@@ -49,7 +49,8 @@ _allowedSubscriptionResources = [
 	CON.Type_AE,
 	CON.Type_ACP,
 	CON.Type_Container,
-	CON.Type_Group
+	CON.Type_Group,
+	CON.Type_RemoteCSE
 ]
 
 
@@ -356,19 +357,25 @@ class HTTPNotificationHandler(BaseHTTPRequestHandler):
 
 		# check verification request
 		vrq = INT.getALLSubElementsJSON(jsn, 'vrq')
+		if len(vrq) == 0:										# TODO remove later when om2m corrects this
+			vrq = INT.getALLSubElementsJSON(jsn, 'm2m:vrq')
 		if len(vrq) > 0 and vrq[0] == True:
 			return 	# do nothing
 
 		# get the sur first
 		sur = INT.getALLSubElementsJSON(jsn, 'sur')
-		if sur and len(sur) > 0:
+		if len(sur) == 0:										# TODO remove later when om2m corrects this
+			sur = INT.getALLSubElementsJSON(jsn, 'm2m:sur')
+		if len(sur) > 0:
 			sur = sur[0]
 		else:
 			return 	# must have a subscription ID
 
 		# get resource
 		rep = INT.getALLSubElementsJSON(jsn, 'rep')
-		if rep and len(rep) > 0:
+		if len(rep) == 0:										# TODO remove later when om2m corrects this
+			rep = INT.getALLSubElementsJSON(jsn, 'm2m:rep')
+		if len(rep) > 0:
 			jsn = rep[0]
 			type = INT.getALLSubElementsJSON(jsn, 'ty')
 			if type and len(type) > 0:

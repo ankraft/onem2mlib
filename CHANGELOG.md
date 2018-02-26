@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 0.7 (xxxx-xx-xx)
+- [IMPROVEMENT] Added support for &lt;remoteCSE> resource type.
+- [FIX] Improved flexibility when parsing notifications messages from CSE.
+- [FIX] The internal server to receive notifications now binds to all available network interfaces.
+
 ## Version 0.6 (2018-01-13)
 - [CHANGE] Refactored module structure. The resources are now available directly.
 - [CHANGE] Resources are now created or retrieved instantly. If one wants to make further changes to a resource object (beside of the initialization), the object must be created with the *instantly* attribute set to *False*.

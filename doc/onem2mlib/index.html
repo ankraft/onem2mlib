@@ -1102,7 +1102,9 @@ table {
     <li class="mono"><a href="#onem2mlib.CSEBase.findAccessControlPolicy">findAccessControlPolicy</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.findContainer">findContainer</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.findGroup">findGroup</a></li>
+    <li class="mono"><a href="#onem2mlib.CSEBase.findRemoteCSE">findRemoteCSE</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.groups">groups</a></li>
+    <li class="mono"><a href="#onem2mlib.CSEBase.remoteCSEs">remoteCSEs</a></li>
   </ul>
 
         </li>
@@ -1145,6 +1147,17 @@ table {
     <li class="mono"><a href="#onem2mlib.Group.deleteGroupResources">deleteGroupResources</a></li>
     <li class="mono"><a href="#onem2mlib.Group.getGroupResources">getGroupResources</a></li>
     <li class="mono"><a href="#onem2mlib.Group.updateGroupResources">updateGroupResources</a></li>
+  </ul>
+
+        </li>
+        <li class="mono">
+        <span class="class_name"><a href="#onem2mlib.RemoteCSE">RemoteCSE</a></span>
+        
+          
+  <ul>
+    <li class="mono"><a href="#onem2mlib.RemoteCSE.__init__">__init__</a></li>
+    <li class="mono"><a href="#onem2mlib.RemoteCSE.cseFromLocalCSE">cseFromLocalCSE</a></li>
+    <li class="mono"><a href="#onem2mlib.RemoteCSE.cseFromRemoteCSE">cseFromRemoteCSE</a></li>
   </ul>
 
         </li>
@@ -1814,6 +1827,21 @@ by the <em>resourceName</em>.</p></div>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.CSEBase.findRemoteCSE">
+    <p>def <span class="ident">findRemoteCSE</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a specific &lt;remoteCSE&gt; resource by its <em>resourceName</em>, or None.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.CSEBase.groups">
     <p>def <span class="ident">groups</span>(</p><p>self)</p>
     </div>
@@ -1822,6 +1850,21 @@ by the <em>resourceName</em>.</p></div>
     
   
     <div class="desc"><p>Return a list of &lt;group&gt; resources from this CSE, or an empty list.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.CSEBase.remoteCSEs">
+    <p>def <span class="ident">remoteCSEs</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return a list of &lt;remoteCSE&gt; resources from this CSE, or an empty list.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1985,9 +2028,10 @@ resource. R/O.</p></div>
 
     
   
-    <div class="desc"><p>Add a new value to a container. This is a convenience function that actually creates a new
-&lt;contentInstance&gt; resource for that value in the &lt;container&gt;. It returns the new
-<em>ContentInstance</em> object, or None.</p></div>
+    <div class="desc"><p>Add a new value to a container. The value is automatically converted to its string
+representation.
+This is a convenience function that actually creates a new&lt;contentInstance&gt; resource
+for that value in the &lt;container&gt;. returns the new <em>ContentInstance</em> object, or None.</p></div>
   <div class="source_cont">
 </div>
 
@@ -2453,6 +2497,146 @@ Please note, that in the returned resource instances only the properties are set
 updated either by the update operation or as a side effect by the CSE, such as the
 <a href="#onem2mlib.ResourceBase.lastModifiedTime"><code>lastModifiedTime</code></a>. The order of the instances in the result list is the same as the order of 
 the resource identifiers in <a href="#onem2mlib.Group.memberIDs"><code>memberIDs</code></a>.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+      </div>
+      </div>
+      
+      <div class="item">
+      <p id="onem2mlib.RemoteCSE" class="name">class <span class="ident">RemoteCSE</span></p>
+      
+  
+    <div class="desc"><p>This class implements the oneM2M &lt;remoteCSE&gt; resource. </p>
+<p>It is  a sub-resource of the &lt;CSEBase&gt; resource, and it represents and grants access to a
+remote CSE.</p></div>
+  <div class="source_cont">
+</div>
+
+
+      <div class="class">
+      
+          <h3>Parent Classes</h3>
+          <ul class="class_list">
+            <li><a href="#onem2mlib.ResourceBase">ResourceBase</a></li>
+          </ul>
+          <h3>Instance variables</h3>
+            <div class="item">
+            <p id="onem2mlib.RemoteCSE.cseBase" class="name">var <span class="ident">cseBase</span></p>
+            
+
+            
+  
+    <div class="desc"><p>URI. The address of the CSEBase resource represented by this &lt;remoteCSE&gt; resource.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.RemoteCSE.cseID" class="name">var <span class="ident">cseID</span></p>
+            
+
+            
+  
+    <div class="desc"><p>String. The CSE identifier of a remote CSE in SP-relative CSE-ID format.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.RemoteCSE.pointOfAccess" class="name">var <span class="ident">pointOfAccess</span></p>
+            
+
+            
+  
+    <div class="desc"><p>List of String. A list of physical addresses to be used by remote CSEs to connect to this CSE.
+Assigned by the CSE. R/O.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="onem2mlib.RemoteCSE.requestReachability" class="name">var <span class="ident">requestReachability</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Boolean. This indicates the reachability of the RemoteCSE. Assigned by the application or the CSE.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+          <h3>Static methods</h3>
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.RemoteCSE.__init__">
+    <p>def <span class="ident">__init__</span>(</p><p>self, parent=None, resourceName=None, resourceID=None, requestReachability=None, instantly=True)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Initialize a RemoteCSE object.
+Usually, objects of this class are created only by the onem2m lib..</p>
+<p>Args:</p>
+<ul>
+<li><em>parent</em>: The parent resource object in which the &lt;remoteCSE&gt; resource
+        will be created. This must be a &lt;CSEBase&gt;. This might throw a <em>ParameterError</em>
+        exception if this is not the case.</li>
+<li><em>instantly</em>: The resource will be instantly retrieved from the CSE. This might throw
+        a <em>CSEOperationError</em> exception in case of an error.</li>
+<li>All other arguments initialize the status variables of the same name in the
+        &lt;remoteCSE&gt; instance or <a href="#onem2mlib.ResourceBase"><code>ResourceBase</code></a>.</li>
+</ul></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.RemoteCSE.cseFromLocalCSE">
+    <p>def <span class="ident">cseFromLocalCSE</span>(</p><p>self, instantly=True)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return a <a href="#onem2mlib.CSEBase"><code>CSEBase</code></a> resource instance that grants access to the remote CSE via the local
+(the CSE from which this &lt;RemoteCSE&gt; resource originates). This means, that all requests to the
+remote CSE are routed through the local CSE.</p>
+<p>Args:</p>
+<ul>
+<li><em>instantly</em>: The CSE resource will be instantly retrieved from the CSE. This might throw
+        a <em>CSEOperationError</em> exception in case of an error.</li>
+</ul></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.RemoteCSE.cseFromRemoteCSE">
+    <p>def <span class="ident">cseFromRemoteCSE</span>(</p><p>self, session=None, instantly=True)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return a <a href="#onem2mlib.CSEBase"><code>CSEBase</code></a> resource instance that grants direct access to the remote CSE.
+This means, that all requests to the remote CSE are directly targeting the remote CSE.</p>
+<p>This might throw a <em>CSEOperationError</em> exception if there is a problem with missing or wrong
+parameters for the remote CSE.</p>
+<p>Args:</p>
+<ul>
+<li><em>session</em>: Optionally provide a <a href="#onem2mlib.Session"><code>Session</code></a> instance to use for the remote CSE.
+        Otherwise the current Session instance is used.</li>
+<li><em>instantly</em>: The CSE resource will be instantly retrieved from the CSE. This might throw
+        a <em>CSEOperationError</em> exception in case of an error.</li>
+</ul></div>
   <div class="source_cont">
 </div>
 

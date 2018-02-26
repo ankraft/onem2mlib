@@ -1,7 +1,7 @@
 # onem2mlib
 **Version 0.7**
 
-This Python3 module implements a library to access and manage resources on a oneM2M CSE.
+This Python 3 module implements a library to access and manage resources on a oneM2M CSE.
 
 ## Introduction
 
@@ -127,7 +127,7 @@ Add a container to an &lt;AE> resource.
 container = Container(ae, resourceName='myContainer')
 ```
 
-### Get all &lt;container> resources of an &lt;AE>
+### Retrieve all &lt;container> resources of an &lt;AE>
 And print them.  
 And add a &lt;contentInstances> to each of them.
 	
@@ -158,19 +158,19 @@ There is a short-cut in case you are only interested in the content.
 print(container.latestContent())
 ```
 
+
 ### Delete an &lt;AE> from a CSE
 Delete an &lt;AE> resource and all its sub-resource from a CSE.
 
 	ae.deleteFromCSE()
 
-### Subscribe to Notifications
+
+### Subscribe to notifications
 Add a subscription to a resource and receive notifications when the resource changes.
 
 ```python
-def myCallback(resource):		# Called for notifications
-								# The parameter is the updated resource
-	# do something with the updated resource
-	...
+def myCallback(resource):		# Called for notifications, with the updated resource as the argument.
+	...                         # do something with the updated resource
 
 # In the main program:
 setupNotifications(myCallback)  # Initialize the notification sub-module
@@ -184,17 +184,43 @@ cnt.addContent('Some value')    # Add a new contentInstance
 There could also be individual callbacks for each resource. Provide another function in the *subscribe()* method call.
 
 ```python
-...
 cnt.subscribe(anotherCallback)          # Subscribe to changes of this resource, and provide a different callback function
-...
 ```
 
 Remove a subscription by calling the *unsubscribe()* method:
 
 ```python
-...
 cnt.unsubscribe()          # Notifications for this resource will stop
-...
+```
+
+
+### Work with &lt;remoteCSE> resources
+The &lt;remoteCSE> resource represents a remote CSE to which a "local" CSE is connected. A remote CSE with the resource name *in-name* can be retrieved like this:
+
+```python
+remoteCSE = cse.findRemoteCSE('in-name')
+```
+
+The &lt;remotsCSE> resource can be used to work with the remote CSE either directly or indirectly. Direct access means that all queries are directly send to the remote CSE, while with indirect access all queries go through the "local" CSE, which then internally routes these requests to the remote CSE.
+
+In both cases one needs to get a *cse* instance.
+
+```python
+# <CSE> resource for direct access
+directRemoteCSE = remoteCSE.cseFromRemoteCSE()
+
+# <CSE> resource for indirect access
+indirectRemoteCSE = remoteCSE.cseFromLocalCSE()
+```
+
+Both resources, *directRemoteCSE* and *indirectRemoteCSE*, can be used like a normal &lt;CSE> resource as described above. The following example shows the use of both &lt;CSE> resources.
+
+```python
+# indirectly retrieve a list of <AE>'s from the remote CSE
+listOfAEs = indirectRemoteCSE.aes()
+
+# directly create a new <AE> resource on the remote CSE
+newRemoteAE = directRemoteCSE.addAE('remoteAE')
 ```
 
 
@@ -205,20 +231,23 @@ See also [ROADMAP](ROADMAP.md) for open issues and planned enhancements.
 ### Resources
 The following resource types are supported in this version.
 
-- [&lt;CSEBase>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.CSEBase)
-- [&lt;AE>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.AE)
-- [&lt;container>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.Container)
-- [&lt;contentInstance>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.ContentInstance)
-- [&lt;group>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.Group)
-- [&lt;accessControlPolicy>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.AccessControlPolicy)
-- [&lt;subscription>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/resources.m.html#onem2mlib.resources.Subscription)
+- [&lt;accessControlPolicy>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.AccessControlPolicy)
+- [&lt;AE>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.AE)
+- [&lt;container>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.Container)
+- [&lt;contentInstance>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.ContentInstance)
+- [&lt;CSEBase>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.CSEBase)
+- [&lt;group>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.Group)
+- [&lt;remoteCSE>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.remoteCSE)
+- [&lt;subscription>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.Subscription)
+
 
 ### Features
 - **Discovery**: 
 Currently, only *label* and *resourceType* are supported in filter criteria.
 - **Encodings**:
 JSON (the default), XML.
-- **Notifications**: A program can subscribe to resource changes, provide callback methods, and receive notifications from a CSE.
+- **Notifications**:
+A program can subscribe to resource changes, provide callback methods, and receive notifications from a CSE.
 
 ## License
 

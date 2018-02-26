@@ -270,6 +270,7 @@ def _newResourceFromType(type, parent):
 	elif type == CON.Type_Group:			return onem2mlib.Group(parent, instantly=False)
 	elif type == CON.Type_ACP:				return onem2mlib.AccessControlPolicy(parent, instantly=False)
 	elif type == CON.Type_Subscription:		return onem2mlib.Subscription(parent, instantly=False)
+	elif type == CON.Type_RemoteCSE:		return onem2mlib.RemoteCSE(parent, instantly=False)
 	return None
 
 
@@ -280,6 +281,7 @@ def _newResourceFromTypeString(typeString, parent):
 	elif typeString == 'grp':	return _newResourceFromType(CON.Type_Group, parent)
 	elif typeString == 'acp':	return _newResourceFromType(CON.Type_ACP, parent)
 	elif typeString == 'sub':	return _newResourceFromType(CON.Type_Subscription, parent)
+	elif typeString == 'csr':	return _newResourceFromType(CON.Type_RemoteCSE, parent)
 	return None
 
 
@@ -292,6 +294,7 @@ def _getResourceFromCSEByResourceName(type, rn, parent):
 	elif type == CON.Type_Group:				res = onem2mlib.Group(parent, resourceName=rn, instantly=False)
 	elif type == CON.Type_ACP:					res = onem2mlib.AccessControlPolicy(parent, resourceName=rn, instantly=False)
 	elif type == CON.Type_Subscription:			res = onem2mlib.Subscription(parent, resourceName=rn, instantly=False)
+	elif type == CON.Type_RemoteCSE:			res = onem2mlib.RemoteCSE(parent, resourceName=rn, instantly=False)
 	if res is not None and res.retrieveFromCSE():
 		return res
 	return None

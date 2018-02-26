@@ -12,6 +12,7 @@ sys.path.append('..')
 import onem2mlib.constants as CON
 
 host		= 'http://localhost:8282'
+rhost		= 'http://localhost:8080'
 originator	= 'admin:admin'
 #encoding	= CON.Encoding_XML
 encoding	= CON.Encoding_JSON
@@ -19,6 +20,8 @@ delayInSec	= 1
 
 CSE_NAME	= 'mn-name'
 CSE_ID		= 'mn-cse'
+CSE_RNAME	= 'in-name'
+CSE_RID		= 'in-cse'
 
 AE_NAME		= 'TEST_AE'
 AE_APPID	= 'test_appid'

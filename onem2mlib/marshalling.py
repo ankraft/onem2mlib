@@ -92,6 +92,31 @@ def _CSEBase_parseJSON(obj, jsn):
 	obj.pointOfAccess = INT.getElementJSON(_jsn, 'poa', obj.pointOfAccess)
 
 
+
+###############################################################################
+#
+#	RemoteCSE
+#
+
+def _remoteCSE_parseXML(obj, root):
+	_resourceBase_parseXML(obj, root)
+	obj.requestReachability = INT.getElement(root, 'rr', obj.requestReachability)
+	obj.pointOfAccess = INT.getElement(root, 'poa', obj.pointOfAccess)
+	obj.cseBase = INT.getElement(root, 'cb', obj.cseBase)
+	obj.cseID = INT.getElement(root, 'csi', obj.cseID)
+
+
+def _remoteCSE_parseJSON(obj, jsn):
+	if 'm2m:csr' not in jsn:
+		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
+	_jsn = jsn['m2m:csr']
+	_resourceBase_parseJSON(obj, _jsn)
+	obj.requestReachability = INT.getElementJSON(_jsn, 'rr', obj.requestReachability)
+	obj.pointOfAccess = INT.getElementJSON(_jsn, 'poa', obj.pointOfAccess)
+	obj.cseBase = INT.getElementJSON(_jsn, 'cb', obj.cseBase)
+	obj.cseID = INT.getElementJSON(_jsn, 'csi', obj.cseID)
+
+
 ###############################################################################
 #
 #	AccessControlPolicy
