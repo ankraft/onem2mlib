@@ -3,6 +3,20 @@
 
 This Python 3 module implements a library to access and manage resources on a oneM2M CSE.
 
+- [Introduction](#introduction)
+- [Installation and Prerequisites](#installation-and-prerequisites)
+- [Usage](#usage)
+	- [Connect to a CSE](#connect-to-a-cse)
+	- [Create an AE resource in a CSE](#create-an-ae-resource-in-a-cse)
+	- [Add a Container resource to an AE](#add-a-container-resource-to-an-ae)
+	- [Retrieve all Container resources of an AE](#retrieve-all-container-resources-of-an-ae)
+	- [Delete an AE from a CSE](#deleteanaefromacse)
+	- [Subscribe to Notifications](#subscribe-to-notifications)
+	- [Work with remoteCSE resources](#work-with-remotecse-resources)
+- [Supported Features & Limitations](#supported-features--limitations)
+- [License](#license)
+
+
 ## Introduction
 
 This Python3 module implements a library to access and manage resources on a oneM2M CSE.
@@ -61,7 +75,7 @@ sudo apt-get install python3-lxml
 ```
 
 
-## Usage
+## Usage[](#Usage)
 
 Read the [full module documentation](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html).
 
@@ -95,7 +109,7 @@ session = Session('http://host.com:8282', 'admin:admin').                 # crea
 cse = CSEBase(session, 'mn-cse', resourceName='mn-name', instantly=False) # create a CSEBase object, without retrieving it
 ```
 
-### Create an &lt;AE> resource in a CSE
+### Create an AE resource in a CSE
 
 The first example creates a new &lt;AE> resource or, if an &lt;AE> resource with the same name already exists in the CSE, that &lt;AE> is returned. This method to get/create a resource is usually sufficient in most cases.
 
@@ -120,14 +134,14 @@ ae = AE(cse, resourceName='aeName', instantly=False)
 ae.createInCSE()
 ```
 
-### Add a &lt;container> resource to an &lt;AE>
+### Add a Container resource to an AE
 Add a container to an &lt;AE> resource.
 
 ```python
 container = Container(ae, resourceName='myContainer')
 ```
 
-### Retrieve all &lt;container> resources of an &lt;AE>
+### Retrieve all Container resources of an AE
 And print them.  
 And add a &lt;contentInstances> to each of them.
 	
@@ -159,13 +173,13 @@ print(container.latestContent())
 ```
 
 
-### Delete an &lt;AE> from a CSE
+### Delete an AE from a CSE
 Delete an &lt;AE> resource and all its sub-resource from a CSE.
 
 	ae.deleteFromCSE()
 
 
-### Subscribe to notifications
+### Subscribe to Notifications
 Add a subscription to a resource and receive notifications when the resource changes.
 
 ```python
@@ -194,7 +208,7 @@ cnt.unsubscribe()          # Notifications for this resource will stop
 ```
 
 
-### Work with &lt;remoteCSE> resources
+### Work with remoteCSE resources
 The &lt;remoteCSE> resource represents a remote CSE to which a "local" CSE is connected. A remote CSE with the resource name *in-name* can be retrieved like this:
 
 ```python
