@@ -3,18 +3,18 @@
 
 This Python 3 module implements a library to access and manage resources on a oneM2M CSE.
 
-- [Introduction](#introduction)
-- [Installation and Prerequisites](#installation-and-prerequisites)
-- [Usage](#usage)
-	- [Connect to a CSE](#connect-to-a-cse)
-	- [Create an AE resource in a CSE](#create-an-ae-resource-in-a-cse)
-	- [Add a Container resource to an AE](#add-a-container-resource-to-an-ae)
-	- [Retrieve all Container resources of an AE](#retrieve-all-container-resources-of-an-ae)
-	- [Delete an AE from a CSE](#delete-an-ae-from-a-cse)
-	- [Subscribe to Notifications](#subscribe-to-notifications)
-	- [Work with remoteCSE resources](#work-with-remotecse-resources)
-- [Supported Features & Limitations](#supported-features--limitations)
-- [License](#license)
+[Introduction](#introduction)
+[Installation and Prerequisites](#installation-and-prerequisites)
+[Usage](#usage)
+&nbsp;&nbsp;&nbsp;&nbsp;[Connect to a CSE](#connect-to-a-cse)
+&nbsp;&nbsp;&nbsp;&nbsp;[Create an AE resource in a CSE](#create-an-ae-resource-in-a-cse)
+&nbsp;&nbsp;&nbsp;&nbsp;[Add a Container resource to an AE](#add-a-container-resource-to-an-ae)
+&nbsp;&nbsp;&nbsp;&nbsp;[Retrieve all Container resources of an AE](#retrieve-all-container-resources-of-an-ae)
+&nbsp;&nbsp;&nbsp;&nbsp;[Delete an AE from a CSE](#delete-an-ae-from-a-cse)
+&nbsp;&nbsp;&nbsp;&nbsp;[Subscribe to Notifications](#subscribe-to-notifications)
+&nbsp;&nbsp;&nbsp;&nbsp;[Work with remoteCSE resources](#work-with-remotecse-resources)
+[Supported Features & Limitations](#supported-features--limitations)
+[License](#license)
 
 
 ## Introduction[](#Introduction)
