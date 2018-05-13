@@ -386,6 +386,8 @@ class HTTPNotificationHandler(BaseHTTPRequestHandler):
 
 	def _callCallback(self, resource, sur):
 		# get and call callback
+		if sur not in _subscriptionIDToParentResourceID:
+			return
 		parentResourceID = _subscriptionIDToParentResourceID[sur]
 		if not parentResourceID:
 			return
