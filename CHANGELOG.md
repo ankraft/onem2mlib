@@ -1,9 +1,10 @@
 # CHANGELOG
 
-## Version 0.7 (xxxx-xx-xx)
+## Version 0.7 (2018-05-13)
 - [IMPROVEMENT] Added support for &lt;remoteCSE> resource type.
 - [FIX] Improved flexibility when parsing notifications messages from CSE.
 - [FIX] The internal server to receive notifications now binds to all available network interfaces.
+- [FIX] Don't throw an exception when receiving a notification to a stale subscription.
 
 ## Version 0.6 (2018-01-13)
 - [CHANGE] Refactored module structure. The resources are now available directly.

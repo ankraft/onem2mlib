@@ -183,24 +183,36 @@ Delete an &lt;AE> resource and all its sub-resource from a CSE.
 Add a subscription to a resource and receive notifications when the resource changes.
 
 ```python
-def myCallback(resource):		# Called for notifications, with the updated resource as the argument.
-	...                         # do something with the updated resource
+import onem2mlib.notifications as NOT
+
+def myCallback(resource):		    # Called for notifications, with the updated resource as the argument.
+    ...                             # do something with the updated resource
 
 # In the main program:
-setupNotifications(myCallback)  # Initialize the notification sub-module
+NOT.setupNotifications(myCallback)  # Initialize the notification sub-module
+                                    # The callback is the callback function above
 ...
-cnt = Container(ae)             # Create a container
-cnt.subscribe()                 # Subscribe to changes of this resource
-cnt.addContent('Some value')    # Add a new contentInstance
-                                # This implicitly triggers a call to 'myCallback' when the value us changed in the CSE
+cnt = Container(ae)                 # Create a container
+cnt.subscribe()                     # Subscribe to changes of this resource
+cnt.addContent('Some value')        # Add a new contentInstance
+                                    # This implicitly triggers a call to 'myCallback' when the value us changed in the CSE
 ```
 
 There could also be individual callbacks for each resource. Provide another function in the *subscribe()* method call.
 
 ```python
+def anotherCallback(resource):          # Define a new callback function
+    ...
+
 cnt.subscribe(anotherCallback)          # Subscribe to changes of this resource, and provide a different callback function
 ```
 
+Instead of a real callback function one can also specify a lambda function.
+
+```python
+cnt.subscribe(lambda resource: print(resource))   # Subscribe to changes of this resource
+                                                  # Provide a lambda function to handle the callback
+```
 Remove a subscription by calling the *unsubscribe()* method:
 
 ```python

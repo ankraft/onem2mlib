@@ -19,3 +19,4 @@
 - Test with other oneM2M implementations (contributions needed)
 - Support more &lt;subscription> attributes
 	- eventNotificationCriteria, notificationStoragePriority, preSubscriptionNotify, pendingNotification, batchNotify, rateLimit, notificationEventCat,
+	- Better handling of stale subscriptions. Currently the cse is not notified of stale subscriptions.
