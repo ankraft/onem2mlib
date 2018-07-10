@@ -38,7 +38,7 @@ except ImportError:
 try:
 	import urllib.parse
 except ImportError:
-    import urlparse
+	import urlparse
 
 import onem2mlib
 import onem2mlib.exceptions as EXC
