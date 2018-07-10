@@ -1,5 +1,7 @@
 # onem2mlib
-**Version 0.7**
+
+**Version 0.8**
+
 
 This Python 3 module implements a library to access and manage resources on a oneM2M CSE.
 

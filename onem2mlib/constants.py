@@ -12,6 +12,12 @@ This sub-module defines various constants used in the onem2mlib module.
 """
 
 #
+#	library configuration
+#
+
+Support_XML = False
+
+#
 #	on2M2M resource types
 #
 
@@ -29,6 +35,8 @@ Type_CSEBase = 5
 """ The &lt;CSE> resource type. """
 Type_Group =  9
 """ The &lt;group> resource type. """
+Type_Node = 14
+""" The &lt;node> resource type. """
 Type_RemoteCSE = 16
 """ The &lt;remoteCSE> resource type. """
 Type_Subscription = 23

@@ -1,5 +1,5 @@
 #
-#	utilities.py
+#	internal.py
 #
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
@@ -8,10 +8,13 @@
 #
 
 
-from lxml import etree as ET
 import onem2mlib.constants as CON
 import onem2mlib.utilities as UT
 import onem2mlib.mcarequests
+
+if CON.Support_XML:
+	from lxml import etree as ET
+
 
 
 # define the namespace
@@ -22,110 +25,113 @@ _ns = {'m2m' : 'http://www.onem2m.org/xml/protocols'}
 #	XML Utilities
 #
 
-def _searchExpression(elemName, relative):
-	if relative:
-		return './/'+elemName
-	return '//'+elemName
+if CON.Support_XML:
+
+	def _searchExpression(elemName, relative):
+		if relative:
+			return './/'+elemName
+		return '//'+elemName
 
 
-# Find a tag value (string) from the tree or, if not found, return the default.
-# If relative is set to True then the search is done relatively to the provided
-# element.
-def getElement(tree, elemName, default=None, relative=False):
-	elem = tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)
-	if elem and len(elem)>0 and elem[0].text:
-		result = elem[0].text
-		if isinstance(default, list):
-			result = result.split()
-		elif isinstance(default, bool):	# bool must be checked before int!
-			result = bool(result)
-		elif isinstance(default, int):
-			result = int(result)
-		return result
-	return default
+	# Find a tag value (string) from the tree or, if not found, return the default.
+	# If relative is set to True then the search is done relatively to the provided
+	# element.
+	def getElement(tree, elemName, default=None, relative=False):
+		elem = tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)
+		if elem and len(elem)>0 and elem[0].text:
+			result = elem[0].text
+			if isinstance(default, list):
+				result = result.split()
+			elif isinstance(default, bool):	# bool must be checked before int!
+				result = bool(result)
+			elif isinstance(default, int):
+				result = int(result)
+			return result
+		return default
 
 
-# Find all subtree elements from the tree. Returns a list.
-# If relative is set to True then the search is done relatively to the provided
-# element.
-def getElements(tree, elemName, relative=False):
-	return tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)
+	# Find all subtree elements from the tree. Returns a list.
+	# If relative is set to True then the search is done relatively to the provided
+	# element.
+	def getElements(tree, elemName, relative=False):
+		return tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)
 
 
-# Find the children elements of a specific XML element.
-def getElementWithChildren(tree, elemName):
-	result = getElements(tree, elemName)
-	if result is not None:
-		return result
-	return None
+	# Find the children elements of a specific XML element.
+	def getElementWithChildren(tree, elemName):
+		result = getElements(tree, elemName)
+		if result is not None:
+			return result
+		return None
 
 
-# Find an attribute value from the tree/element or, if not found, return the default
-def getAttribute(tree, elemName, attrName, default=None):
-	elem = tree.xpath('//'+elemName, namespaces=_ns)
-	if elem and len(elem)>0:
-		if attrName in elem[0].attrib:
-			return elem[0].attrib[attrName]
-	return default
+	# Find an attribute value from the tree/element or, if not found, return the default
+	def getAttribute(tree, elemName, attrName, default=None):
+		elem = tree.xpath('//'+elemName, namespaces=_ns)
+		if elem and len(elem)>0:
+			if attrName in elem[0].attrib:
+				return elem[0].attrib[attrName]
+		return default
 
 
-# Create an XML element, including an optional namespace. Return the element
-def createElement(elemName, namespace=None):
-	if namespace:
-		return ET.Element('{%s}%s' % (_ns['m2m'], elemName), nsmap=_ns)
-	else:
-		return ET.Element(elemName)
-
-
-# Create and add an element with the given name to the root. Return the new element.
-def addElement(root, name):
-	elem = createElement(name)
-	root.append(elem)
-	return elem
-
-
-# Create and add an element with the given name to the root. Add content to it when
-# the content is not None, or add the content nevertheless when mandatory is True.
-def addToElement(root, name, content, mandatory=False):
-	if isinstance(content, int) or (content and len(content) > 0) or mandatory:
-		elem = createElement(name)
-		if isinstance(content, list):
-			elem.text = ' '.join(content)
+	# Create an XML element, including an optional namespace. Return the element
+	def createElement(elemName, namespace=None):
+		if namespace:
+			return ET.Element('{%s}%s' % (_ns['m2m'], elemName), nsmap=_ns)
 		else:
-		 	elem.text = str(content)
+			return ET.Element(elemName)
+
+
+	# Create and add an element with the given name to the root. Return the new element.
+	def addElement(root, name):
+		elem = createElement(name)
 		root.append(elem)
 		return elem
-	return None
 
 
-# Create a new ElementTree from a sub-tree
-def elementAsNewTree(tree):
-	return ET.ElementTree(tree).getroot()
+	# Create and add an element with the given name to the root. Add content to it when
+	# the content is not None, or add the content nevertheless when mandatory is True.
+	def addToElement(root, name, content, mandatory=False):
+		if isinstance(content, int) or (content and len(content) > 0) or mandatory:
+			elem = createElement(name)
+			if isinstance(content, list):
+				elem.text = ' '.join(content)
+			else:
+			 	elem.text = str(content)
+			root.append(elem)
+			return elem
+		return None
 
 
-# Create an XML structure out of a response
-def responseToXML(response):
-	if response and response.content and len(response.content) > 0:
-		return stringToXML(response.content)
-	return None
+	# Create a new ElementTree from a sub-tree
+	def elementAsNewTree(tree):
+		return ET.ElementTree(tree).getroot()
 
 
-# Return the qualified name of an element
-def xmlQualifiedName(element, stripNameSpace=False):
-	qname = ET.QName(element)
-	if stripNameSpace:
-		return qname.localname
-	return qname
+	# Create an XML structure out of a response
+	def responseToXML(response):
+		if response and response.content and len(response.content) > 0:
+			return stringToXML(response.content)
+		return None
 
 
-# Return the XML structure as a string
-def xmlToString(xml):
-	return ET.tostring(xml)
+	# Return the qualified name of an element
+	def xmlQualifiedName(element, stripNameSpace=False):
+		qname = ET.QName(element)
+		if stripNameSpace:
+			return qname.localname
+		return qname
 
 
-# create a new XML structure from a string
-def stringToXML(value):
-	return ET.fromstring(value)
+	# Return the XML structure as a string
+	def xmlToString(xml):
+		return ET.tostring(xml)
+
+
+	# create a new XML structure from a string
+	def stringToXML(value):
+		return ET.fromstring(value)
+
 
 
 ###############################################################################

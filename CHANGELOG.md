@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 0.8 (xxxx-xx-xx)
+- [IMPROVEMENT] Support for Python 2 (>= 2.7).
+- [IMPROVEMENT] By default, the XML encoding is not supported at all, and must be enabled explicitly. This also removes the dependency to the *lxml* library.
+
 ## Version 0.7 (2018-05-13)
 - [IMPROVEMENT] Added support for &lt;remoteCSE> resource type.
 - [FIX] Improved flexibility when parsing notifications messages from CSE.

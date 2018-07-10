@@ -65,6 +65,8 @@ class Session:
 			It specifies the type of encoding for requests between the AE and the CSE. """
 		if self.encoding not in [CON.Encoding_XML, CON.Encoding_JSON]:
 			raise EXC.NotSupportedError('Unsupported encoding: ' + str(self.encoding))
+		if self.encoding == CON.Encoding_XML and not CON.Support_XML:
+			raise EXC.NotSupportedError('Unsupported encoding: Encoding_XML')
 
 		if not self.originator:
 			raise EXC.AuthenticationError('Missing accessControlOriginator.')
@@ -430,7 +432,8 @@ class CSEBase(ResourceBase):
 		Internally, the *cseID* is assigned to the `onem2mlib.ResourceBase.resourceID` attribute, and the *csename* is handled
 		by the *resourceName*. 
 		"""
-		super().__init__(None, resourceName, cseID, CON.Type_CSEBase)
+		#super().__init__(None, resourceName, cseID, CON.Type_CSEBase)
+		ResourceBase.__init__(self, None, resourceName, cseID, CON.Type_CSEBase)
 
 		self.session = session # Must assign session manually.
 		
@@ -452,7 +455,8 @@ class CSEBase(ResourceBase):
 
 	def __str__(self):
 		result = 'CSEBase:\n'
-		result += super().__str__()
+		#result += super().__str__()
+		result += ResourceBase.__str__(self)
 		result += INT.strResource('cseType', 'cst', self.cseType)
 		result += INT.strResource('supportedResourceTypes', 'srt', self.supportedResourceTypes)
 		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
@@ -565,7 +569,8 @@ class CSEBase(ResourceBase):
 
 
 	def _copy(self, resource):
-		super()._copy(resource)
+		#super()._copy(resource)
+		ResourceBase._copy(self, resource)
 		self.cseType = resource.cseType
 		self.supportedResourceTypes = resource.supportedResourceTypes
 		self.pointOfAccess = self.pointOfAccess
@@ -596,7 +601,9 @@ class RemoteCSE(ResourceBase):
 		- All other arguments initialize the status variables of the same name in the
 			&lt;remoteCSE> instance or `onem2mlib.ResourceBase`.
 		"""
-		super().__init__(parent, resourceName, resourceID, CON.Type_RemoteCSE)
+		# super().__init__(parent, resourceName, resourceID, CON.Type_RemoteCSE)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_RemoteCSE)
+
 		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:
 			raise EXC.ParameterError('Parent must be <CSE> or <remoteCSE>.')
 
@@ -620,7 +627,8 @@ class RemoteCSE(ResourceBase):
 
 	def __str__(self):
 		result = 'RemoteCSE:\n'
-		result += super().__str__()
+		#result += super().__str__()
+		result += ResourceBase.__str__(self)
 		result += INT.strResource('requestReachability', 'rr', self.requestReachability)
 		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
 		result += INT.strResource('CSEBase', 'cb', self.cseBase)
@@ -676,7 +684,8 @@ class RemoteCSE(ResourceBase):
 
 
 	def _copy(self, resource):
-		super()._copy(resource)
+		# super()._copy(resource)
+		ResourceBase._copy(self, resource)
 		self.cseBase = resource.cseBase
 		self.cseID = resource.cseID
 		self.pointOfAccess = resource.pointOfAccess
@@ -716,7 +725,9 @@ class AccessControlPolicy(ResourceBase):
 		- All other arguments initialize the status variables of the same name in the
 			&lt;accessControlPolicy> instance or `onem2mlib.ResourceBase`.
 		"""
-		super().__init__(parent, resourceName, resourceID, CON.Type_ACP)
+		#super().__init__(parent, resourceName, resourceID, CON.Type_ACP)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ACP)
+		
 		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:
 			raise EXC.ParameterError('Parent must be <CSE> or <remoteCSE>.')
 
@@ -734,7 +745,8 @@ class AccessControlPolicy(ResourceBase):
 
 	def __str__(self):
 		result = 'ACP:\n'
-		result += super().__str__()
+		#result += super().__str__()
+		result += ResourceBase.__str__(self)
 		result += '\tPrivileges:\n'
 		for p in self.privileges:
 			result += str(p)
@@ -761,7 +773,8 @@ class AccessControlPolicy(ResourceBase):
 
 
 	def _copy(self, resource):
-		super()._copy(resource)
+		#super()._copy(resource)
+		ResourceBase._copy(self, resource)
 		self.privileges = resource.privileges
 		self.selfPrivileges = resource.selfPrivileges
 
@@ -844,7 +857,8 @@ class AE(ResourceBase):
 		- All other arguments initialize the status variables of the same name in the
 			&lt;AE> instance or `onem2mlib.ResourceBase`.
 		"""
-		super().__init__(parent, resourceName, resourceID, CON.Type_AE, labels=labels)
+		# super().__init__(parent, resourceName, resourceID, CON.Type_AE, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_AE, labels=labels)
 
 		self.appID = appID
 		""" String. The identifier of the Application. Assigned by the application or the CSE. """
@@ -867,7 +881,8 @@ class AE(ResourceBase):
 
 	def __str__(self):
 		result = 'AE:\n'
-		result += super().__str__()
+		#result += super().__str__()
+		result += ResourceBase.__str__(self)
 		result += INT.strResource('appID', 'api', self.appID)
 		result += INT.strResource('AEID', 'aei', self.AEID)
 		result += INT.strResource('requestReachability', 'rr', self.requestReachability)
@@ -953,7 +968,8 @@ class AE(ResourceBase):
 
 
 	def _copy(self, resource):
-		super()._copy(resource)
+		#super()._copy(resource)
+		ResourceBase._copy(self, resource)
 		self.appID = resource.appID
 		self.AEID = resource.AEID
 		self.requestReachability = resource.requestReachability
@@ -983,7 +999,8 @@ class Container(ResourceBase):
 		- All other arguments initialize the status variables of the same name in the
 			&lt;container> instance or `onem2mlib.ResourceBase`.
 		"""	
-		super().__init__(parent, resourceName, resourceID, CON.Type_Container, labels=labels)
+		# super().__init__(parent, resourceName, resourceID, CON.Type_Container, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Container, labels=labels)
 
 		self.maxNrOfInstances = maxNrOfInstances
 		""" Integer. Maximum number of direct child &lt;contentInstance> resources in the 
@@ -1023,7 +1040,8 @@ class Container(ResourceBase):
 
 	def __str__(self):
 		result = 'Container:\n'
-		result += super().__str__()
+		#result += super().__str__()
+		result += ResourceBase.__str__(self)
 		result += INT.strResource('maxNrOfInstances', 'mni', self.maxNrOfInstances)
 		result += INT.strResource('maxByteSize', 'mbs', self.maxByteSize)
 		result += INT.strResource('maxInstanceAge', 'mia', self.maxInstanceAge)
@@ -1155,7 +1173,8 @@ class Container(ResourceBase):
 
 
 	def _copy(self, resource):
-		super()._copy(resource)
+		#super()._copy(resource)
+		ResourceBase._copy(self, resource)
 		self.maxNrOfInstances = resource.maxNrOfInstances
 		self.maxByteSize = resource.maxByteSize
 		self.maxInstanceAge = resource.maxInstanceAge
@@ -1200,7 +1219,8 @@ class ContentInstance(ResourceBase):
 		- All other arguments initialize the status variables of the same name in
 			&lt;contentInstance> instance or `onem2mlib.ResourceBase`.
 		"""
-		super().__init__(parent, resourceName, resourceID, CON.Type_ContentInstance, labels=labels)
+		# super().__init__(parent, resourceName, resourceID, CON.Type_ContentInstance, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ContentInstance, labels=labels)
 
 		self.contentInfo = contentInfo
 		""" String. The type of the data in the `onem2mlib.ContentInstance.content` 
@@ -1220,7 +1240,8 @@ class ContentInstance(ResourceBase):
 
 	def __str__(self):
 		result = 'ContentInstance:\n'
-		result += super().__str__()
+		#result += super().__str__()
+		result += ResourceBase.__str__(self)
 		result += INT.strResource('contentInfo', 'cnf', self.contentInfo)
 		result += INT.strResource('contentSize', 'cs', self.contentSize)
 		result += INT.strResource('content', 'con', self.content)
@@ -1244,7 +1265,8 @@ class ContentInstance(ResourceBase):
 
 
 	def _copy(self, resource):
-		super()._copy(resource)
+		#super()._copy(resource)
+		ResourceBase._copy(self, resource)
 		self.contentInfo = resource.contentInfo
 		self.contentSize = resource.contentSize
 		self.content = resource.content
@@ -1276,7 +1298,8 @@ class Group(ResourceBase):
 		- All other arguments initialize the status variables of the same name in
 			&lt;group> instance or `onem2mlib.ResourceBase`.
 		"""		
-		super().__init__(parent, resourceName, resourceID, CON.Type_Group, labels=labels)
+		# super().__init__(parent, resourceName, resourceID, CON.Type_ContentInstance, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ContentInstance, labels=labels)
 
 		self.maxNrOfMembers = maxNrOfMembers
 		""" Integer. Maximum number of members in the &lt;group>. """
@@ -1340,7 +1363,8 @@ class Group(ResourceBase):
 
 	def __str__(self):
 		result = 'Group:\n'
-		result += super().__str__()
+		#result += super().__str__()
+		result += ResourceBase.__str__(self)
 		result += INT.strResource('maxNrOfMembers', 'mnm', self.maxNrOfMembers)
 		result += INT.strResource('memberType', 'mt', self.memberType)
 		result += INT.strResource('currentNrOfMembers', 'cnm', self.currentNrOfMembers)
@@ -1476,7 +1500,8 @@ class Group(ResourceBase):
 
 
 	def _copy(self, resource):
-		super()._copy(resource)
+		#super()._copy(resource)
+		ResourceBase._copy(self, resource)
 		self.maxNrOfMembers = resource.maxNrOfMembers
 		self.memberType = resource.memberType
 		self.currentNrOfMembers = resource.currentNrOfMembers
@@ -1515,7 +1540,8 @@ class Subscription(ResourceBase):
 			&lt;subscription> instance or `onem2mlib.ResourceBase`.
 		"""
 	
-		super().__init__(parent, resourceName, resourceID, CON.Type_Subscription, labels=labels)
+		# super().__init__(parent, resourceName, resourceID, CON.Type_Subscription, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Subscription, labels=labels)
 
 		self.notificationURI = notificationURI
 		"""
@@ -1581,7 +1607,8 @@ class Subscription(ResourceBase):
 
 	def __str__(self):
 		result = 'Subscription:\n'
-		result += super().__str__()
+		#result += super().__str__()
+		result += ResourceBase.__str__(self)
 		result += INT.strResource('notificationURI', 'nu', self.notificationURI)
 		result += INT.strResource('notificationContentType', 'nct', self.notificationContentType)
 		if self.expirationCounter != -1:
@@ -1614,7 +1641,8 @@ class Subscription(ResourceBase):
 
 
 	def _copy(self, resource):
-		super()._copy(resource)
+		#super()._copy(resource)
+		ResourceBase._copy(self, resource)
 		self.notificationURI = resource.notificationURI
 		self.notificationContentType = resource.notificationContentType
 		self.expirationCounter = resource.expirationCounter

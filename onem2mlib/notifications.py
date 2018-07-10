@@ -29,8 +29,16 @@ This method also automatically shuts down the server when the parent program ter
 """
 
 import atexit, threading, json
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import urllib.parse
+
+try:
+	from http.server import BaseHTTPRequestHandler, HTTPServer
+except ImportError:
+	from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+
+try:
+	import urllib.parse
+except ImportError:
+    import urlparse
 
 import onem2mlib
 import onem2mlib.exceptions as EXC

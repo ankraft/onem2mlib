@@ -27,13 +27,14 @@ if __name__ == '__main__':
 
 	# create a <container> and add it to the <AE>
 	cnt = Container(ae)
+	print(cnt)
 
 	# add a <contentInstance> to the <container>, with labels
 	cin = ContentInstance(cnt, content='Some value', labels=['label1/example', 'label2/anotherExample'])
 
 	# or do the same a bit more conventient
 	cnt.addContent('Some other Value', ['label1/example', 'label2/anotherExample'])
-	print('ContentInstances in the Container: ' + str([cnt.resourceID for cnt in cnt.contentInstances()]))
+	print('ContentInstances in the Container: ' + str([cin.resourceID for cin in cnt.contentInstances()]))
 
 	# retrieve the <contentInstance> via the <container>.latest and print it
 	print('Latest ' + str(cnt.latestContentInstance()))
