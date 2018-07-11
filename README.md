@@ -251,6 +251,9 @@ listOfAEs = indirectRemoteCSE.aes()
 newRemoteAE = directRemoteCSE.addAE('remoteAE')
 ```
 
+The following drawing shows the relationship between the different resource types and the communication paths.
+
+![](doc/drawings/remoteCSE.png)
 
 ## Supported Features & Limitations
 
