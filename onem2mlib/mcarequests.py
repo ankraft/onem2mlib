@@ -197,7 +197,7 @@ def _getPath(session, path):
 		return session.address+'/~/' + path
 
 def _isValidResource(resource):
-	return	(resource.type == CON.Type_CSEBase and resource.session) or \
+	return	(resource.type == CON.Type_CSEBase and resource.session is not None) or \
 			(resource.session is not None and ( \
 				(resource.parent is not None and resource.parent.resourceID is not None)\
 			) )

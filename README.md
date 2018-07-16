@@ -12,6 +12,7 @@ This Python 3 module implements a library to access and manage resources on a on
 	- [Create an AE resource in a CSE](#create-an-ae-resource-in-a-cse)
 	- [Add a Container resource to an AE](#add-a-container-resource-to-an-ae)
 	- [Retrieve all Container resources of an AE](#retrieve-all-container-resources-of-an-ae)
+	- [Retrieve a Resource by its Path](#retrieve-a-resource-by-its-path)
 	- [Delete an AE from a CSE](#delete-an-ae-from-a-cse)
 	- [Subscribe to Notifications](#subscribe-to-notifications)
 	- [Work with remoteCSE resources](#work-with-remotecse-resources)
@@ -90,7 +91,7 @@ The following sections provide some examples.
 First, create a session and then retrieve a &lt;CSEBase> resource from a CSE. The session holds, for example, the authentication information to access the CSE.
 
 ```python
-session = Session('http://host.com:8282', 'admin:admin').   # create a session
+session = Session('http://host.com:8282', 'admin:admin')   # create a session
 cse = CSEBase(session, 'mn-cse')                            # get the <CSEBase> resource
 ```
 
@@ -174,6 +175,20 @@ There is a short-cut in case you are only interested in the content.
 print(container.latestContent())
 ```
 
+### Retrieve a resource by its path
+
+If the structure of an &lt;AE> is a bit more sophisticated, or when one doesn't want to retrieve all the intermediate resources in between the &lt;CSEBase> and the actual resource, one can retrieve that resource directly as is shown in the following example.
+
+```python
+# First create a CSE object. No need to retrieve it though.
+session = Session('http://host.com:8282', 'admin:admin')
+cse = CSEBase(session, 'mn-cse', resourceName='mn-name', instantly=False)
+
+# Then retrieve the resource by its path
+cnt = cse.findContainer('myAE/container')
+```
+
+This method can be used with all supported ```find...()``` methods of the resources. Please note, that the provided path is always relative to the resource from which the ```find()...``` method is invoked.
 
 ### Delete an AE from a CSE
 Delete an &lt;AE> resource and all its sub-resource from a CSE.

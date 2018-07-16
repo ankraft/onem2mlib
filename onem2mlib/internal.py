@@ -294,6 +294,8 @@ def _newResourceFromTypeString(typeString, parent):
 # Get a resource from the CSE by its resourceName
 def _getResourceFromCSEByResourceName(type, rn, parent):
 	res = None
+	if rn.startswith('/'):	# Remove leading '/' in case we do a deep search
+		rn = rn[1:]
 	if type == CON.Type_ContentInstance:		res = onem2mlib.ContentInstance(parent, resourceName=rn, instantly=False)
 	elif type == CON.Type_Container:			res = onem2mlib.Container(parent, resourceName=rn, instantly=False)
 	elif type == CON.Type_AE:					res = onem2mlib.AE(parent, resourceName=rn, instantly=False)

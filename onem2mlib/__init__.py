@@ -115,7 +115,7 @@ class ResourceBase:
 		""" String. The resource ID of the resource. Assigned by the CSE.
 			For a &lt;CSEBase> this is the *cseID*.2"""
 		
-		self.resourceName= resourceName
+		self.resourceName = resourceName
 		""" String. The resource name of the resource. Assigned by the application or the CSE. 
 			For a &lt;CSEBase> this is the *cseName*."""
 		
