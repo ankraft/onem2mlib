@@ -29,8 +29,8 @@ if __name__ == '__main__':
 	cnt2 = Container(ae, resourceName='container2')
 
 	# create a <group> reosurce that contains both containers, and add it to the <ae>
-	grp = Group(ae, resourceName='myGroup', resources=[cnt1, cnt2],)
-
+	grp = Group(ae, resourceName='myGroup', resources=[cnt1, cnt2])
+	
 	# print the group
 	print(grp)
 

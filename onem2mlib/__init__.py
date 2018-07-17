@@ -358,14 +358,82 @@ class ResourceBase:
 		return INT._findSubResource(self, CON.Type_Subscription)
 
 
+	def findAccessControlPolicy(self, resourceName):
+		"""
+		Find a specific &lt;accessControlPolicy> resource by its *resourceName*, or None.
+
+		*resourceName* could point to a direct sub-resource, or it can be a relative path
+		pointing to a resource deeper down the resource tree. In that case the path
+		elements are separated by '/' characters.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_ACP, resourceName, self)
+
+
+	def findAE(self, resourceName):
+		"""
+		Find a specific &lt;AE> resource by its *resourceName*, or None otherwise.
+
+		*resourceName* could point to a direct sub-resource, or it can be a relative path
+		pointing to a resource deeper down the resource tree. In that case the path
+		elements are separated by '/' characters.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_AE, resourceName, self)
+
+
+	def findContainer(self, resourceName):
+		"""
+		Find a &lt;container> resource by its *resourceName*, or None.
+
+		*resourceName* could point to a direct sub-resource, or it can be a relative path
+		pointing to a resource deeper down the resource tree. In that case the path
+		elements are separated by '/' characters.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
+
+
+	def findContentInstance(self, resourceName):
+		"""
+		Find a &lt;ContentInstance> resource by its *resourceName*, or None.
+
+		*resourceName* could point to a direct sub-resource, or it can be a relative path
+		pointing to a resource deeper down the resource tree. In that case the path
+		elements are separated by '/' characters.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_ContentInstance, resourceName, self)
+
+
+	def findGroup(self, resourceName):
+		"""
+		Find a specific &lt;group> resource by its *resourceName*, or None.
+
+		*resourceName* could point to a direct sub-resource, or it can be a relative path
+		pointing to a resource deeper down the resource tree. In that case the path
+		elements are separated by '/' characters.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self)
+
+
+	def findRemoteCSE(self, resourceName):
+		"""
+		Find a specific &lt;remoteCSE> resource by its *resourceName*, or None.
+
+		*resourceName* could point to a direct sub-resource, or it can be a relative path
+		pointing to a resource deeper down the resource tree. In that case the path
+		elements are separated by '/' characters.
+		"""
+		return INT._getResourceFromCSEByResourceName(CON.Type_RemoteCSE, resourceName, self)
+
+
 	def findSubscription(self, resourceName):
 		"""
 		Find a specific &lt;subscription> resource by its *resourceName*, or None otherwise.
 
-		This method might throw	a `onem2mlib.exceptions.NotSupportedError` exception in case
-		the target resource type doesn't support subscriptions.
+		*resourceName* could point to a direct sub-resource, or it can be a relative path
+		pointing to a resource deeper down the resource tree. In that case the path
+		elements are separated by '/' characters.
 		"""
 		return INT._getResourceFromCSEByResourceName(CON.Type_Subscription, resourceName, self)
+
 
 
 	# Recursivly construct a structured resourceName
@@ -470,25 +538,11 @@ class CSEBase(ResourceBase):
 		return INT._findSubResource(self, CON.Type_ACP)
 
 
-	def findAccessControlPolicy(self, resourceName):
-		"""
-		Find a specific &lt;accessControlPolicy> resource by its *resourceName*, or None.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_ACP, resourceName, self)
-
-
 	def aes(self):
 		"""
 		Return a list of &lt;AE> resources from this CSE, or an empty list.
 		"""
 		return INT._findSubResource(self, CON.Type_AE)
-
-
-	def findAE(self, resourceName):
-		"""
-		Find a specific &lt;AE> resource by its *resourceName*, or None otherwise.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_AE, resourceName, self)
 
 
 	def addAE(self, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[]):
@@ -507,13 +561,6 @@ class CSEBase(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Container)
 
 
-	def findContainer(self, resourceName):
-		"""
-		Find a &lt;container> resource by its *resourceName*, or None.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
-
-
 	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[]):
 		"""
 		Add a new container. This is a convenience function that actually creates a new
@@ -530,13 +577,6 @@ class CSEBase(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Group)
 
 
-	def findGroup(self, resourceName):
-		"""
-		Find a specific &lt;group> resource by its *resourceName*, or None.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self)
-
-
 	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], instantly=True):
 		"""
 		Add a new group. This is a convenience function that actually creates a new
@@ -551,13 +591,6 @@ class CSEBase(ResourceBase):
 		Return a list of &lt;remoteCSE> resources from this CSE, or an empty list.
 		"""
 		return INT._findSubResource(self, CON.Type_RemoteCSE)
-
-
-	def findRemoteCSE(self, resourceName):
-		"""
-		Find a specific &lt;remoteCSE> resource by its *resourceName*, or None.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_RemoteCSE, resourceName, self)
 
 
 	def _parseXML(self, root):
@@ -690,13 +723,6 @@ class RemoteCSE(ResourceBase):
 		self.cseID = resource.cseID
 		self.pointOfAccess = resource.pointOfAccess
 		self.requestReachability = resource.requestReachability
-
-
-# README
-
-
-
-
 
 
 ###############################################################################
@@ -897,14 +923,6 @@ class AE(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Container)
 
 
-	def findContainer(self, resourceName):
-		"""
-		Find a &lt;container> resource by its *resourceName*, or None.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
-
-
-
 	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[]):
 		"""
 		Add a new container. This is a convenience function that actually creates a new
@@ -933,13 +951,6 @@ class AE(ResourceBase):
 		Return a list of all &lt;group> resources of this &lt;AE>, or an empty list.
 		"""
 		return INT._findSubResource(self, CON.Type_Group)
-
-
-	def findGroup(self, resourceName):
-		"""
-		Find a specific &lt;group> resource by its *resourceName*, or None.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self)
 
 
 	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], instantly=True):
@@ -1059,13 +1070,6 @@ class Container(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Container)
 
 
-	def findContainer(self, resourceName):
-		"""
-		Find a &lt;container> resource by its *resourceName*, or None.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
-
-
 	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[]):
 		"""
 		Add a new container. This is a convenience function that actually creates a new
@@ -1080,13 +1084,6 @@ class Container(ResourceBase):
 		Return all &lt;contentInstance> sub-resources from this container, or an empty list.
 		"""
 		return INT._findSubResource(self, CON.Type_ContentInstance)
-
-
-	def findContentInstance(self, resourceName):
-		"""
-		Find a &lt;ContentInstance> resource by its *resourceName*, or None.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_ContentInstance, resourceName, self)
 
 
 	def contents(self):
@@ -1299,7 +1296,7 @@ class Group(ResourceBase):
 			&lt;group> instance or `onem2mlib.ResourceBase`.
 		"""		
 		# super().__init__(parent, resourceName, resourceID, CON.Type_ContentInstance, labels=labels)
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ContentInstance, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Group, labels=labels)
 
 		self.maxNrOfMembers = maxNrOfMembers
 		""" Integer. Maximum number of members in the &lt;group>. """
@@ -1700,7 +1697,13 @@ __pdoc__['CSEBase.setAccessControlPolicies']             = None
 __pdoc__['CSEBase.subscribe']                            = None
 __pdoc__['CSEBase.unsubscribe']                          = None
 __pdoc__['CSEBase.subscriptions']                        = None
+__pdoc__['CSEBase.findAccessControlPolicy']              = None
+__pdoc__['CSEBase.findAE']                               = None
+__pdoc__['CSEBase.findContainer']                        = None
+__pdoc__['CSEBase.findContentInstance']                  = None
+__pdoc__['CSEBase.findGroup']                            = None
 __pdoc__['CSEBase.findSubscription']                     = None
+__pdoc__['CSEBase.findRemoteCSE']                        = None
 
 __pdoc__['AE.createInCSE']                               = None
 __pdoc__['AE.deleteFromCSE']                             = None
@@ -1712,7 +1715,13 @@ __pdoc__['AE.setAccessControlPolicies']                  = None
 __pdoc__['AE.subscribe']                                 = None
 __pdoc__['AE.unsubscribe']                               = None
 __pdoc__['AE.subscriptions']                             = None
+__pdoc__['AE.findAccessControlPolicy']                   = None
+__pdoc__['AE.findAE']                                    = None
+__pdoc__['AE.findContainer']                             = None
+__pdoc__['AE.findContentInstance']                       = None
+__pdoc__['AE.findGroup']                                 = None
 __pdoc__['AE.findSubscription']                          = None
+__pdoc__['AE.findRemoteCSE']                             = None
 
 __pdoc__['AccessControlPolicy.createInCSE']              = None
 __pdoc__['AccessControlPolicy.deleteFromCSE']            = None
@@ -1724,7 +1733,13 @@ __pdoc__['AccessControlPolicy.setAccessControlPolicies'] = None
 __pdoc__['AccessControlPolicy.subscribe']                = None
 __pdoc__['AccessControlPolicy.unsubscribe']              = None
 __pdoc__['AccessControlPolicy.subscriptions']            = None
+__pdoc__['AccessControlPolicy.findAccessControlPolicy']  = None
+__pdoc__['AccessControlPolicy.findAE']                   = None
+__pdoc__['AccessControlPolicy.findContainer']            = None
+__pdoc__['AccessControlPolicy.findContentInstance']      = None
+__pdoc__['AccessControlPolicy.findGroup']                = None
 __pdoc__['AccessControlPolicy.findSubscription']         = None
+__pdoc__['AccessControlPolicy.findRemoteCSE']            = None
 
 __pdoc__['Container.createInCSE']                        = None
 __pdoc__['Container.deleteFromCSE']                      = None
@@ -1736,7 +1751,13 @@ __pdoc__['Container.setAccessControlPolicies']           = None
 __pdoc__['Container.subscribe']                          = None
 __pdoc__['Container.unsubscribe']                        = None
 __pdoc__['Container.subscriptions']                      = None
+__pdoc__['Container.findAccessControlPolicy']            = None
+__pdoc__['Container.findAE']                             = None
+__pdoc__['Container.findContainer']                      = None
+__pdoc__['Container.findContentInstance']                = None
+__pdoc__['Container.findGroup']                          = None
 __pdoc__['Container.findSubscription']                   = None
+__pdoc__['Container.findRemoteCSE']                      = None
 
 __pdoc__['ContentInstance.createInCSE']                  = None
 __pdoc__['ContentInstance.deleteFromCSE']                = None
@@ -1748,7 +1769,13 @@ __pdoc__['ContentInstance.setAccessControlPolicies']     = None
 __pdoc__['ContentInstance.subscribe']                    = None
 __pdoc__['ContentInstance.unsubscribe']                  = None
 __pdoc__['ContentInstance.subscriptions']                = None
+__pdoc__['ContentInstance.findAccessControlPolicy']      = None
+__pdoc__['ContentInstance.findAE']                       = None
+__pdoc__['ContentInstance.findContainer']                = None
+__pdoc__['ContentInstance.findContentInstance']          = None
+__pdoc__['ContentInstance.findGroup']                    = None
 __pdoc__['ContentInstance.findSubscription']             = None
+__pdoc__['ContentInstance.findRemoteCSE']                = None
 
 __pdoc__['Group.createInCSE']                            = None
 __pdoc__['Group.deleteFromCSE']                          = None
@@ -1760,7 +1787,13 @@ __pdoc__['Group.setAccessControlPolicies']       		 = None
 __pdoc__['Group.subscribe']                              = None
 __pdoc__['Group.unsubscribe']                            = None
 __pdoc__['Group.subscriptions']                          = None
+__pdoc__['Group.findAccessControlPolicy']                = None
+__pdoc__['Group.findAE']                                 = None
+__pdoc__['Group.findContainer']                          = None
+__pdoc__['Group.findContentInstance']                    = None
+__pdoc__['Group.findGroup']                              = None
 __pdoc__['Group.findSubscription']                       = None
+__pdoc__['Group.findRemoteCSE']                          = None
 
 __pdoc__['RemoteCSE.createInCSE']         		 		 = None
 __pdoc__['RemoteCSE.deleteFromCSE']  		             = None
@@ -1772,7 +1805,13 @@ __pdoc__['RemoteCSE.setAccessControlPolicies']		     = None
 __pdoc__['RemoteCSE.subscribe']                          = None
 __pdoc__['RemoteCSE.unsubscribe']                        = None
 __pdoc__['RemoteCSE.subscriptions']                      = None
+__pdoc__['RemoteCSE.findAccessControlPolicy']            = None
+__pdoc__['RemoteCSE.findAE']                             = None
+__pdoc__['RemoteCSE.findContainer']                      = None
+__pdoc__['RemoteCSE.findContentInstance']                = None
+__pdoc__['RemoteCSE.findGroup']                          = None
 __pdoc__['RemoteCSE.findSubscription']                   = None
+__pdoc__['RemoteCSE.findRemoteCSE']                      = None
 
 __pdoc__['Subscription.createInCSE']         		     = None
 __pdoc__['Subscription.deleteFromCSE']  		         = None
@@ -1784,5 +1823,10 @@ __pdoc__['Subscription.setAccessControlPolicies']		 = None
 __pdoc__['Subscription.subscribe']                       = None
 __pdoc__['Subscription.unsubscribe']                     = None
 __pdoc__['Subscription.subscriptions']       		     = None
+__pdoc__['Subscription.findAccessControlPolicy']         = None
+__pdoc__['Subscription.findAE']                          = None
+__pdoc__['Subscription.findContainer']                   = None
+__pdoc__['Subscription.findContentInstance']             = None
+__pdoc__['Subscription.findGroup']                       = None
 __pdoc__['Subscription.findSubscription']                = None
-
+__pdoc__['Subscription.findRemoteCSE']                   = None

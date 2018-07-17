@@ -1062,8 +1062,6 @@ table {
     <li class="mono"><a href="#onem2mlib.AE.addContainer">addContainer</a></li>
     <li class="mono"><a href="#onem2mlib.AE.addGroup">addGroup</a></li>
     <li class="mono"><a href="#onem2mlib.AE.containers">containers</a></li>
-    <li class="mono"><a href="#onem2mlib.AE.findContainer">findContainer</a></li>
-    <li class="mono"><a href="#onem2mlib.AE.findGroup">findGroup</a></li>
     <li class="mono"><a href="#onem2mlib.AE.groups">groups</a></li>
   </ul>
 
@@ -1098,11 +1096,6 @@ table {
     <li class="mono"><a href="#onem2mlib.CSEBase.addGroup">addGroup</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.aes">aes</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.containers">containers</a></li>
-    <li class="mono"><a href="#onem2mlib.CSEBase.findAE">findAE</a></li>
-    <li class="mono"><a href="#onem2mlib.CSEBase.findAccessControlPolicy">findAccessControlPolicy</a></li>
-    <li class="mono"><a href="#onem2mlib.CSEBase.findContainer">findContainer</a></li>
-    <li class="mono"><a href="#onem2mlib.CSEBase.findGroup">findGroup</a></li>
-    <li class="mono"><a href="#onem2mlib.CSEBase.findRemoteCSE">findRemoteCSE</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.groups">groups</a></li>
     <li class="mono"><a href="#onem2mlib.CSEBase.remoteCSEs">remoteCSEs</a></li>
   </ul>
@@ -1119,8 +1112,6 @@ table {
     <li class="mono"><a href="#onem2mlib.Container.containers">containers</a></li>
     <li class="mono"><a href="#onem2mlib.Container.contentInstances">contentInstances</a></li>
     <li class="mono"><a href="#onem2mlib.Container.contents">contents</a></li>
-    <li class="mono"><a href="#onem2mlib.Container.findContainer">findContainer</a></li>
-    <li class="mono"><a href="#onem2mlib.Container.findContentInstance">findContentInstance</a></li>
     <li class="mono"><a href="#onem2mlib.Container.latestContent">latestContent</a></li>
     <li class="mono"><a href="#onem2mlib.Container.latestContentInstance">latestContentInstance</a></li>
     <li class="mono"><a href="#onem2mlib.Container.oldestContent">oldestContent</a></li>
@@ -1170,6 +1161,12 @@ table {
     <li class="mono"><a href="#onem2mlib.ResourceBase.createInCSE">createInCSE</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.deleteFromCSE">deleteFromCSE</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.discover">discover</a></li>
+    <li class="mono"><a href="#onem2mlib.ResourceBase.findAE">findAE</a></li>
+    <li class="mono"><a href="#onem2mlib.ResourceBase.findAccessControlPolicy">findAccessControlPolicy</a></li>
+    <li class="mono"><a href="#onem2mlib.ResourceBase.findContainer">findContainer</a></li>
+    <li class="mono"><a href="#onem2mlib.ResourceBase.findContentInstance">findContentInstance</a></li>
+    <li class="mono"><a href="#onem2mlib.ResourceBase.findGroup">findGroup</a></li>
+    <li class="mono"><a href="#onem2mlib.ResourceBase.findRemoteCSE">findRemoteCSE</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.findSubscription">findSubscription</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.get">get</a></li>
     <li class="mono"><a href="#onem2mlib.ResourceBase.retrieveFromCSE">retrieveFromCSE</a></li>
@@ -1385,36 +1382,6 @@ application and the sub-structure of resources beneath it.</p></div>
     
   
     <div class="desc"><p>Return a list of all &lt;container&gt; resources of this &lt;AE&gt;, or an empty list.</p></div>
-  <div class="source_cont">
-</div>
-
-  </div>
-  
-            
-  <div class="item">
-    <div class="name def" id="onem2mlib.AE.findContainer">
-    <p>def <span class="ident">findContainer</span>(</p><p>self, resourceName)</p>
-    </div>
-    
-
-    
-  
-    <div class="desc"><p>Find a &lt;container&gt; resource by its <em>resourceName</em>, or None.</p></div>
-  <div class="source_cont">
-</div>
-
-  </div>
-  
-            
-  <div class="item">
-    <div class="name def" id="onem2mlib.AE.findGroup">
-    <p>def <span class="ident">findGroup</span>(</p><p>self, resourceName)</p>
-    </div>
-    
-
-    
-  
-    <div class="desc"><p>Find a specific &lt;group&gt; resource by its <em>resourceName</em>, or None.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1767,81 +1734,6 @@ by the <em>resourceName</em>.</p></div>
   
             
   <div class="item">
-    <div class="name def" id="onem2mlib.CSEBase.findAE">
-    <p>def <span class="ident">findAE</span>(</p><p>self, resourceName)</p>
-    </div>
-    
-
-    
-  
-    <div class="desc"><p>Find a specific &lt;AE&gt; resource by its <em>resourceName</em>, or None otherwise.</p></div>
-  <div class="source_cont">
-</div>
-
-  </div>
-  
-            
-  <div class="item">
-    <div class="name def" id="onem2mlib.CSEBase.findAccessControlPolicy">
-    <p>def <span class="ident">findAccessControlPolicy</span>(</p><p>self, resourceName)</p>
-    </div>
-    
-
-    
-  
-    <div class="desc"><p>Find a specific &lt;accessControlPolicy&gt; resource by its <em>resourceName</em>, or None.</p></div>
-  <div class="source_cont">
-</div>
-
-  </div>
-  
-            
-  <div class="item">
-    <div class="name def" id="onem2mlib.CSEBase.findContainer">
-    <p>def <span class="ident">findContainer</span>(</p><p>self, resourceName)</p>
-    </div>
-    
-
-    
-  
-    <div class="desc"><p>Find a &lt;container&gt; resource by its <em>resourceName</em>, or None.</p></div>
-  <div class="source_cont">
-</div>
-
-  </div>
-  
-            
-  <div class="item">
-    <div class="name def" id="onem2mlib.CSEBase.findGroup">
-    <p>def <span class="ident">findGroup</span>(</p><p>self, resourceName)</p>
-    </div>
-    
-
-    
-  
-    <div class="desc"><p>Find a specific &lt;group&gt; resource by its <em>resourceName</em>, or None.</p></div>
-  <div class="source_cont">
-</div>
-
-  </div>
-  
-            
-  <div class="item">
-    <div class="name def" id="onem2mlib.CSEBase.findRemoteCSE">
-    <p>def <span class="ident">findRemoteCSE</span>(</p><p>self, resourceName)</p>
-    </div>
-    
-
-    
-  
-    <div class="desc"><p>Find a specific &lt;remoteCSE&gt; resource by its <em>resourceName</em>, or None.</p></div>
-  <div class="source_cont">
-</div>
-
-  </div>
-  
-            
-  <div class="item">
     <div class="name def" id="onem2mlib.CSEBase.groups">
     <p>def <span class="ident">groups</span>(</p><p>self)</p>
     </div>
@@ -2077,36 +1969,6 @@ for that value in the &lt;container&gt;. returns the new <em>ContentInstance</em
     
   
     <div class="desc"><p>Return all content from all &lt;contentInstance&gt;'s in list, or an empty list.</p></div>
-  <div class="source_cont">
-</div>
-
-  </div>
-  
-            
-  <div class="item">
-    <div class="name def" id="onem2mlib.Container.findContainer">
-    <p>def <span class="ident">findContainer</span>(</p><p>self, resourceName)</p>
-    </div>
-    
-
-    
-  
-    <div class="desc"><p>Find a &lt;container&gt; resource by its <em>resourceName</em>, or None.</p></div>
-  <div class="source_cont">
-</div>
-
-  </div>
-  
-            
-  <div class="item">
-    <div class="name def" id="onem2mlib.Container.findContentInstance">
-    <p>def <span class="ident">findContentInstance</span>(</p><p>self, resourceName)</p>
-    </div>
-    
-
-    
-  
-    <div class="desc"><p>Find a &lt;ContentInstance&gt; resource by its <em>resourceName</em>, or None.</p></div>
   <div class="source_cont">
 </div>
 
@@ -2918,6 +2780,114 @@ to be used for different condition tags. The default value is logical AND.</li>
   
             
   <div class="item">
+    <div class="name def" id="onem2mlib.ResourceBase.findAE">
+    <p>def <span class="ident">findAE</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a specific &lt;AE&gt; resource by its <em>resourceName</em>, or None otherwise.</p>
+<p><em>resourceName</em> could point to a direct sub-resource, or it can be a relative path
+pointing to a resource deeper down the resource tree. In that case the path
+elements are separated by '/' characters.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.ResourceBase.findAccessControlPolicy">
+    <p>def <span class="ident">findAccessControlPolicy</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a specific &lt;accessControlPolicy&gt; resource by its <em>resourceName</em>, or None.</p>
+<p><em>resourceName</em> could point to a direct sub-resource, or it can be a relative path
+pointing to a resource deeper down the resource tree. In that case the path
+elements are separated by '/' characters.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.ResourceBase.findContainer">
+    <p>def <span class="ident">findContainer</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a &lt;container&gt; resource by its <em>resourceName</em>, or None.</p>
+<p><em>resourceName</em> could point to a direct sub-resource, or it can be a relative path
+pointing to a resource deeper down the resource tree. In that case the path
+elements are separated by '/' characters.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.ResourceBase.findContentInstance">
+    <p>def <span class="ident">findContentInstance</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a &lt;ContentInstance&gt; resource by its <em>resourceName</em>, or None.</p>
+<p><em>resourceName</em> could point to a direct sub-resource, or it can be a relative path
+pointing to a resource deeper down the resource tree. In that case the path
+elements are separated by '/' characters.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.ResourceBase.findGroup">
+    <p>def <span class="ident">findGroup</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a specific &lt;group&gt; resource by its <em>resourceName</em>, or None.</p>
+<p><em>resourceName</em> could point to a direct sub-resource, or it can be a relative path
+pointing to a resource deeper down the resource tree. In that case the path
+elements are separated by '/' characters.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="onem2mlib.ResourceBase.findRemoteCSE">
+    <p>def <span class="ident">findRemoteCSE</span>(</p><p>self, resourceName)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Find a specific &lt;remoteCSE&gt; resource by its <em>resourceName</em>, or None.</p>
+<p><em>resourceName</em> could point to a direct sub-resource, or it can be a relative path
+pointing to a resource deeper down the resource tree. In that case the path
+elements are separated by '/' characters.</p></div>
+  <div class="source_cont">
+</div>
+
+  </div>
+  
+            
+  <div class="item">
     <div class="name def" id="onem2mlib.ResourceBase.findSubscription">
     <p>def <span class="ident">findSubscription</span>(</p><p>self, resourceName)</p>
     </div>
@@ -2926,8 +2896,9 @@ to be used for different condition tags. The default value is logical AND.</li>
     
   
     <div class="desc"><p>Find a specific &lt;subscription&gt; resource by its <em>resourceName</em>, or None otherwise.</p>
-<p>This method might throw a <a href="exceptions.m.html#onem2mlib.exceptions.NotSupportedError"><code>onem2mlib.exceptions.NotSupportedError</code></a> exception in case
-the target resource type doesn't support subscriptions.</p></div>
+<p><em>resourceName</em> could point to a direct sub-resource, or it can be a relative path
+pointing to a resource deeper down the resource tree. In that case the path
+elements are separated by '/' characters.</p></div>
   <div class="source_cont">
 </div>
 

@@ -15,7 +15,7 @@ This Python 3 module implements a library to access and manage resources on a on
 	- [Retrieve a Resource by its Path](#retrieve-a-resource-by-its-path)
 	- [Delete an AE from a CSE](#delete-an-ae-from-a-cse)
 	- [Subscribe to Notifications](#subscribe-to-notifications)
-	- [Work with remoteCSE resources](#work-with-remotecse-resources)
+	- [Working with remoteCSE resources](#working-with-remotecse-resources)
 - [Supported Features & Limitations](#supported-features--limitations)
 - [License](#license)
 
@@ -177,10 +177,10 @@ print(container.latestContent())
 
 ### Retrieve a resource by its path
 
-If the structure of an &lt;AE> is a bit more sophisticated, or when one doesn't want to retrieve all the intermediate resources in between the &lt;CSEBase> and the actual resource, one can retrieve that resource directly as is shown in the following example.
+If the structure of an &lt;AE> is a bit more sophisticated, or when one doesn't want to retrieve all the intermediate resources in between the &lt;CSEBase> and the actual resource, one can retrieve that resource directly as shown in the following example.
 
 ```python
-# First create a CSE object. No need to retrieve it though.
+# First create a CSE object that points to the CSE. No need to retrieve it though.
 session = Session('http://host.com:8282', 'admin:admin')
 cse = CSEBase(session, 'mn-cse', resourceName='mn-name', instantly=False)
 
@@ -237,7 +237,7 @@ cnt.unsubscribe()          # Notifications for this resource will stop
 ```
 
 
-### Work with remoteCSE resources
+### Working with remoteCSE resources
 The &lt;remoteCSE> resource represents a remote CSE to which a "local" CSE is connected. A remote CSE with the resource name *in-name* can be retrieved like this:
 
 ```python
