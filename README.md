@@ -53,10 +53,11 @@ In addition you need to install the following modules:
 Install with pip3:
 
 ```bash
-pip3 install lxml
+pip3 install requests
 ```
 
 ### LXML
+This is an optional install. By default, XML as a serialization format is not enabled (see XXX below), therefore this module must only be installed if XML serialization is enabled.
 
 Install with pip3:
 
@@ -77,6 +78,13 @@ All this might take a very long time on a small system (such as a Raspberry Pi).
 sudo apt-get install python3-lxml
 ```
 
+### Enabling support for XML encoding
+
+By default, XML serialization is not enabled. If, in addition to JSON serialization, XML should also be supported by the oneM2M module, then one must enabled this feature by setting the ```Support_XML```in the file [onem2mlib/constants.py](onem2mlib/constants.py) to ```True```.
+
+```python
+Support_XML = True
+```
 
 ## Usage[](#Usage)
 

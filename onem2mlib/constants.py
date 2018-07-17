@@ -16,6 +16,7 @@ This sub-module defines various constants used in the onem2mlib module.
 #
 
 Support_XML = False
+""" Enabling or disabling XML serialization support. """
 
 #
 #	on2M2M resource types
