@@ -3,6 +3,8 @@
 ## Version 0.8 (xxxx-xx-xx)
 - [IMPROVEMENT] Support for Python 2 (>= 2.7).
 - [IMPROVEMENT] By default, the XML encoding is not supported at all, and must be enabled explicitly. This also removes the dependency to the *lxml* library.
+- [IMPROVEMENT] 'find...()' methods are now part of the ResourceBase" class.
+- [FIX] Group resource creation fixed.
 
 ## Version 0.7 (2018-05-13)
 - [IMPROVEMENT] Added support for &lt;remoteCSE> resource type.
