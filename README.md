@@ -50,14 +50,14 @@ In addition you need to install the following modules:
 - [lxml](http://lxml.de)
 
 ### requests
-Install with pip3:
+onem2mlib uses the [requests HTTP library](http://python-requests.org). One can install it with pip3:
 
 ```bash
 pip3 install requests
 ```
 
 ### LXML
-This is an optional install. By default, XML as a serialization format is not enabled (see XXX below), therefore this module must only be installed if XML serialization is enabled.
+This is an optional install. By default, XML as a serialization format is not enabled (see [Enabling support for XML encoding](#enabling-support-for-xml-encoding) below), therefore this module must only be installed if XML serialization is enabled.
 
 Install with pip3:
 
