@@ -194,6 +194,11 @@ cse = CSEBase(session, 'mn-cse', resourceName='mn-name', instantly=False)
 
 # Then retrieve the resource by its path
 cnt = cse.findContainer('myAE/container')
+
+if cnt is not None:
+	print('found')
+else:
+	print('not found')
 ```
 
 This method can be used with all supported ```find...()``` methods of the resources. Please note, that the provided path is always relative to the resource from which the ```find()...``` method is invoked.
