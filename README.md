@@ -17,6 +17,7 @@ This Python 3 module implements a library to access and manage resources on a on
 	- [Subscribe to Notifications](#subscribe-to-notifications)
 	- [Working with remoteCSE resources](#working-with-remotecse-resources)
 - [Supported Features & Limitations](#supported-features--limitations)
+- [Logging](#logging)
 - [License](#license)
 
 
@@ -50,7 +51,7 @@ In addition you need to install the following modules:
 - [lxml](http://lxml.de)
 
 ### requests
-onem2mlib uses the [requests HTTP library](http://python-requests.org). One can install it with pip3:
+onem2mlib uses the [requests HTTP library](http://python-requests.org). One can i![![]()]()nstall it with pip3:
 
 ```bash
 pip3 install requests
@@ -299,6 +300,9 @@ The following resource types are supported in this version.
 - [&lt;remoteCSE>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.remoteCSE)
 - [&lt;subscription>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.Subscription)
 
+
+### Logging
+The module uses Python logging for debug and other output. Each of the modules and sub-modules use their own loggers, so one can do fine-grain conifguration for each of them.
 
 ### Features
 - **Discovery**: 

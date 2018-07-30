@@ -5,7 +5,7 @@ This Python3 module implements a library to access and manage resources on a one
 Licensed under the BSD 3-Clause License. See the LICENSE file for further details.
 
 """
-import json, uuid
+import json, logging, uuid
 
 import onem2mlib.constants as CON
 import onem2mlib.exceptions
@@ -23,6 +23,8 @@ __all__ = [	'AccessControlPolicy', 'AccessControlRule', 'AE', 'Container',
 			'ResourceBase', 'Session',
 			'constants', 'exceptions', 'utilities', 'notifications',
 			'retrieveResourceFromCSE']
+
+logger = logging.getLogger(__name__)
 
 
 ###############################################################################
@@ -64,12 +66,14 @@ class Session:
 		"""	Integer, either `onem2mlib.constants.Encoding_XML` or `onem2mlib.constants.Encoding_JSON`.
 			It specifies the type of encoding for requests between the AE and the CSE. """
 		if self.encoding not in [CON.Encoding_XML, CON.Encoding_JSON]:
+			logger.critical('Unsupported encoding: ' + str(self.encoding))
 			raise EXC.NotSupportedError('Unsupported encoding: ' + str(self.encoding))
 		if self.encoding == CON.Encoding_XML and not CON.Support_XML:
+			logger.critical('Unsupported encoding: Encoding_XML.')
 			raise EXC.NotSupportedError('Unsupported encoding: Encoding_XML')
-
 		if not self.originator:
-			raise EXC.AuthenticationError('Missing accessControlOriginator.')
+			logger.error('Missing accessControlOriginator')
+			raise EXC.AuthenticationError('Missing accessControlOriginator')
 
 
 	def __str__(self):
@@ -185,7 +189,8 @@ class ResourceBase:
 		self.accessControlPolicyIDs = []
 
 		if isinstance(self, ContentInstance):
-			raise EXC.NotSupportedError('Resource does not support AccessControlPolicies.')
+			logger.error('Resource does not support AccessControlPolicies: ' + INT.nameAndType(self))
+			raise EXC.NotSupportedError('Resource does not support AccessControlPolicies: ' + INT.nameAndType(self))
 
 		if acps is not None:
 			if isinstance(acps, AccessControlPolicy) and acps.resourceID is not None:
@@ -220,7 +225,8 @@ class ResourceBase:
 		must be set to a valid value.
 		"""
 		if self.type in [CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
-			raise EXC.NotSupportedError('Resource doesn''t support deleting.')
+			logger.error('Resource doesn''t support deleting: ' + INT.nameAndType(self))
+			raise EXC.NotSupportedError('Resource doesn''t support deleting: ' + INT.nameAndType(self))
 		return MCA.deleteFromCSE(self)
 
 
@@ -236,7 +242,8 @@ class ResourceBase:
 		must be set to a valid value.
 		"""
 		if self.type in [CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
-			raise EXC.NotSupportedError('Resource doesn''t support updating.')
+			logger.error('Resource doesn''t support creating: ' + INT.nameAndType(self))
+			raise EXC.NotSupportedError('Resource doesn''t support creating: ' + INT.nameAndType(self))
 		return MCA.createInCSE(self, self.type)
 
 
@@ -252,7 +259,8 @@ class ResourceBase:
 		must be set to a valid value.
 		"""
 		if self.type in [CON.Type_ContentInstance, CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
-			raise EXC.NotSupportedError('Resource doesn''t support updating.')
+			logger.error('Resource doesn''t support updating: ' + INT.nameAndType(self))
+			raise EXC.NotSupportedError('Resource doesn''t support updating: ' + INT.nameAndType(self))
 		return MCA.updateInCSE(self, self.type)
 
 
@@ -325,7 +333,8 @@ class ResourceBase:
 
 		"""
 		if self.type not in NOT._allowedSubscriptionResources:
-			raise EXC.NotSupportedError('Subscription not supported for this resource type')
+			logger.error('Subscription not supported for this resource type: ' + INT.nameAndType(self))
+			raise EXC.NotSupportedError('Subscription not supported for this resource type: ' + INT.nameAndType(self))
 		if not NOT.isNotificationEnabled():
 			return False
 		return NOT.addSubscription(self, callback)
@@ -342,7 +351,8 @@ class ResourceBase:
 		The method returns a Boolean indicating whether the subscription was successfull.
 		"""
 		if self.type not in NOT._subscriptionResources:
-			raise EXC.NotSupportedError('Subscription not supported for this resource type')
+			logger.error('Subscription not supported for this resource type: ' + INT.nameAndType(self))
+			raise EXC.NotSupportedError('Subscription not supported for this resource type: ' + INT.nameAndType(self))
 		return NOT.removeSubscription(self)
 
 
@@ -354,6 +364,7 @@ class ResourceBase:
 		the target resource type doesn't support subscriptions.
 		"""
 		if self.type not in NOT._allowedSubscriptionResources:
+			logger.error('Subscription not supported for this resource type: ' + INT.nameAndType(self))
 			raise EXC.NotSupportedError('Subscription not supported for this resource type')
 		return INT._findSubResource(self, CON.Type_Subscription)
 
@@ -446,11 +457,11 @@ class ResourceBase:
 
 
 	def _parseResponse(self, response):
-		#print(response.text)
 		if self.session.encoding == CON.Encoding_XML:
 			return self._parseXML(INT.responseToXML(response))
 		elif self.session.encoding == CON.Encoding_JSON:
 			return self._parseJSON(response.json())
+		logger.error('Encoding not supported: ' + str(self.session.encoding))
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
 
@@ -459,6 +470,7 @@ class ResourceBase:
 			return INT.xmlToString(self._createXML(isUpdate))
 		elif self.session.encoding == CON.Encoding_JSON:
 			return json.dumps(self._createJSON(isUpdate))
+		logger.error('Encoding not supported: ' + str(self.session.encoding))
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
 
@@ -518,6 +530,7 @@ class CSEBase(ResourceBase):
 
 		if instantly:
 			if not self.retrieveFromCSE():
+				logger.critical('Cannot get CSEBase. ' + MCA.lastError)
 				raise EXC.CSEOperationError('Cannot get CSEBase. ' + MCA.lastError)
 
 
@@ -638,7 +651,8 @@ class RemoteCSE(ResourceBase):
 		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_RemoteCSE)
 
 		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:
-			raise EXC.ParameterError('Parent must be <CSE> or <remoteCSE>.')
+			logger.error('Parent must be <CSE> or <remoteCSE>: ' + INT.nameAndType(self))
+			raise EXC.ParameterError('Parent must be <CSE> or <remoteCSE>: ' + INT.nameAndType(self))
 
 		self.pointOfAccess = []
 		""" List of String. A list of physical addresses to be used by remote CSEs to connect to this CSE.
@@ -655,6 +669,7 @@ class RemoteCSE(ResourceBase):
 
 		if instantly:
 			if not self.get():
+				logger.critical('Cannot get remoteCSE.' + MCA.lastError)
 				raise EXC.CSEOperationError('Cannot get remoteCSE.' + MCA.lastError)
 
 
@@ -699,6 +714,7 @@ class RemoteCSE(ResourceBase):
 			a *CSEOperationError* exception in case of an error.
 		"""
 		if self.pointOfAccess == None or len(self.pointOfAccess) == 0:
+			logger.error('Missing PointOfAccess of remote CSE.')
 			raise EXC.CSEOperationError('Missing PointOfAccess of remote CSE.')
 
 		if session is None:
@@ -755,6 +771,7 @@ class AccessControlPolicy(ResourceBase):
 		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ACP)
 		
 		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:
+			logger.error('Parent must be <CSE> or <remoteCSE>.')
 			raise EXC.ParameterError('Parent must be <CSE> or <remoteCSE>.')
 
 		self.privileges = privileges
@@ -766,6 +783,7 @@ class AccessControlPolicy(ResourceBase):
 
 		if instantly:
 			if not self.get():
+				logger.critical('Cannot get or create ACP. ' + MCA.lastError)
 				raise EXC.CSEOperationError('Cannot get or create ACP. ' + MCA.lastError)
 
 
@@ -1046,6 +1064,7 @@ class Container(ResourceBase):
 
 		if instantly:
 			if not self.get():
+				logger.critical('Cannot get or create Container. '  + MCA.lastError)
 				raise EXC.CSEOperationError('Cannot get or create Container. '  + MCA.lastError)
 
 
@@ -1232,6 +1251,7 @@ class ContentInstance(ResourceBase):
 
 		if instantly:
 			if not self.get():
+				logger.critical('Cannot get or create ContentInstance. '  + MCA.lastError)
 				raise EXC.CSEOperationError('Cannot get or create ContentInstance. '  + MCA.lastError)
 
 
@@ -1355,6 +1375,7 @@ class Group(ResourceBase):
 
 		if instantly:
 			if not self.get():
+				logger.critical('Cannot get or create Group. '  + MCA.lastError)
 				raise EXC.CSEOperationError('Cannot get or create Group. '  + MCA.lastError)
 
 
@@ -1416,6 +1437,7 @@ class Group(ResourceBase):
 		elif self.session.encoding == CON.Encoding_JSON:
 			body = json.dumps(resource._createJSON(isUpdate=True))
 		else:
+			logger.error('Encoding not supported: ' + str(self.session.encoding))
 			raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 		response = MCA.update(self.session, self.fanOutPoint, resource.type, body)
 		return self._parseFanOutPointResponse(response)
@@ -1433,6 +1455,7 @@ class Group(ResourceBase):
 		elif self.session.encoding == CON.Encoding_JSON:
 			body = json.dumps(resource._createJSON(isUpdate=True))
 		else:
+			logger.error('Encoding not supported: ' + str(self.session.encoding))
 			raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 		response = MCA.create(self.session, self.fanOutPoint, resource.type, body)
 		return self._parseFanOutPointResponse(response)
@@ -1486,8 +1509,8 @@ class Group(ResourceBase):
 						resource._parseJSON(elem)
 						resources.append(resource)
 				return resources
-
 			else:
+				logger.error('Encoding not supported: ' + str(self.session.encoding))
 				raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 		return None
 
@@ -1599,6 +1622,7 @@ class Subscription(ResourceBase):
 
 		if instantly:
 			if not self.get():
+				logger.error('Cannot get or create Subscription. '  + MCA.lastError)
 				raise EXC.CSEOperationError('Cannot get or create Subscription. '  + MCA.lastError)
 
 

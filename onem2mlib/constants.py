@@ -25,7 +25,7 @@ Support_XML = False
 Type_Mixed =  0
 """ The *Mixed* type, e.g. for &lt;group> resources that point to resources of various types. """
 Type_ACP = 1
-""" The &lt;ACP> resource type, """
+""" The &lt>ACP> resource type, """
 Type_AE =  2
 """ The &lt;AE> resource type. """
 Type_Container =  3
@@ -42,7 +42,7 @@ Type_RemoteCSE = 16
 """ The &lt;remoteCSE> resource type. """
 Type_Subscription = 23
 """ The &lt;Subscription> resource type"""
-Type_FlexContainer = 24
+Type_FlexContainer = 28
 """ The &lt;flexContainer> resource type. """
 
 

@@ -191,7 +191,7 @@ def getTypeFromResponse(response, encoding):
 
 ###############################################################################
 #
-#	Formating
+#	Formatting
 #
 
 _width = 45
@@ -216,6 +216,46 @@ def toInt(value):
 	if value is None:
 		return None
 	return int(value)
+
+
+# Return the formatted resource name, id and type
+def nameAndType(resource):
+	if resource is None or resource.type is None:
+		return "NONE"
+	rn = resource.resourceName if resource.resourceName is not None else 'unknown'
+	ri = resource.resourceID if resource.resourceID is not None else "unknown"
+	return rn + '(' +  ri + ') [' +  typeToString(resource.type) + ']'
+
+
+# Return the resource type as a string
+def typeToString(ty):
+	res = [		"mixed", "accessControlPolicy", "AE", "container", "contentInstance", "CSEBase", "delivery", "eventConfig", "execInstance",
+				"group", "locationPolicy", "m2mServiceSubscriptionProfile", "mgmtCmd", "mgmtObj", "node", "pollingChannel",
+				"remoteCSE", "request", "schedule", "serviceSubscribedAppRule", "serviceSubscribedNode", "statsCollect",
+				"statsConfig", "subscription", "semanticDescriptor", "notificationTargetMgmtPolicyRef", "notificationTargetPolicy"
+				"policyDeletionRules", "flexContainer", "timeSeries", "timeSeriesInstance", "role", "token", "void",
+				"dynamicAuthorizationConsultation", "authorizationDecision", "authorizationPolicy", "authorizationInformation",
+				"ontologyRepository", "ontology", "semanticMashupJobProfile", "semanticMashupInstance", "semanticMashupResult",
+				"AEContactList", "AEContactListPerCSE", "localMulticastGroup", "multimediaSession", "triggerRequest",
+				"crossResourceSubscription"]
+	resAnnc = [	"", "accessControlPolicyAnnc", "AEAnnc", "containerAnnc", "contentInstanceAnnc", "", "", "", "", "groupAnnc",
+				"locationPolicyAnnc", "", "", "mgmtObjAnnc", "nodeAnnc", "", "remoteCSEAnnc", "", "scheduleAnnc", "", "",
+				"", "", "", "semanticDescriptorAnnc", "", "", "", "flexContainerAnnc", "timeSeriesAnnc", "timeSeriesInstanceAnnc",
+				"void", "dynamicAuthorizationConsultationAnnc", "", "", "", "ontologyRepositoryAnnc", "ontologyAnnc", 
+				"semanticMashupJobProfileAnnc", "semanticMashupInstanceAnnc", "semanticMashupResultAnnc", "", "", "",
+				"multimediaSessionAnnc"]
+
+	if ty < 10000:
+		if ty >= 0 and ty <= len(res)+1:
+			return res[ty]
+	else:
+		if ty > 10000 and ty <= len(resAnnc)+1:
+			return resAnnc[ty - 10000];
+	return "unknown"
+
+
+
+	
 
 
 ###############################################################################
@@ -306,7 +346,6 @@ def _getResourceFromCSEByResourceName(type, rn, parent):
 	if res is not None and res.retrieveFromCSE():
 		return res
 	return None
-
 
 
 

@@ -28,7 +28,7 @@ The sub-module is shutdown by calling `onem2mlib.notifications.shutdownNotificat
 This method also automatically shuts down the server when the parent program terminates.
 """
 
-import atexit, threading, json
+import atexit, threading, json, logging
 
 try:
 	from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -50,6 +50,8 @@ _host = None
 _port = -1
 _callback = None
 _notificationURI = None
+
+logger = logging.getLogger(__name__)
 
 
 _allowedSubscriptionResources = [
@@ -90,8 +92,10 @@ def setupNotifications(callback=None, host='localhost', port=1400):
 	# Initialize configuration, possible a new configuration
 
 	if not host:
+		logger.critical('enableNotifications(): Missing host.')
 		raise EXC.ConfigurationError('enableNotifications(): Missing host.')
 	if port == -1:
+		logger.critical('enableNotifications(): Missing port.')
 		raise EXC.ConfigurationError('enableNotifications(): Missing port.')
 	_host = host
 	_port = port
@@ -187,7 +191,8 @@ def addSubscription(resource, callback=None):
 	if resource.resourceID in _subscriptions:
 		return True
 	if resource.type not in _allowedSubscriptionResources:
-		raise EXC.NotSupportedError('Subscription not supported for this resource type')
+		logger.error('Subscription not supported for this resource type: ' + INT.nameAndType(resource))
+		raise EXC.NotSupportedError('Subscription not supported for this resource type: ' + INT.nameAndType(resource))
 	sub = onem2mlib.Subscription(resource, notificationURI=[_notificationURI])
 	if not sub:
 		return False

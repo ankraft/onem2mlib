@@ -7,10 +7,12 @@
 #	This module defines various internal functions for marchalling and unmarshalling of objects.
 #
 
-import json
+import json, logging
 import onem2mlib
 import onem2mlib.internal as INT
 import onem2mlib.exceptions as EXC
+
+logger = logging.getLogger(__name__)
 
 ###############################################################################
 #
@@ -84,6 +86,7 @@ def _CSEBase_parseXML(obj, root):
 
 def _CSEBase_parseJSON(obj, jsn):
 	if 'm2m:cb' not in jsn:
+		logger.error('Wrong encoding: ' + str(jsn))
 		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_jsn = jsn['m2m:cb']
 	_resourceBase_parseJSON(obj, _jsn)
@@ -108,6 +111,7 @@ def _remoteCSE_parseXML(obj, root):
 
 def _remoteCSE_parseJSON(obj, jsn):
 	if 'm2m:csr' not in jsn:
+		logger.error('Wrong encoding: ' + str(jsn))
 		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_jsn = jsn['m2m:csr']
 	_resourceBase_parseJSON(obj, _jsn)
@@ -123,7 +127,6 @@ def _remoteCSE_parseJSON(obj, jsn):
 #
 
 def _accessControlPolicy_parseXML(obj, root):
-	#print(INT.xmlToString(root))
 	_resourceBase_parseXML(obj, root)
 	obj.privileges = []
 	pv = INT.getElementWithChildren(root, 'pv')
@@ -157,12 +160,13 @@ def _accessControlPolicy_createXML(obj, isUpdate=False):
 
 
 def _accessControlPolicy_parseJSON(obj, jsn):
-	#print(json.dumps(jsn, sort_keys=True, indent=4))
 	if 'm2m:acp' not in jsn:
+		logger.error('Wrong encoding: ' + str(jsn))
 		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_jsn = jsn['m2m:acp']
 	if _jsn is None:
-		raise EXC.EncodingError('Wrong encoding: ' + jsn)
+		logger.error('Wrong encoding: ' + str(jsn))
+		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_resourceBase_parseJSON(obj, _jsn)
 	obj.privileges = []
 	pv = INT.getElementJSON(_jsn, 'pv')
@@ -258,10 +262,12 @@ def _AE_createXML(obj, isUpdate=False):
 
 def _AE_parseJSON(obj, jsn):
 	if 'm2m:ae' not in jsn:
+		logger.error('Wrong encoding: ' + str(jsn))
 		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_jsn = jsn['m2m:ae']
 	if _jsn is None:
-		raise EXC.EncodingError('Wrong encoding: ' + jsn)
+		logger.error('Wrong encoding: ' + str(jsn))
+		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_resourceBase_parseJSON(obj, _jsn)
 	obj.appID = INT.getElementJSON(_jsn, 'api', obj.appID)
 	obj.AEID = INT.getElementJSON(_jsn, 'aei', obj.AEID)
@@ -308,6 +314,7 @@ def _Container_createXML(obj, isUpdate=False):
 
 def _Container_parseJSON(obj, jsn):
 	if 'm2m:cnt' not in jsn:
+		logger.error('Wrong encoding: ' + str(jsn))
 		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_jsn = jsn['m2m:cnt']
 	_resourceBase_parseJSON(obj, _jsn)
@@ -350,12 +357,13 @@ def _ContentInstance_createXML(obj, isUpdate=False):
 
 
 def _ContentInstance_parseJSON(obj, jsn):
-	#print(json.dumps(jsn, sort_keys=True, indent=4))
 	if 'm2m:cin' not in jsn:
+		logger.error('Wrong encoding: ' + str(jsn))
 		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_jsn = jsn['m2m:cin']
 	if _jsn is None:
-		raise EXC.EncodingError('Wrong encoding: ' + jsn)
+		logger.error('Wrong encoding: ' + str(jsn))
+		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_resourceBase_parseJSON(obj, _jsn)
 	obj.contentInfo = INT.getElementJSON(_jsn, 'cnf', obj.contentInfo)
 	obj.contentSize = INT.getElementJSON(_jsn, 'cs', obj.contentSize)
@@ -402,10 +410,12 @@ def _Group_createXML(obj, isUpdate):
 
 def _Group_parseJSON(obj, jsn):
 	if 'm2m:grp' not in jsn:
+		logger.error('Wrong encoding: ' + str(jsn))
 		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_jsn = jsn['m2m:grp']
 	if _jsn is None:
-		raise EXC.EncodingError('Wrong encoding: ' + jsn)
+		logger.error('Wrong encoding: ' + str(jsn))
+		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_resourceBase_parseJSON(obj, _jsn)
 	obj.maxNrOfMembers = INT.getElementJSON(_jsn, 'mnm', obj.maxNrOfMembers)
 	obj.memberType = INT.getElementJSON(_jsn, 'mt', obj.memberType)
@@ -467,10 +477,12 @@ def _Subscription_createXML(obj, isUpdate=False):
 
 def _Subscription_parseJSON(obj, jsn):
 	if 'm2m:sub' not in jsn:
+		logger.error('Wrong encoding: ' + str(jsn))
 		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_jsn = jsn['m2m:sub']
 	if _jsn is None:
-		raise EXC.EncodingError('Wrong encoding: ' + jsn)
+		logger.error('Wrong encoding: ' + str(jsn))
+		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
 	_resourceBase_parseJSON(obj, _jsn)
 	obj.notificationURI = INT.getElementJSON(_jsn, 'nu', obj.notificationURI)
 	obj.notificationContentType = INT.getElementJSON(_jsn, 'nct', obj.notificationContentType)

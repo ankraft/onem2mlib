@@ -8,6 +8,7 @@
 #
 
 import requests
+import logging
 import onem2mlib.internal
 import onem2mlib.constants as CON
 import onem2mlib.exceptions as EXC
@@ -16,6 +17,8 @@ import onem2mlib.exceptions as EXC
 ###############################################################################
 
 lastError = ''
+
+logger = logging.getLogger(__name__)
 
 #
 #	Communication functions
@@ -26,7 +29,9 @@ def retrieveFromCSE(resource):
 	global lastError
 	lastError = ''
 
+	logger.debug('Retrieve resource: ' + str(resource))
 	if not _isValidResource(resource):
+		logger.error('Invalid resource')
 		lastError = 'Invalid resource'
 		return False
 	if resource.resourceName:
@@ -34,12 +39,11 @@ def retrieveFromCSE(resource):
 	else:
 		response = get(resource.session, resource.resourceID)
 	if response and response.status_code == 200:
-		#print(response)
 		resource._parseResponse(response)
 		return True
 	if response:
 		lastError = str(response.status_code) + ' - ' + response.text
-		#print(str(response.status_code) + ' - ' + response.text)
+		logger.error('Retrieve: ' + str(response.status_code) + ' - ' + response.text)
 	return False
 
 
@@ -47,19 +51,19 @@ def createInCSE(resource, type):
 	global lastError
 	lastError = ''
 
+	logger.debug('Create resource: ' + str(resource))
 	if not _isValidResource(resource):
+		logger.error('Invalid resource')
 		lastError = 'Invalid resource'
 		return False
 	content = resource._createContent(False)
-	#print(content)
 	response =  create(resource.session, resource.parent.resourceID, type, content)
 	if response and response.status_code == 201:
-		#print(response)
 		resource._parseResponse(response)	# update own fields with response
 		return True
 	if response:
 		lastError = str(response.status_code) + ' - ' + response.text
-		#print(str(response.status_code) + ' - ' + response.text)
+		logger.error('Create: ' + str(response.status_code) + ' - ' + response.text)
 	return False
 
 
@@ -67,7 +71,9 @@ def deleteFromCSE(resource):
 	global lastError
 	lastError = ''
 
+	logger.debug('Delete resource: ' + str(resource))
 	if not _isValidResource(resource) or not resource.resourceID :
+		logger.error('Invalid resource')
 		lastError = 'Invalid resource'
 		return False
 	response = delete(resource.session, resource.resourceID)
@@ -75,7 +81,7 @@ def deleteFromCSE(resource):
 		return True
 	if response:
 		lastError = str(response.status_code) + ' - ' + response.text
-		#print(response.status_code)
+		logger.error('Delete: ' + str(response.status_code))
 	return False
 
 
@@ -83,20 +89,18 @@ def updateInCSE(resource, type):
 	global lastError
 	lastError = ''
 
+	logger.debug('Update resource: ' + str(resource))
 	if not _isValidResource(resource):
 		lastError = 'Invalid resource'
 		return False
 	content = resource._createContent(True)
-	#print(content)
 	response = update(resource.session, resource.resourceID, type, content)
 	if response and response.status_code == 200:
-		#print(response)
 		resource._parseResponse(response)	# update own fields with response
 		return True
 	if response:
-		#print(response)
 		lastError = str(response.status_code) + ' - ' + response.text
-		#print(response.status_code)
+		logger.error('Update: ' + str(response.status_code))
 	return False
 
 
@@ -119,11 +123,13 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
 			return onem2mlib.internal.getElement(onem2mlib.internal.responseToXML(response), 'm2m:uril', default=[])	# setting default because: Make sure that the result is a list
 		elif resource.session.encoding == CON.Encoding_JSON:
 			return onem2mlib.internal.getElementJSON(response.json(), 'm2m:uril', default=[])
+		logger.error('Encoding not supported: ' + str(self.session.encoding))
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
 	if response:
 		lastError = str(response.status_code) + ' - ' + response.text
 	else:
+		logger.critical('Response from CSE must not be None.')
 		raise EXC.CSEOperationError('Response from CSE must not be None.')
 	return None
 
@@ -138,29 +144,62 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
 # Get a resource from the CSE
 def get(session, path):
 	try:
-		#print(_getPath(session, path))
-		return requests.get(_getPath(session, path), headers=_getHeaders(session), timeout=CON.NETWORK_REQUEST_TIMEOUT)
+		realPath = _getPath(session, path)
+		headers = _getHeaders(session)
+		logger.debug('Get path: ' + realPath)
+		logger.debug('Get headers: ' + str(headers))
+		response = requests.get(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT)
+		logger.debug('Response status code: ' + str(response.status_code))
+		logger.debug('Response header: ' + str(response.headers))
+		logger.debug('Repsonse body: ' + response.text)
+		return response
 	except Exception as e:
 		return None
 
 # Delete an existing resource on the CSE
 def delete(session, path):
 	try:
-		return requests.delete(_getPath(session, path), headers=_getHeaders(session), timeout=CON.NETWORK_REQUEST_TIMEOUT)
+		realPath = _getPath(session, path)
+		headers = _getHeaders(session)
+		logger.debug('Delete path: ' + realPath)
+		logger.debug('Delete headers: ' + str(headers))
+		response = requests.delete(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT)
+		logger.debug('Response status code: ' + str(response.status_code))
+		logger.debug('Response header: ' + str(response.headers))
+		logger.debug('Repsonse body: ' + response.text)
+		return response
 	except Exception as e:
 		return None
 
 # Create a new resource on the CSE
 def create(session, path, type, body):
 	try:
-		return requests.post(_getPath(session, path), headers=_getHeaders(session, type), data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT)
+		realPath = _getPath(session, path)
+		headers = _getHeaders(session, type)
+		logger.debug('Create path: ' + realPath)
+		logger.debug('Create headers: ' + str(headers))
+		logger.debug('Create body: ' + body)
+		response = requests.post(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT)
+		logger.debug('Response status code: ' + str(response.status_code))
+		logger.debug('Response header: ' + str(response.headers))
+		logger.debug('Repsonse body: ' + response.text)
+		return response
 	except Exception as e:
 		return None
 
 # Update an existing resource on the CSE
 def update(session, path, type, body):
 	try:
-		return requests.put(_getPath(session, path), headers=_getHeaders(session, type), data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT)
+		realPath = _getPath(session, path)
+		headers = _getHeaders(session)
+		logger.debug('Update path: ' + realPath)
+		logger.debug('Update headers: ' + str(headers))
+		logger.debug('Update body: ' + body)
+		response = requests.put(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT)
+		logger.debug('Response status code: ' + str(response.status_code))
+		logger.debug('Response header: ' + str(response.headers))
+		logger.debug('Repsonse body: ' + response.text)
+		return response
 	except Exception as e:
 		return None
 
@@ -178,15 +217,14 @@ def _getHeaders(session, type=None):
 		encoding = 'application/xml'
 	else:
 		encoding = 'application/json'
+		#encoding = 'application/vnd.onem2m-res+json'
 
 	if type:
 		headers['Content-Type'] = encoding + ';ty=' + str(type)
-		headers['Accept'] = encoding
+		headers['Accept'] = encoding # + ';ty=' + str(type)	# TODO: Make this configurable
 	else:
 		headers['Content-Type'] = encoding
 		headers['Accept'] = encoding
-
-	headers['Accept'] = encoding
 	return headers
 
 

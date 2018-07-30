@@ -11,8 +11,11 @@
 This sub-module defines the various utility classes and function for the onem2mlib module.
 
 """
+import logging
 import onem2mlib.exceptions as EXC
 import onem2mlib.constants as CON
+
+logger = logging.getLogger(__name__)
 
 #
 #	Filter
@@ -29,9 +32,11 @@ def newLabelFilterCriteria(label):
 	This function may throw a *ParameterError* exception when called with an empty or wrong label format.
 	"""
 	if label is None:
+		logger.error('label must not be empty.')
 		raise EXC.ParameterError('label must not be empty.')
 	if label.count('/') < 1:
-		raise EXC.ParameterError('Wrong format: label format is "key/value".')
+		logger.error('Wrong format: label format is "key/value": ' + label)
+		raise EXC.ParameterError('Wrong format: label format is "key/value": ' + label)
 	return ('lbl', label)
 
 
@@ -49,6 +54,7 @@ def newTypeFilterCriteria(type):
 					CON.Type_ContentInstance, CON.Type_CSEBase, CON.Type_Group, CON.Type_RemoteCSE, \
 					CON.Type_Subscription, \
 					CON.Type_FlexContainer]:
+		logger.error('Wrong or unsupported type: ' + str(type))
 		raise EXC.ParameterError('Wrong or unsupported type: ' + str(type))
 	return ('ty', str(type))
 
