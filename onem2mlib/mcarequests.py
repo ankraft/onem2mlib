@@ -146,13 +146,8 @@ def get(session, path):
 	try:
 		realPath = _getPath(session, path)
 		headers = _getHeaders(session)
-		logger.debug('Get path: ' + realPath)
-		logger.debug('Get headers: ' + str(headers))
-		response = requests.get(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT)
-		logger.debug('Response status code: ' + str(response.status_code))
-		logger.debug('Response header: ' + str(response.headers))
-		logger.debug('Repsonse body: ' + response.text)
-		return response
+		_logRequest(realPath, headers)
+		return _logResponse(requests.get(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
 		return None
 
@@ -161,13 +156,8 @@ def delete(session, path):
 	try:
 		realPath = _getPath(session, path)
 		headers = _getHeaders(session)
-		logger.debug('Delete path: ' + realPath)
-		logger.debug('Delete headers: ' + str(headers))
-		response = requests.delete(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT)
-		logger.debug('Response status code: ' + str(response.status_code))
-		logger.debug('Response header: ' + str(response.headers))
-		logger.debug('Repsonse body: ' + response.text)
-		return response
+		_logRequest(realPath, headers, 'DELETE')
+		return _logResponse(requests.delete(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
 		return None
 
@@ -176,14 +166,8 @@ def create(session, path, type, body):
 	try:
 		realPath = _getPath(session, path)
 		headers = _getHeaders(session, type)
-		logger.debug('Create path: ' + realPath)
-		logger.debug('Create headers: ' + str(headers))
-		logger.debug('Create body: ' + body)
-		response = requests.post(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT)
-		logger.debug('Response status code: ' + str(response.status_code))
-		logger.debug('Response header: ' + str(response.headers))
-		logger.debug('Repsonse body: ' + response.text)
-		return response
+		_logRequest(realPath, headers, 'POST', body)
+		return _logResponse(requests.post(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
 		return None
 
@@ -192,16 +176,27 @@ def update(session, path, type, body):
 	try:
 		realPath = _getPath(session, path)
 		headers = _getHeaders(session)
-		logger.debug('Update path: ' + realPath)
-		logger.debug('Update headers: ' + str(headers))
-		logger.debug('Update body: ' + body)
-		response = requests.put(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT)
-		logger.debug('Response status code: ' + str(response.status_code))
-		logger.debug('Response header: ' + str(response.headers))
-		logger.debug('Repsonse body: ' + response.text)
-		return response
+		_logRequest(realPath, headers, 'PUT', body)
+		return _logResponse(requests.put(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
 		return None
+
+
+# Helper: log a request
+def _logRequest(path, headers, ty='GET', body=None):
+	logger.debug(ty + ' path: ' + path)
+	logger.debug(ty + ' headers: ' + str(headers))
+	if body is not None:
+		logger.debug(ty + ' body: ' + str(body))
+
+
+# Helper: log a response and return it
+def _logResponse(response):
+	logger.debug('Response status code: ' + str(response.status_code))
+	logger.debug('Response header: ' + str(response.headers))
+	if response.text is not None and len(response.text) > 0:
+		logger.debug('Response body: ' + response.text)
+	return response
 
 
 ###############################################################################

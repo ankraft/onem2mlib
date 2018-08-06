@@ -7,18 +7,23 @@
 #	This example shows how to create an <AE> resource in an CSE.
 #
 
-import uuid, sys
+import uuid, sys, logging
 sys.path.append('..')
 from onem2mlib import *
 
+loggingLevel = logging.INFO
+
 
 if __name__ == '__main__':
+	logging.basicConfig(level=loggingLevel)
+	logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 	# Create session
 	session = Session('http://localhost:8282', 'admin:admin')
 
 	# Get the <CSEBase> resource
 	cse = CSEBase(session, 'mn-cse')
+	print(cse)
 
 	#
 	# Create and print an <AE> resource on the CSE in one step.

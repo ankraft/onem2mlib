@@ -7,11 +7,13 @@
 #	This example shows how to susbcribe to resources and receive notifications.
 #
 
-import uuid, sys, time
+import uuid, sys, time, logging
 sys.path.append('..')
 from onem2mlib import *
 import onem2mlib.constants as CON
 import onem2mlib.notifications as NOT
+
+loggingLevel = logging.INFO
 
 
 
@@ -25,6 +27,8 @@ def callback(resource):
 
 
 if __name__ == '__main__':
+	logging.basicConfig(level=loggingLevel)
+	logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 	# Setup the notification sub-system
 	print('Setting up notifications...')

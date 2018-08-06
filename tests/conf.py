@@ -5,7 +5,7 @@
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
 #	This is the configuration file for the unit tests. 
-#	Change the settings for *host*, *username*, and *password* according to your setup.
+#	Change the settings for *host*, *rhost* (remote host), *originator* according to your setup.
 
 import sys
 sys.path.append('..')

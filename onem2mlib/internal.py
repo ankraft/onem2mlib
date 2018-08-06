@@ -16,9 +16,9 @@ if CON.Support_XML:
 	from lxml import etree as ET
 
 
-
 # define the namespace
-_ns = {'m2m' : 'http://www.onem2m.org/xml/protocols'}
+_ns = {	'm2m' : 'http://www.onem2m.org/xml/protocols',
+	 	'hd'  : 'http://www.onem2m.org/xml/protocols/homedomain'}
 
 ###############################################################################
 #
@@ -116,11 +116,14 @@ if CON.Support_XML:
 
 
 	# Return the qualified name of an element
-	def xmlQualifiedName(element, stripNameSpace=False):
+	def xmlQualifiedName(element):
 		qname = ET.QName(element)
-		if stripNameSpace:
-			return qname.localname
-		return qname
+		r = ''
+		for s,n in _ns.items(): 
+			if n == qname.namespace:
+				r = s
+				break
+		return (qname.localname, s)
 
 
 	# Return the XML structure as a string
@@ -168,6 +171,10 @@ def getALLSubElementsJSON(jsn, name):
 				if isinstance(e, dict):
 					result.extend(getALLSubElementsJSON(e, name))
 	return result
+
+
+def wrapJSON(obj, jsn):
+	return {obj.namespace + ':' + obj.typeShortName : jsn}
 
 
 ###############################################################################
@@ -317,17 +324,19 @@ def _newResourceFromType(type, parent):
 	elif type == CON.Type_ACP:				return onem2mlib.AccessControlPolicy(parent, instantly=False)
 	elif type == CON.Type_Subscription:		return onem2mlib.Subscription(parent, instantly=False)
 	elif type == CON.Type_RemoteCSE:		return onem2mlib.RemoteCSE(parent, instantly=False)
+	elif type == CON.Type_FlexContainer:	return onem2mlib.FlexContainer(parent, instantly=False)
 	return None
 
 
-def _newResourceFromTypeString(typeString, parent):
-	if typeString == 'cin':		return _newResourceFromType(CON.Type_ContentInstance, parent)
-	elif typeString == 'cnt':	return _newResourceFromType(CON.Type_Container, parent)
-	elif typeString == 'ae':	return _newResourceFromType(CON.Type_AE, parent)
-	elif typeString == 'grp':	return _newResourceFromType(CON.Type_Group, parent)
-	elif typeString == 'acp':	return _newResourceFromType(CON.Type_ACP, parent)
-	elif typeString == 'sub':	return _newResourceFromType(CON.Type_Subscription, parent)
-	elif typeString == 'csr':	return _newResourceFromType(CON.Type_RemoteCSE, parent)
+def _newResourceFromTypeString(typeString, parent, namespace='m2m'):
+	if namespace == 'm2m':
+		if typeString == 'cin':		return _newResourceFromType(CON.Type_ContentInstance, parent)
+		elif typeString == 'cnt':	return _newResourceFromType(CON.Type_Container, parent)
+		elif typeString == 'ae':	return _newResourceFromType(CON.Type_AE, parent)
+		elif typeString == 'grp':	return _newResourceFromType(CON.Type_Group, parent)
+		elif typeString == 'acp':	return _newResourceFromType(CON.Type_ACP, parent)
+		elif typeString == 'sub':	return _newResourceFromType(CON.Type_Subscription, parent)
+		elif typeString == 'csr':	return _newResourceFromType(CON.Type_RemoteCSE, parent)
 	return None
 
 
@@ -343,6 +352,7 @@ def _getResourceFromCSEByResourceName(type, rn, parent):
 	elif type == CON.Type_ACP:					res = onem2mlib.AccessControlPolicy(parent, resourceName=rn, instantly=False)
 	elif type == CON.Type_Subscription:			res = onem2mlib.Subscription(parent, resourceName=rn, instantly=False)
 	elif type == CON.Type_RemoteCSE:			res = onem2mlib.RemoteCSE(parent, resourceName=rn, instantly=False)
+	elif type == CON.Type_FlexContainer: 		res = onem2mlib.FlexContainer(paretnt, resourceName=rn, instantly=False)
 	if res is not None and res.retrieveFromCSE():
 		return res
 	return None

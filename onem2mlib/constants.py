@@ -24,26 +24,53 @@ Support_XML = False
 
 Type_Mixed =  0
 """ The *Mixed* type, e.g. for &lt;group> resources that point to resources of various types. """
+
 Type_ACP = 1
-""" The &lt>ACP> resource type, """
+""" The &lt>ACP> resource type. """
+Type_ACP_SN = 'acp'
+""" Shortname for the &lt;ACP> resource type. """
+
 Type_AE =  2
 """ The &lt;AE> resource type. """
+Type_AE_SN = 'ae'
+""" Shortname for the &lt;AE> resource type. """
+
 Type_Container =  3
 """ The &lt;container> resource type. """
+Type_Container_SN = 'cnt'
+""" Shortname for the &lt;container> resource type. """
+
 Type_ContentInstance =  4
 """ The &lt;contentInstance> resource type. """
+Type_ContentInstance_SN = 'cin'
+""" Shortname for the &lt;contentInstance> resource type. """
+
 Type_CSEBase = 5
 """ The &lt;CSE> resource type. """
+Type_CSEBase_SN = 'cb'
+""" The &lt;CSEBase> resource type. """
+
 Type_Group =  9
 """ The &lt;group> resource type. """
-Type_Node = 14
-""" The &lt;node> resource type. """
+Type_Group_SN = 'grp'
+""" Shortname for the &lt;group> resource type. """
+
+#Type_Node = 14
+#""" The &lt;node> resource type. """
+
 Type_RemoteCSE = 16
 """ The &lt;remoteCSE> resource type. """
+Type_RemoteCSE_SN = 'csr'
+""" Shortname for the &lt;remoteCSE> resource type. """
+
 Type_Subscription = 23
-""" The &lt;Subscription> resource type"""
+""" The &lt;subscription> resource type"""
+Type_Subscription_SN = 'sub'
+""" Shortname for the &lt;subscription> resource type. """
+
 Type_FlexContainer = 28
 """ The &lt;flexContainer> resource type. """
+# No implicit shortname for the flexContainer.
 
 
 #

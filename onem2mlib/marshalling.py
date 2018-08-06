@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 
 def _resourceBase_parseXML(obj, root):
 	rootTag = INT.xmlQualifiedName(root)
-	obj.resourceName = INT.getAttribute(root, 'm2m:'+rootTag.localname, 'rn', obj.resourceName)
+
+	obj.resourceName = INT.getAttribute(root, rootTag[1] + ':' + rootTag[0], 'rn', obj.resourceName)
 	obj.type = INT.getElement(root, 'ty', obj.type)
 	obj.stateTag = INT.toInt(INT.getElement(root, 'st', obj.stateTag))
 	obj.labels = INT.getElement(root, 'lbl', obj.labels)
@@ -37,39 +38,51 @@ def _resourceBase_parseXML(obj, root):
 
 
 # Create the XML for only some of the writable attributes.
-def _resourceBase_createXML(obj, root, isUpdate):
+def _resourceBase_createXML(obj, isUpdate):
+	root = INT.createElement(obj.typeShortName, namespace=obj.namespace )
 	if obj.resourceName and not isUpdate: 	# No RN when updating
 		root.attrib['rn'] = obj.resourceName
 	INT.addToElement(root, 'lbl', obj.labels)
 	INT.addToElement(root, 'aa', obj.announcedAttribute)
 	INT.addToElement(root, 'at', obj.announceTo)
 	INT.addToElement(root, 'acpi', obj.accessControlPolicyIDs)
+	return root
 
 
 def _resourceBase_parseJSON(obj, jsn):
-	obj.resourceName = INT.getElementJSON(jsn, 'rn', obj.resourceName)
-	obj.type = INT.getElementJSON(jsn, 'ty', obj.type)
-	obj.stateTag = INT.toInt(INT.getElementJSON(jsn, 'st', obj.stateTag))
-	obj.labels = INT.getElementJSON(jsn, 'lbl', obj.labels)
-	obj.resourceID = INT.getElementJSON(jsn, 'ri', obj.resourceID)
-	obj.parentID = INT.getElementJSON(jsn, 'pi', obj.parentID)
-	obj.creationTime = INT.getElementJSON(jsn, 'ct', obj.creationTime)
-	obj.lastModifiedTime = INT.getElementJSON(jsn, 'lt', obj.lastModifiedTime)
-	obj.accessControlPolicyIDs = INT.getElementJSON(jsn, 'acpi', obj.accessControlPolicyIDs)
-	obj.expirationTime = INT.getElementJSON(jsn, 'et', obj.expirationTime)
-	obj.announceTo = INT.getElementJSON(jsn, 'at', obj.announceTo)
-	obj.announcedAttribute = INT.getElementJSON(jsn, 'aa', obj.announcedAttribute)
-
+	name = obj.namespace + ':' + obj.typeShortName
+	if name not in jsn:
+		logger.error('Wrong encoding: ' + str(jsn))
+		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
+	_jsn = jsn[name]
+	# if _jsn is None:
+	# 	logger.error('Wrong encoding: ' + str(jsn))
+	# 	raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
+	obj.resourceName = INT.getElementJSON(_jsn, 'rn', obj.resourceName)
+	obj.type = INT.getElementJSON(_jsn, 'ty', obj.type)
+	obj.stateTag = INT.toInt(INT.getElementJSON(_jsn, 'st', obj.stateTag))
+	obj.labels = INT.getElementJSON(_jsn, 'lbl', obj.labels)
+	obj.resourceID = INT.getElementJSON(_jsn, 'ri', obj.resourceID)
+	obj.parentID = INT.getElementJSON(_jsn, 'pi', obj.parentID)
+	obj.creationTime = INT.getElementJSON(_jsn, 'ct', obj.creationTime)
+	obj.lastModifiedTime = INT.getElementJSON(_jsn, 'lt', obj.lastModifiedTime)
+	obj.accessControlPolicyIDs = INT.getElementJSON(_jsn, 'acpi', obj.accessControlPolicyIDs)
+	obj.expirationTime = INT.getElementJSON(_jsn, 'et', obj.expirationTime)
+	obj.announceTo = INT.getElementJSON(_jsn, 'at', obj.announceTo)
+	obj.announcedAttribute = INT.getElementJSON(_jsn, 'aa', obj.announcedAttribute)
+	return _jsn
 
 
 # Create the JSON for only some of the writable attributes.
-def _resourceBase_createJSON(obj, jsn, isUpdate):
+def _resourceBase_createJSON(obj, isUpdate):
+	jsn = {}
 	if obj.resourceName and not isUpdate: 	# No RN when updating
 		INT.addToElementJSON(jsn, 'rn', obj.resourceName)
 	INT.addToElementJSON(jsn, 'lbl', obj.labels)
 	INT.addToElementJSON(jsn, 'aa', obj.announcedAttribute)
 	INT.addToElementJSON(jsn, 'at', obj.announceTo)
 	INT.addToElementJSON(jsn, 'acpi', obj.accessControlPolicyIDs)
+	return jsn
 
 
 ###############################################################################
@@ -85,11 +98,7 @@ def _CSEBase_parseXML(obj, root):
 
 
 def _CSEBase_parseJSON(obj, jsn):
-	if 'm2m:cb' not in jsn:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_jsn = jsn['m2m:cb']
-	_resourceBase_parseJSON(obj, _jsn)
+	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.cseType = INT.toInt(INT.getElementJSON(_jsn, 'cst', obj.cseType))
 	obj.supportedResourceTypes = INT.getElementJSON(_jsn, 'srt', obj.supportedResourceTypes)
 	obj.pointOfAccess = INT.getElementJSON(_jsn, 'poa', obj.pointOfAccess)
@@ -110,11 +119,7 @@ def _remoteCSE_parseXML(obj, root):
 
 
 def _remoteCSE_parseJSON(obj, jsn):
-	if 'm2m:csr' not in jsn:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_jsn = jsn['m2m:csr']
-	_resourceBase_parseJSON(obj, _jsn)
+	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.requestReachability = INT.getElementJSON(_jsn, 'rr', obj.requestReachability)
 	obj.pointOfAccess = INT.getElementJSON(_jsn, 'poa', obj.pointOfAccess)
 	obj.cseBase = INT.getElementJSON(_jsn, 'cb', obj.cseBase)
@@ -147,9 +152,8 @@ def _accessControlPolicy_parseXML(obj, root):
 
 
 def _accessControlPolicy_createXML(obj, isUpdate=False):
-	root = INT.createElement('acp', namespace='m2m')
 	# add resource attributes
-	_resourceBase_createXML(obj, root, isUpdate)
+	root = _resourceBase_createXML(obj, isUpdate)
 	pv = INT.addElement(root, 'pv')
 	for p in obj.privileges:
 		p._createXML(pv)
@@ -160,14 +164,7 @@ def _accessControlPolicy_createXML(obj, isUpdate=False):
 
 
 def _accessControlPolicy_parseJSON(obj, jsn):
-	if 'm2m:acp' not in jsn:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_jsn = jsn['m2m:acp']
-	if _jsn is None:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_resourceBase_parseJSON(obj, _jsn)
+	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.privileges = []
 	pv = INT.getElementJSON(_jsn, 'pv')
 	if pv:
@@ -189,17 +186,16 @@ def _accessControlPolicy_parseJSON(obj, jsn):
 
 
 def _accessControlPolicy_createJSON(obj, isUpdate=False):
-	data = {}
-	_resourceBase_createJSON(obj, data, isUpdate)
+	jsn = _resourceBase_createJSON(obj, isUpdate)
 	if obj.privileges:
 		pv = {}
 		pv['acr'] = [ p._createJSON() for p in obj.privileges ]
-		data['pv'] = pv
+		jsn['pv'] = pv
 	if obj.selfPrivileges:
 		pvs = {}
 		pvs['acr'] = [ p._createJSON() for p in obj.selfPrivileges ]
-		data['pvs'] = pvs
-	return {'m2m:acp' : data}
+		jsn['pvs'] = pvs
+	return INT.wrapJSON(obj, jsn)
 
 
 
@@ -249,8 +245,7 @@ def _AE_parseXML(obj, root):
 
 
 def _AE_createXML(obj, isUpdate=False):
-	root = INT.createElement('ae', namespace='m2m')
-	_resourceBase_createXML(obj, root, isUpdate)
+	root = _resourceBase_createXML(obj, isUpdate)
 	if obj.appID and not isUpdate: 		# No api when updating
 		INT.addToElement(root, 'api', obj.appID)
 	if obj.AEID and not isUpdate:	# No api when updating
@@ -261,14 +256,7 @@ def _AE_createXML(obj, isUpdate=False):
 
 
 def _AE_parseJSON(obj, jsn):
-	if 'm2m:ae' not in jsn:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_jsn = jsn['m2m:ae']
-	if _jsn is None:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_resourceBase_parseJSON(obj, _jsn)
+	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.appID = INT.getElementJSON(_jsn, 'api', obj.appID)
 	obj.AEID = INT.getElementJSON(_jsn, 'aei', obj.AEID)
 	obj.requestReachability = INT.getElementJSON(_jsn, 'rr', obj.requestReachability)
@@ -276,15 +264,14 @@ def _AE_parseJSON(obj, jsn):
 
 
 def _AE_createJSON(obj, isUpdate=False):
-	data = {}
-	_resourceBase_createJSON(obj, data, isUpdate)
+	jsn = _resourceBase_createJSON(obj, isUpdate)
 	if obj.appID and not isUpdate: 		# No api when updating
-		INT.addToElementJSON(data, 'api', obj.appID)
+		INT.addToElementJSON(jsn, 'api', obj.appID)
 	if obj.AEID and not isUpdate:	# No api when updating
-		INT.addToElementJSON(data, 'aei', obj.AEID)
-	INT.addToElementJSON(data, 'rr', obj.requestReachability)
-	INT.addToElementJSON(data, 'poa', obj.pointOfAccess)
-	return {'m2m:ae' : data}
+		INT.addToElementJSON(jsn, 'aei', obj.AEID)
+	INT.addToElementJSON(jsn, 'rr', obj.requestReachability)
+	INT.addToElementJSON(jsn, 'poa', obj.pointOfAccess)
+	return INT.wrapJSON(obj, jsn)
 
 
 ###############################################################################
@@ -304,8 +291,7 @@ def _Container_parseXML(obj, root):
 
 
 def _Container_createXML(obj, isUpdate=False):
-	root = INT.createElement('cnt', namespace='m2m')
-	_resourceBase_createXML(obj, root, isUpdate)
+	root = _resourceBase_createXML(obj, isUpdate)
 	INT.addToElement(root, 'mni', obj.maxNrOfInstances)
 	INT.addToElement(root, 'mbs', obj.maxByteSize)
 	INT.addToElement(root, 'mia', obj.maxInstanceAge)
@@ -313,11 +299,7 @@ def _Container_createXML(obj, isUpdate=False):
 
 
 def _Container_parseJSON(obj, jsn):
-	if 'm2m:cnt' not in jsn:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_jsn = jsn['m2m:cnt']
-	_resourceBase_parseJSON(obj, _jsn)
+	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.maxNrOfInstances = INT.getElementJSON(_jsn, 'mni', obj.maxNrOfInstances)
 	obj.maxByteSize = INT.getElementJSON(_jsn, 'mbs', obj.maxByteSize)
 	obj.maxInstanceAge = INT.getElementJSON(_jsn, 'mia', obj.maxInstanceAge)
@@ -328,12 +310,11 @@ def _Container_parseJSON(obj, jsn):
 
 
 def _Container_createJSON(obj, isUpdate=False):
-	data = {}
-	_resourceBase_createJSON(obj, data, isUpdate)
-	INT.addToElementJSON(data, 'mni', obj.maxNrOfInstances)
-	INT.addToElementJSON(data, 'mbs', obj.maxByteSize)
-	INT.addToElementJSON(data, 'mia', obj.maxInstanceAge)
-	return {'m2m:cnt' : data}
+	jsn = _resourceBase_createJSON(obj, isUpdate)
+	INT.addToElementJSON(jsn, 'mni', obj.maxNrOfInstances)
+	INT.addToElementJSON(jsn, 'mbs', obj.maxByteSize)
+	INT.addToElementJSON(jsn, 'mia', obj.maxInstanceAge)
+	return INT.wrapJSON(obj, jsn)
 
 
 ###############################################################################
@@ -349,33 +330,24 @@ def _ContentInstance_parseXML(obj, root):
 
 
 def _ContentInstance_createXML(obj, isUpdate=False):
-	root = INT.createElement('cin', namespace='m2m')
-	_resourceBase_createXML(obj, root, isUpdate)
+	root = _resourceBase_createXML(obj, isUpdate)
 	INT.addToElement(root, 'cnf', obj.contentInfo)
 	INT.addToElement(root, 'con', obj.content)
 	return root
 
 
 def _ContentInstance_parseJSON(obj, jsn):
-	if 'm2m:cin' not in jsn:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_jsn = jsn['m2m:cin']
-	if _jsn is None:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_resourceBase_parseJSON(obj, _jsn)
+	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.contentInfo = INT.getElementJSON(_jsn, 'cnf', obj.contentInfo)
 	obj.contentSize = INT.getElementJSON(_jsn, 'cs', obj.contentSize)
 	obj.content = INT.getElementJSON(_jsn, 'con', obj.content)
 
 
 def _ContentInstance_createJSON(obj, isUpdate=False):
-	data = {}
-	_resourceBase_createJSON(obj, data, isUpdate)
-	INT.addToElementJSON(data, 'cnf', obj.contentInfo)
-	INT.addToElementJSON(data, 'con', obj.content)
-	return {'m2m:cin' : data}
+	jsn = _resourceBase_createJSON(obj, isUpdate)
+	INT.addToElementJSON(jsn, 'cnf', obj.contentInfo)
+	INT.addToElementJSON(jsn, 'con', obj.content)
+	return INT.wrapJSON(obj, jsn)
 
 
 ###############################################################################
@@ -396,8 +368,7 @@ def _Group_parseXML(obj, root):
 
 
 def _Group_createXML(obj, isUpdate):
-	root = INT.createElement('grp', namespace='m2m')
-	_resourceBase_createXML(obj, root, isUpdate)
+	root = _resourceBase_createXML(obj, isUpdate)
 	if obj.maxNrOfMembers and not isUpdate: 	# No mnm when updating
 		INT.addToElement(root, 'mnm', obj.maxNrOfMembers)
 	INT.addToElement(root, 'mt', obj.memberType)
@@ -409,14 +380,7 @@ def _Group_createXML(obj, isUpdate):
 
 
 def _Group_parseJSON(obj, jsn):
-	if 'm2m:grp' not in jsn:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_jsn = jsn['m2m:grp']
-	if _jsn is None:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_resourceBase_parseJSON(obj, _jsn)
+	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.maxNrOfMembers = INT.getElementJSON(_jsn, 'mnm', obj.maxNrOfMembers)
 	obj.memberType = INT.getElementJSON(_jsn, 'mt', obj.memberType)
 	obj.currentNrOfMembers = INT.getElementJSON(_jsn, 'cnm', obj.currentNrOfMembers)
@@ -428,16 +392,15 @@ def _Group_parseJSON(obj, jsn):
 
 
 def _Group_createJSON(obj, isUpdate):
-	data = {}
-	_resourceBase_createJSON(obj, data, isUpdate)
+	jsn = _resourceBase_createJSON(obj, isUpdate)
 	if obj.maxNrOfMembers and not isUpdate: 	# No mnm when updating
-		INT.addToElementJSON(data, 'mnm', obj.maxNrOfMembers)
-	INT.addToElementJSON(data, 'mt', obj.memberType)
-	INT.addToElementJSON(data, 'mid', obj.memberIDs, mandatory=True)
+		INT.addToElementJSON(jsn, 'mnm', obj.maxNrOfMembers)
+	INT.addToElementJSON(jsn, 'mt', obj.memberType)
+	INT.addToElementJSON(jsn, 'mid', obj.memberIDs, mandatory=True)
 	if obj.consistencyStrategy and not isUpdate: 	# No csy when updating
-		INT.addToElementJSON(data, 'csy', obj.consistencyStrategy)
-	INT.addToElementJSON(data, 'gn', obj.groupName)
-	return {'m2m:grp' : data}
+		INT.addToElementJSON(jsn, 'csy', obj.consistencyStrategy)
+	INT.addToElementJSON(jsn, 'gn', obj.groupName)
+	return INT.wrapJSON(obj, jsn)
 
 
 
@@ -458,8 +421,7 @@ def _Subscription_parseXML(obj, root):
 
 
 def _Subscription_createXML(obj, isUpdate=False):
-	root = INT.createElement('sub', namespace='m2m')
-	_resourceBase_createXML(obj, root, isUpdate)
+	root = _resourceBase_createXML(obj, isUpdate)
 	INT.addToElement(root, 'nu', obj.notificationURI)
 	INT.addToElement(root, 'nct', obj.notificationContentType)
 	if obj.expirationCounter != -1:
@@ -476,14 +438,7 @@ def _Subscription_createXML(obj, isUpdate=False):
 
 
 def _Subscription_parseJSON(obj, jsn):
-	if 'm2m:sub' not in jsn:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_jsn = jsn['m2m:sub']
-	if _jsn is None:
-		logger.error('Wrong encoding: ' + str(jsn))
-		raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
-	_resourceBase_parseJSON(obj, _jsn)
+	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.notificationURI = INT.getElementJSON(_jsn, 'nu', obj.notificationURI)
 	obj.notificationContentType = INT.getElementJSON(_jsn, 'nct', obj.notificationContentType)
 	obj.expirationCounter = INT.getElementJSON(_jsn, 'exc', obj.expirationCounter)
@@ -494,18 +449,50 @@ def _Subscription_parseJSON(obj, jsn):
 
 
 def _Subscription_createJSON(obj, isUpdate=False):
-	data = {}
-	_resourceBase_createJSON(obj, data, isUpdate)
-	INT.addToElementJSON(data, 'nu', obj.notificationURI)
-	INT.addToElementJSON(data, 'nct', obj.notificationContentType)
+	jsn = _resourceBase_createJSON(obj, isUpdate)
+	INT.addToElementJSON(jsn, 'nu', obj.notificationURI)
+	INT.addToElementJSON(jsn, 'nct', obj.notificationContentType)
 	if obj.expirationCounter != -1:
-		INT.addToElementJSON(data, 'exc', obj.expirationCounter)
+		INT.addToElementJSON(jsn, 'exc', obj.expirationCounter)
 	if obj.latestNotify:
-		INT.addToElementJSON(data, 'ln', obj.latestNotify)
+		INT.addToElementJSON(jsn, 'ln', obj.latestNotify)
 	if obj.groupID:
-		INT.addToElementJSON(data, 'gpi', obj.groupID)
+		INT.addToElementJSON(jsn, 'gpi', obj.groupID)
 	if obj.notificationForwardingURI:
-		INT.addToElementJSON(data, 'nfu', obj.notificationForwardingURI)
+		INT.addToElementJSON(jsn, 'nfu', obj.notificationForwardingURI)
 	if obj.subscriberURI:
-		INT.addToElementJSON(data, 'su', obj.subscriberURI)
-	return {'m2m:sub' : data}
+		INT.addToElementJSON(jsn, 'su', obj.subscriberURI)
+	return INT.wrapJSON(obj, jsn)
+
+
+
+###############################################################################
+#
+#	FlexContainer
+#
+
+def _FlexContainer_parseXML(obj, root):
+	_resourceBase_parseXML(obj, root)
+	obj.contentDefinition = INT.getElement(root, 'cnd', obj.contentDefinition)
+	# TODO attributes
+
+
+
+def _FlexContainer_createXML(obj, isUpdate=False):
+	root = _resourceBase_createXML(obj, isUpdate)
+	INT.addToElement(root, 'cnd', obj.contentDefinition)
+	# TODO attributes
+	return root
+
+
+def _FlexContainer_parseJSON(obj, jsn):
+	_resourceBase_parseJSON(obj, _jsn)
+	obj.contentDefinition = INT.getElementJSON(_jsn, 'cnd', obj.contentDefinition)
+	# TODO Attributes
+
+
+def _FlexContainer_createJSON(obj, isUpdate=False):
+	jsn = _resourceBase_createJSON(obj, isUpdate)
+	INT.addToElementJSON(data, 'cnd', obj.contentDefinition)
+	# >TODO attribues
+	return INT.wrapJSON(obj, jsn)
