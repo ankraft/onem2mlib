@@ -139,7 +139,8 @@ def _accessControlPolicy_parseXML(obj, root):
 		acrs = INT.getElements(pv[0], 'acr', relative=True) # only the first element[0]
 		for a in acrs:
 			acr = onem2mlib.AccessControlRule()
-			acr._parseXML(a)
+			_accessControlPolicy_parseXML(acr, a)
+			#acr._parseXML(a)
 			obj.privileges.append(acr)
 	obj.selfPrivileges = []
 	pvs = INT.getElementWithChildren(root, 'pvs')
@@ -147,7 +148,8 @@ def _accessControlPolicy_parseXML(obj, root):
 		acrs = INT.getElements(pvs[0], 'acr', relative=True) # only the first element[0]
 		for a in acrs:
 			acr = onem2mlib.AccessControlRule()
-			acr._parseXML(a)
+			_accessControlPolicy_parseXML(acr, a)
+			#acr._parseXML(a)
 			obj.selfPrivileges.append(acr)
 
 
@@ -156,10 +158,12 @@ def _accessControlPolicy_createXML(obj, isUpdate=False):
 	root = _resourceBase_createXML(obj, isUpdate)
 	pv = INT.addElement(root, 'pv')
 	for p in obj.privileges:
-		p._createXML(pv)
+		_accessControlRule_createXML(p, pv)
+		#p._createXML(pv)
 	pvs = INT.addElement(root, 'pvs')
 	for p in obj.selfPrivileges:
-		p._createXML(pvs)
+		_accessControlRule_createXML(p, pvs)
+		#p._createXML(pvs)
 	return root
 
 
@@ -172,7 +176,8 @@ def _accessControlPolicy_parseJSON(obj, jsn):
 		if acrs:
 			for ajsn in acrs:
 				acr = onem2mlib.AccessControlRule()
-				acr._parseJSON(ajsn)	
+				_accessControlRule_parseJSON(acr, ajsn)
+				#acr._parseJSON(ajsn)	
 				obj.privileges.append(acr)	
 	obj.selfPrivileges = []
 	pvs = INT.getElementJSON(_jsn, 'pvs')
@@ -181,7 +186,8 @@ def _accessControlPolicy_parseJSON(obj, jsn):
 		if acrs:
 			for ajsn in acrs:
 				acr = onem2mlib.AccessControlRule()
-				acr._parseJSON(ajsn)
+				_accessControlRule_parseJSON(acr, ajsn)
+				#acr._parseJSON(ajsn)
 				obj.selfPrivileges.append(acr)	
 
 
@@ -189,11 +195,13 @@ def _accessControlPolicy_createJSON(obj, isUpdate=False):
 	jsn = _resourceBase_createJSON(obj, isUpdate)
 	if obj.privileges:
 		pv = {}
-		pv['acr'] = [ p._createJSON() for p in obj.privileges ]
+		#pv['acr'] = [ p._createJSON() for p in obj.privileges ]
+		pv['acr'] = [ _accessControlRule_createJSON(p) for p in obj.privileges ]
 		jsn['pv'] = pv
 	if obj.selfPrivileges:
 		pvs = {}
-		pvs['acr'] = [ p._createJSON() for p in obj.selfPrivileges ]
+		#pvs['acr'] = [ p._createJSON() for p in obj.selfPrivileges ]
+		pvs['acr'] = [ _accessControlRule_createJSON(p) for p in obj.selfPrivileges ]
 		jsn['pvs'] = pvs
 	return INT.wrapJSON(obj, jsn)
 

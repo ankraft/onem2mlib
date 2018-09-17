@@ -162,7 +162,7 @@ class ResourceBase:
 			or an empty list. """
 
 		# Internal list of per-class marshalling methods
-		# [ parseXML, parseJSON, createXML, createJSON ]
+		# [ parseXML, createXML, parseJSON, createJSON ]
 		self._marshallers = [ None, None, None, None ]
 		# TODO for all classes
 		# TODO move methods to resourceBase
@@ -487,6 +487,29 @@ class ResourceBase:
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
 
+	# Marschalling calls
+	def _parseXML(self, root):
+		if self._marshallers[0] is not None:
+			self._marshallers[0](self, root)
+
+
+	def _createXML(self, isUpdate=False):
+		if self._marshallers[1] is not None:
+			return self._marshallers[1](self, isUpdate)
+		return None
+
+
+	def _parseJSON(self, jsn):
+		if self._marshallers[2] is not None:
+			self._marshallers[2](self, jsn)
+
+
+	def _createJSON(self, isUpdate=False):
+		if self._marshallers[3] is not None:
+			return self._marshallers[3](self, isUpdate)
+		return None
+
+
 	def _copy(self, resource):
 		self.resourceName = resource.resourceName
 		self.namespace = resource.namespace
@@ -529,6 +552,7 @@ class CSEBase(ResourceBase):
 		ResourceBase.__init__(self, None, resourceName, cseID, CON.Type_CSEBase, CON.Type_CSEBase_SN)
 
 		self.session = session # Must assign session manually.
+		self._marshallers = [M._CSEBase_parseXML, None, M._CSEBase_parseJSON, None]
 		
 		self.cseType = None
 		""" Integer. The type of the CSE. See also the `Constants.CSE_Type_*` constants.
@@ -618,14 +642,6 @@ class CSEBase(ResourceBase):
 		return INT._findSubResource(self, CON.Type_RemoteCSE)
 
 
-	def _parseXML(self, root):
-		M._CSEBase_parseXML(self, root)
-
-
-	def _parseJSON(self, jsn):
-		M._CSEBase_parseJSON(self, jsn)
-
-
 	def _copy(self, resource):
 		ResourceBase._copy(self, resource)
 		self.cseType = resource.cseType
@@ -659,6 +675,7 @@ class RemoteCSE(ResourceBase):
 			&lt;remoteCSE> instance or `onem2mlib.ResourceBase`.
 		"""
 		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_RemoteCSE, CON.Type_RemoteCSE_SN)
+		self._marshallers = [M._remoteCSE_parseXML, None, M._remoteCSE_parseJSON, None]
 
 		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:
 			logger.error('Parent must be <CSE> or <remoteCSE>: ' + INT.nameAndType(self))
@@ -733,14 +750,6 @@ class RemoteCSE(ResourceBase):
 		return CSEBase(nSession, self.cseID, instantly=instantly)
 
 
-	def _parseXML(self, root):
-		M._remoteCSE_parseXML(self, root)
-
-
-	def _parseJSON(self, jsn):
-		M._remoteCSE_parseJSON(self, jsn)
-
-
 	def _copy(self, resource):
 		ResourceBase._copy(self, resource)
 		self.cseBase = resource.cseBase
@@ -776,7 +785,9 @@ class AccessControlPolicy(ResourceBase):
 			&lt;accessControlPolicy> instance or `onem2mlib.ResourceBase`.
 		"""
 		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ACP, CON.Type_ACP_SN)
-		
+		self._marshallers = [M._accessControlPolicy_parseXML, M._accessControlPolicy_createXML, 
+							 M._accessControlPolicy_parseJSON, M._accessControlPolicy_createJSON]
+
 		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:
 			logger.error('Parent must be <CSE> or <remoteCSE>.')
 			raise EXC.ParameterError('Parent must be <CSE> or <remoteCSE>.')
@@ -804,22 +815,6 @@ class AccessControlPolicy(ResourceBase):
 		for p in self.selfPrivileges:
 			result += str(p)
 		return result
-
-
-	def _parseXML(self, root):
-		M._accessControlPolicy_parseXML(self, root)
-
-
-	def _parseJSON(self, jsn):
-		M._accessControlPolicy_parseJSON(self, jsn)
-
-
-	def _createXML(self, isUpdate=False):
-		return M._accessControlPolicy_createXML(self, isUpdate)
-
-
-	def _createJSON(self, isUpdate=False):
-		return M._accessControlPolicy_createJSON(self, isUpdate)
 
 
 	def _copy(self, resource):
@@ -866,22 +861,6 @@ class AccessControlRule():
 		return result
 
 
-	def _parseXML(self, root):
-		M._accessControlRule_parseXML(self, root)
-
-
-	def _createXML(self, root):
-		M._accessControlRule_createXML(self, root)
-
-
-	def _parseJSON(self, jsn):
-		M._accessControlRule_parseJSON(self, jsn)
-
-
-	def _createJSON(self):
-		return M._accessControlRule_createJSON(self)
-
-
 ###############################################################################
 
 
@@ -907,6 +886,8 @@ class AE(ResourceBase):
 			&lt;AE> instance or `onem2mlib.ResourceBase`.
 		"""
 		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_AE, CON.Type_AE_SN, labels=labels)
+		self._marshallers = [M._AE_parseXML, M._AE_createXML,
+							 M._AE_parseJSON, M._AE_createJSON]
 
 		self.appID = appID
 		""" String. The identifier of the Application. Assigned by the application or the CSE. """
@@ -983,22 +964,6 @@ class AE(ResourceBase):
 		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels)
 
 
-	def _parseXML(self, root):
-		M._AE_parseXML(self, root)
-
-
-	def _createXML(self, isUpdate=False):
-		return M._AE_createXML(self, isUpdate)
-
-
-	def _parseJSON(self, jsn):
-		M._AE_parseJSON(self, jsn)
-
-
-	def _createJSON(self, isUpdate=False):
-		return M._AE_createJSON(self, isUpdate)
-
-
 	def _copy(self, resource):
 		ResourceBase._copy(self, resource)
 		self.appID = resource.appID
@@ -1032,6 +997,8 @@ class Container(ResourceBase):
 		"""	
 
 		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Container, CON.Type_Container_SN, labels=labels)
+		self._marshallers = [M._Container_parseXML, M._Container_createXML,
+							 M._Container_parseJSON, M._Container_createJSON]
 
 		self.maxNrOfInstances = maxNrOfInstances
 		""" Integer. Maximum number of direct child &lt;contentInstance> resources in the 
@@ -1173,22 +1140,6 @@ class Container(ResourceBase):
 		return None
 
 
-	def _parseXML(self, root):
-		M._Container_parseXML(self, root)
-
-
-	def _createXML(self, isUpdate=False):
-		return M._Container_createXML(self, isUpdate)
-
-
-	def _parseJSON(self, jsn):
-		M._Container_parseJSON(self, jsn)
-
-
-	def _createJSON(self, isUpdate=False):
-		return M._Container_createJSON(self, isUpdate)
-
-
 	def _copy(self, resource):
 		ResourceBase._copy(self, resource)
 		self.maxNrOfInstances = resource.maxNrOfInstances
@@ -1236,6 +1187,8 @@ class ContentInstance(ResourceBase):
 			&lt;contentInstance> instance or `onem2mlib.ResourceBase`.
 		"""
 		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ContentInstance, CON.Type_ContentInstance_SN, labels=labels)
+		self._marshallers = [M._ContentInstance_parseXML, M._ContentInstance_createXML,
+							 M._ContentInstance_parseJSON, M._ContentInstance_createJSON]
 
 		self.contentInfo = contentInfo
 		""" String. The type of the data in the `onem2mlib.ContentInstance.content` 
@@ -1261,22 +1214,6 @@ class ContentInstance(ResourceBase):
 		result += INT.strResource('contentSize', 'cs', self.contentSize)
 		result += INT.strResource('content', 'con', self.content)
 		return result
-
-
-	def _parseXML(self, root):
-		M._ContentInstance_parseXML(self, root)
-
-
-	def _createXML(self, isUpdate=False):
-		return M._ContentInstance_createXML(self, isUpdate)
-
-
-	def _parseJSON(self, jsn):
-		M._ContentInstance_parseJSON(self, jsn)
-
-
-	def _createJSON(self, isUpdate=False):
-		return M._ContentInstance_createJSON(self, isUpdate)
 
 
 	def _copy(self, resource):
@@ -1313,6 +1250,8 @@ class Group(ResourceBase):
 			&lt;group> instance or `onem2mlib.ResourceBase`.
 		"""		
 		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Group, CON.Type_Group_SN, labels=labels)
+		self._marshallers = [M._Group_parseXML, M._Group_createXML,
+							 M._Group_parseJSON, M._Group_createJSON]
 
 		self.maxNrOfMembers = maxNrOfMembers
 		""" Integer. Maximum number of members in the &lt;group>. """
@@ -1456,22 +1395,6 @@ class Group(ResourceBase):
 		return self._parseFanOutPointResponse(response)
 
 
-	def _parseXML(self, root):
-		M._Group_parseXML(self, root)
-
-
-	def _createXML(self, isUpdate=False):
-		return M._Group_createXML(self, isUpdate)
-
-
-	def _parseJSON(self, jsn):
-		M._Group_parseJSON(self, jsn)
-
-
-	def _createJSON(self, isUpdate=False):
-		return M._Group_createJSON(self, isUpdate)
-
-
 	def _parseFanOutPointResponse(self, response):
 		# Get the resources from the answer
 		if response and response.status_code == 200:
@@ -1555,6 +1478,8 @@ class Subscription(ResourceBase):
 		"""
 	
 		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Subscription, CON.Type_Subscription_SN, labels=labels)
+		self._marshallers = [M._Subscription_parseXML, M._Subscription_createXML,
+							 M._Subscription_parseJSON, M._Subscription_createJSON]
 
 		self.notificationURI = notificationURI
 		"""
@@ -1637,22 +1562,6 @@ class Subscription(ResourceBase):
 		return result
 
 
-	def _parseXML(self, root):
-		M._Subscription_parseXML(self, root)
-
-
-	def _createXML(self, isUpdate=False):
- 		return M._Subscription_createXML(self, isUpdate)
-
-
-	def _parseJSON(self, jsn):
-		M._Subscription_parseJSON(self, jsn)
-
-
-	def _createJSON(self, isUpdate=False):
-		return M._Subscription_createJSON(self, isUpdate)
-
-
 	def _copy(self, resource):
 		ResourceBase._copy(self, resource)
 		self.notificationURI = resource.notificationURI
@@ -1695,6 +1604,8 @@ class FlexContainer(ResourceBase):
 		"""
 	
 		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_FlexContainer, resourceSpecialization, labels=labels, namespace=namespace)
+		self._marshallers = [M._FlexContainer_parseXML, M._FlexContainer_createXML,
+							 M._FlexContainer_parseJSON, M._FlexContainer_createJSON]
 
 		self.contentDefinition = contentDefinition
 		self.attributes = attributes # TODO
@@ -1713,22 +1624,6 @@ class FlexContainer(ResourceBase):
 
 		# TODO attributes
 		return result
-
-
-	def _parseXML(self, root):
-		M._FlexContainer_parseXML(self, root)
-
-
-	def _createXML(self, isUpdate=False):
- 		return M._FlexContainer_createXML(self, isUpdate)
-
-
-	def _parseJSON(self, jsn):
-		M._FlexContainer_parseJSON(self, jsn)
-
-
-	def _createJSON(self, isUpdate=False):
-		return M._FlexContainer_createJSON(self, isUpdate)
 
 
 	def _copy(self, resource):

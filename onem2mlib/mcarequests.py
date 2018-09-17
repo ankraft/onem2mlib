@@ -149,6 +149,7 @@ def get(session, path):
 		_logRequest(realPath, headers)
 		return _logResponse(requests.get(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
+		logger.critical(e)
 		return None
 
 # Delete an existing resource on the CSE
@@ -159,6 +160,7 @@ def delete(session, path):
 		_logRequest(realPath, headers, 'DELETE')
 		return _logResponse(requests.delete(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
+		logger.critical(e)
 		return None
 
 # Create a new resource on the CSE
@@ -169,6 +171,7 @@ def create(session, path, type, body):
 		_logRequest(realPath, headers, 'POST', body)
 		return _logResponse(requests.post(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
+		logger.critical(e)
 		return None
 
 # Update an existing resource on the CSE
@@ -179,6 +182,7 @@ def update(session, path, type, body):
 		_logRequest(realPath, headers, 'PUT', body)
 		return _logResponse(requests.put(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
+		logger.critical(e)
 		return None
 
 
