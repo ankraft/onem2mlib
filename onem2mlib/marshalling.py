@@ -250,6 +250,7 @@ def _AE_parseXML(obj, root):
 	obj.AEID = INT.getElement(root, 'aei', obj.AEID)
 	obj.requestReachability = INT.getElement(root, 'rr', obj.requestReachability)
 	obj.pointOfAccess = INT.getElement(root, 'poa', obj.pointOfAccess)
+	obj.nodeLink = INT.getElement(root, 'nl', obj.nodeLink)
 
 
 def _AE_createXML(obj, isUpdate=False):
@@ -260,6 +261,7 @@ def _AE_createXML(obj, isUpdate=False):
 		INT.addToElement(root, 'aei', obj.AEID)
 	INT.addToElement(root, 'rr', obj.requestReachability)
 	INT.addToElement(root, 'poa', obj.pointOfAccess)
+	INT.addToElement(root, 'nl', obj.nodeLink)
 	return root
 
 
@@ -268,7 +270,8 @@ def _AE_parseJSON(obj, jsn):
 	obj.appID = INT.getElementJSON(_jsn, 'api', obj.appID)
 	obj.AEID = INT.getElementJSON(_jsn, 'aei', obj.AEID)
 	obj.requestReachability = INT.getElementJSON(_jsn, 'rr', obj.requestReachability)
-	obj.pointOfAccess = INT.getElementJSON(_jsn, 'poa', obj.pointOfAccess)
+	obj.pointOfAccess = INT.getElementJSON(_jsn, 'poa', obj.pointOfAccess)	
+	obj.nodeLink = INT.getElementJSON(_jsn, 'nl', obj.nodeLink)
 
 
 def _AE_createJSON(obj, isUpdate=False):
@@ -279,6 +282,7 @@ def _AE_createJSON(obj, isUpdate=False):
 		INT.addToElementJSON(jsn, 'aei', obj.AEID)
 	INT.addToElementJSON(jsn, 'rr', obj.requestReachability)
 	INT.addToElementJSON(jsn, 'poa', obj.pointOfAccess)
+	INT.addToElementJSON(jsn, 'nl', obj.nodeLink)
 	return INT.wrapJSON(obj, jsn)
 
 
@@ -472,6 +476,49 @@ def _Subscription_createJSON(obj, isUpdate=False):
 		INT.addToElementJSON(jsn, 'su', obj.subscriberURI)
 	return INT.wrapJSON(obj, jsn)
 
+
+
+###############################################################################
+#
+#	Node
+#
+
+def _Node_parseXML(obj, root):
+	_resourceBase_parseXML(obj, root)
+	obj.nodeID = INT.getElement(root, 'ni', obj.nodeID)
+	obj.hostedCSELink = INT.toInt(INT.getElement(root, 'hcl', obj.hostedCSELink))
+	obj.hostedAELinks = INT.toInt(INT.getElement(root, 'hael', obj.hostedAELinks))
+	obj.hostedServiceLinks = INT.getElement(root, 'hsl', obj.hostedServiceLinks)
+	obj.mgmtClientAddress = INT.getElement(root, 'mgca', obj.mgmtClientAddress)
+	obj.roamingStatus = INT.getElement(root, 'rms', obj.roamingStatus)
+	obj.networkID = INT.getElement(root, 'nid', obj.networkID)
+
+
+def _Node_createXML(obj, isUpdate=False):
+	root = _resourceBase_createXML(obj, isUpdate)
+	INT.addToElement(root, 'ni', obj.nodeID)
+	if obj.mgmtClientAddress:
+		INT.addToElement(root, 'mgca', obj.mgmtClientAddress)
+	return root
+
+
+def _Node_parseJSON(obj, jsn):
+	_jsn = _resourceBase_parseJSON(obj, jsn)
+	obj.nodeID = INT.getElementJSON(_jsn, 'ni', obj.nodeID)
+	obj.hostedCSELink = INT.getElementJSON(_jsn, 'hcl', obj.hostedCSELink)
+	obj.hostedAELinks = INT.getElementJSON(_jsn, 'hael', obj.hostedAELinks)
+	obj.hostedServiceLinks = INT.getElementJSON(_jsn, 'hsl', obj.hostedServiceLinks)
+	obj.mgmtClientAddress = INT.getElementJSON(_jsn, 'mgca', obj.mgmtClientAddress)
+	obj.roamingStatus = INT.getElementJSON(_jsn, 'rms', obj.roamingStatus)
+	obj.networkID = INT.getElementJSON(_jsn, 'nid', obj.networkID)
+
+
+def _Node_createJSON(obj, isUpdate=False):
+	jsn = _resourceBase_createJSON(obj, isUpdate)
+	INT.addToElementJSON(jsn, 'ni', obj.nodeID)
+	if obj.mgmtClientAddress:
+		INT.addToElementJSON(jsn, 'mgca', obj.mgmtClientAddress)
+	return INT.wrapJSON(obj, jsn)
 
 
 ###############################################################################

@@ -292,7 +292,10 @@ def _findSubResource(resource, type):
 				subResource = _newResourceFromRID(type, ri, resource)
 				subResource.retrieveFromCSE()
 				result.append(subResource)
-
+			elif ri[0] != '/':	# Hack for Mobius. where they just return an unstructured RI, no matter what
+				subResource = _newResourceFromRID(type, ri, resource)
+				subResource.retrieveFromCSE()
+				result.append(subResource)
 		# Still a hack: sort the list by the ct attribute
 		result.sort(key=lambda x: x.creationTime)
 

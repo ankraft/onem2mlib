@@ -58,6 +58,7 @@ def createInCSE(resource, type):
 		return False
 	content = resource._createContent(False)
 	response =  create(resource.session, resource.parent.resourceID, type, content)
+	#response =  create(resource.session, resource.parent.resourceName, type, content)
 	if response and response.status_code == 201:
 		resource._parseResponse(response)	# update own fields with response
 		return True
@@ -212,6 +213,7 @@ def _logResponse(response):
 def _getHeaders(session, type=None):
 	headers = dict()
 	headers['X-M2M-Origin'] = session.originator
+	headers['X-M2M-RI'] = 'xyz'	# TODO
 	if session.encoding == CON.Encoding_XML:
 		encoding = 'application/xml'
 	else:
@@ -228,14 +230,19 @@ def _getHeaders(session, type=None):
 
 
 def _getPath(session, path):
+	# logger.debug('session.address: ' + session.address)
+	# logger.debug('path: ' + path)
 	if path and path[0] == '/':
+		#return session.address + path
 		return session.address+'/~' + path
 	else:
+		#return session.address+'/' + path
 		return session.address+'/~/' + path
 
 def _isValidResource(resource):
 	return	(resource.type == CON.Type_CSEBase and resource.session is not None) or \
 			(resource.session is not None and ( \
+				#(resource.parent is not None and resource.parent.resourceName is not None)\
 				(resource.parent is not None and resource.parent.resourceID is not None)\
 			) )
 

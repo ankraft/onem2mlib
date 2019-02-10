@@ -51,7 +51,7 @@ In addition you need to install the following modules:
 - [lxml](http://lxml.de)
 
 ### requests
-onem2mlib uses the [requests HTTP library](http://python-requests.org). One can i![![]()]()nstall it with pip3:
+onem2mlib uses the [requests HTTP library](http://python-requests.org). One can install it with pip3:
 
 ```bash
 pip3 install requests

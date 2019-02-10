@@ -55,8 +55,10 @@ Type_Group =  9
 Type_Group_SN = 'grp'
 """ Shortname for the &lt;group> resource type. """
 
-#Type_Node = 14
-#""" The &lt;node> resource type. """
+Type_Node = 14
+""" The &lt;node> resource type. """
+Type_Node_SN = 'nod'
+""" Shortname for the &lt;node> resource type. """
 
 Type_RemoteCSE = 16
 """ The &lt;remoteCSE> resource type. """

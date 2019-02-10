@@ -12,6 +12,8 @@ sys.path.append('..')
 from onem2mlib import *
 
 loggingLevel = logging.INFO
+loggingLevel = logging.DEBUG
+
 
 if __name__ == '__main__':
 	logging.basicConfig(level=loggingLevel)
@@ -19,9 +21,16 @@ if __name__ == '__main__':
 
 	# create session 
 	session = Session('http://localhost:8282', 'admin:admin')
+	session = Session('http://localhost:8080', 'admin:admin')
+	#session = Session('http://localhost:7579', 'S')
+
 
 	# get the <CSEBase> resource
-	cse = CSEBase(session, 'mn-cse')
+	#cse = CSEBase(session, 'mn-cse')
+	cse = CSEBase(session, '')
+	#cse = CSEBase(session, 'Mobius')
+	print(cse)
+
 
 	# get and print a list of all <AE> resources
 	aes = cse.aes()

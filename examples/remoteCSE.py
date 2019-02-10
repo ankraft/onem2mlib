@@ -44,7 +44,7 @@ if __name__ == '__main__':
 		# Get the CSE for remote access
 		remoterCSE = rCSE.cseFromRemoteCSE()
 		print(remoterCSE)
-
+		
 		# Create an AE through the local CSE resrource
 		ae = AE(localrCSE, 'testAE')
 		print(ae)
