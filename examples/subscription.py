@@ -12,14 +12,14 @@ sys.path.append('..')
 from onem2mlib import *
 import onem2mlib.constants as CON
 import onem2mlib.notifications as NOT
-
-loggingLevel = logging.INFO
+import conf
 
 
 
 # This is the callback function that is called for the notifications.
 # The parameter is the changed resource
 def callback(resource):
+	print('Received notification')
 	if resource.type == CON.Type_ContentInstance:
 		print(resource.content)
 	else:
@@ -27,7 +27,7 @@ def callback(resource):
 
 
 if __name__ == '__main__':
-	logging.basicConfig(level=loggingLevel)
+	logging.basicConfig(level=conf.LOGGINGLEVEL)
 	logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 	# Setup the notification sub-system
@@ -35,10 +35,10 @@ if __name__ == '__main__':
 	NOT.setupNotifications(callback)
 
 	# Create session
-	session = Session('http://localhost:8282', 'admin:admin')
+	session = Session(conf.CSEURL, conf.ORIGINATOR)
 
 	# Get the <CSEBase> resource
-	cse = CSEBase(session, 'mn-cse')
+	cse = CSEBase(session, conf.CSEID)
 
 	# create an <AE> resource
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>

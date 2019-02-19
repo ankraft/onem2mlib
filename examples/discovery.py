@@ -12,17 +12,16 @@ sys.path.append('..')
 from onem2mlib import *
 import onem2mlib.constants as CON
 from onem2mlib.utilities import *
-
-loggingLevel = logging.INFO
+import conf
 
 
 if __name__ == '__main__':
-	logging.basicConfig(level=loggingLevel)
+	logging.basicConfig(level=conf.LOGGINGLEVEL)
 	logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 	# Create session & get CSE
-	session = Session('http://localhost:8282', 'admin:admin')
-	cse = CSEBase(session, 'mn-cse')
+	session = Session(conf.CSEURL, conf.ORIGINATOR)
+	cse = CSEBase(session, conf.CSEID)
 
 	#
 	# Create an AE, a container, and a couple of contentInstances first

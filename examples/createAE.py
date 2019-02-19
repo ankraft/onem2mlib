@@ -10,19 +10,18 @@
 import uuid, sys, logging
 sys.path.append('..')
 from onem2mlib import *
-
-loggingLevel = logging.INFO
+import conf
 
 
 if __name__ == '__main__':
-	logging.basicConfig(level=loggingLevel)
+	logging.basicConfig(level=conf.LOGGINGLEVEL)
 	logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 	# Create session
-	session = Session('http://localhost:8282', 'admin:admin')
+	session = Session(conf.CSEURL, conf.ORIGINATOR)
 
 	# Get the <CSEBase> resource
-	cse = CSEBase(session, 'mn-cse')
+	cse = CSEBase(session, conf.CSEID)
 	print(cse)
 
 	#

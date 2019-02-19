@@ -11,27 +11,26 @@ import uuid, sys, logging
 sys.path.append('..')
 from onem2mlib import *
 import onem2mlib.constants as CON
-
-loggingLevel = logging.INFO
+import conf
 
 
 if __name__ == '__main__':
-	logging.basicConfig(level=loggingLevel)
+	logging.basicConfig(level=conf.LOGGINGLEVEL)
 	logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 	# Create session
-	session = Session('http://localhost:8282', 'admin:admin')
+	session = Session(conf.CSEURL, conf.ORIGINATOR)
 
 	# Get the <CSEBase> resource
-	cse = CSEBase(session, 'mn-cse')
+	cse = CSEBase(session, conf.CSEID)
 
 	# Create AccessControlRules for privileges and self-privileges
 	privileges = [ 
-		AccessControlRule(['admin:admin'], CON.Acp_ALL),
+		AccessControlRule([conf.ORIGINATOR], CON.Acp_ALL),
 		AccessControlRule(['user:user'], CON.Acp_RETRIEVE+CON.Acp_DISCOVER)
 	]
 	selfPrivileges = [ 
-		AccessControlRule(['admin:admin'], CON.Acp_ALL)
+		AccessControlRule([conf.ORIGINATOR], CON.Acp_ALL)
 	]
 
 	# Create a new accessControlPolicy with the previous created privileges and self-privileges
