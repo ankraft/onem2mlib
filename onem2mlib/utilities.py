@@ -65,3 +65,41 @@ def newTypeFilterCriteria(type):
 #
 
 
+
+###############################################################################
+#
+#	Retrieval functions
+#
+
+def retrieveResourceFromCSE(parent, resourceID):
+	"""
+	Retrieve a resource by its *resourceID* from the CSE. Any valid *parent* resource
+	instance from that CSE must be given as the first parameter to pass on various internal
+	attributes. 
+	The type of the resource is determined during retrieval.
+
+	When successful, this method returns the retrieved resource, or None otherwise.
+	"""
+	import onem2mlib.mcarequests
+	import onem2mlib.internal
+
+	if not parent.session or not resourceID or not len(resourceID):
+		return False
+	result = None
+	response = onem2mlib.mcarequests.get(parent.session, resourceID)
+	if response and response.status_code == 200:
+		ty = onem2mlib.internal.getTypeFromResponse(response, parent.session.encoding)
+		if parent.session.encoding == CON.Encoding_XML:
+			root = onem2mlib.internal.responseToXML(response)
+			result = onem2mlib.internal._newResourceFromRID(ty, resourceID, parent)
+			if result:
+				result._parseXML(root)
+		elif parent.session.encoding == CON.Encoding_JSON:
+			jsn = response.json()
+			result = onem2mlib.internal._newResourceFromRID(ty, resourceID, parent)
+			if result:
+				result._parseJSON(jsn)
+	return result
+
+
+

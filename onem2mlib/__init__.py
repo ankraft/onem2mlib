@@ -32,48 +32,12 @@ from .resources.Subscription import *
 __all__ = [	'AccessControlPolicy', 'AccessControlRule', 'AE', 'Container',
 			'ContentInstance', 'CSEBase', 'FlexContainer', 'Group', 'Node',
 			'RemoteCSE', 'Subscription', 'ResourceBase', 'Session',
-			'constants', 'exceptions', 'utilities', 'notifications',
-			'retrieveResourceFromCSE']
+			'constants', 'exceptions', 'utilities', 'notifications']
 
 logger = logging.getLogger(__name__)
 
 # TODO:
 # - Test remoteCSE
-
-
-
-###############################################################################
-#
-#	General functions
-#
-
-def retrieveResourceFromCSE(parent, resourceID):
-	"""
-	Retrieve a resource by its *resourceID* from the CSE. Any valid *parent* resource
-	instance from that CSE must be given as the first parameter to pass on various internal
-	attributes. 
-	The type of the resource is determined during retrieval.
-
-	When successful, this method returns the retrieved resource, or None otherwise.
-	"""
-	if not parent.session or not resourceID or not len(resourceID):
-		return False
-	result = None
-	response = MCA.get(parent.session, resourceID)
-	if response and response.status_code == 200:
-		ty = INT.getTypeFromResponse(response, parent.session.encoding)
-		if parent.session.encoding == CON.Encoding_XML:
-			root = INT.responseToXML(response)
-			result = INT._newResourceFromRID(ty, resourceID, parent)
-			if result:
-				result._parseXML(root)
-		elif parent.session.encoding == CON.Encoding_JSON:
-			jsn = response.json()
-			result = INT._newResourceFromRID(ty, resourceID, parent)
-			if result:
-				result._parseJSON(jsn)
-	return result
-
 
 ###############################################################################
 #

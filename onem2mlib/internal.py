@@ -9,7 +9,6 @@
 
 
 import onem2mlib.constants as CON
-import onem2mlib.utilities as UT
 import onem2mlib.mcarequests
 
 if CON.Support_XML:
@@ -272,10 +271,12 @@ def typeToString(ty):
 
 # Find a sub-resource
 def _findSubResource(resource, type):
+	import onem2mlib.utilities
+
 	if not resource or not resource.session or not resource.resourceID: 
 		return None
 	result = []
-	ris = onem2mlib.mcarequests.discoverInCSE(resource, filter=[UT.newTypeFilterCriteria(int(type))], structuredResult=True)
+	ris = onem2mlib.mcarequests.discoverInCSE(resource, filter=[onem2mlib.utilities.newTypeFilterCriteria(int(type))], structuredResult=True)
 	if ris:
 		#	The following is a hack to restrict the search result to the direct child
 		#	level. Yes, the oneM2M "level" attribute could be used for that, but it

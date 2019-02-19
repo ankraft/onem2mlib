@@ -13,6 +13,7 @@ import onem2mlib.mcarequests as MCA
 import onem2mlib.internal as INT
 import onem2mlib.exceptions as EXC
 import onem2mlib.notifications as NOT
+import onem2mlib.utilities as UT
 
 
 logger = logging.getLogger(__name__)
@@ -245,10 +246,12 @@ class ResourceBase:
 
 		Currently, only *label* and *resoureType* are supported in filters.
 		"""
+		import onem2mlib.utilities
+
 		rids = MCA.discoverInCSE(self, filter=filter, filterOperation=filterOperation)
 		if rids is None:
 			return []
-		return [ retrieveResourceFromCSE(self, id) for id in rids ]
+		return [ UT.retrieveResourceFromCSE(self, id) for id in rids ]
 
 
 	def subscribe(self, callback=None):
