@@ -291,14 +291,16 @@ See also [ROADMAP](ROADMAP.md) for open issues and planned enhancements.
 ### Resources
 The following resource types are supported in this version.
 
-- [&lt;accessControlPolicy>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.AccessControlPolicy)
-- [&lt;AE>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.AE)
-- [&lt;container>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.Container)
-- [&lt;contentInstance>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.ContentInstance)
-- [&lt;CSEBase>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.CSEBase)
-- [&lt;group>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.Group)
-- [&lt;remoteCSE>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.remoteCSE)
-- [&lt;subscription>](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.resources.Subscription)
+- [&lt;accessControlPolicy>](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.AccessControlPolicy)
+- [&lt;AE>](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.AE)
+- [&lt;container>](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.Container)
+- [&lt;contentInstance>](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.ContentInstance)
+- [&lt;CSEBase>](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.CSEBase)
+- [&lt;node>](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.Node)
+- [&lt;group>](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.Group)
+- [&lt;remoteCSE>](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.RemoteCSE)
+- [&lt;subscription>](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html#onem2mlib.Subscription)
+
 
 
 ### Logging
