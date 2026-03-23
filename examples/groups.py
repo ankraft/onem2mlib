@@ -22,7 +22,7 @@ if __name__ == '__main__':
 	session = Session(conf.CSEURL, conf.ORIGINATOR)
 
 	# get the <CSEBase> resource
-	cse = CSEBase(session, conf.CSEID)
+	cse = session.getCSEBase()
 
 	# create an <AE> resource
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
