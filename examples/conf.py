@@ -1,7 +1,7 @@
 import logging
 
-CSEURL = 'http://localhost:8090'
+CSEURL = 'http://localhost:8080'
 CSEID = 'in-cse'
-ORIGINATOR = 'CAdmin' 
+ORIGINATOR = 'admin:admin' 
 
 LOGGINGLEVEL = logging.INFO
