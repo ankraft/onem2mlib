@@ -7,6 +7,7 @@
 - [FIX] Group resource creation fixed.
 - [IMPROVEMENT] Now using logging for debug output.
 - [IMPROVEMENT] Simplified marshalling.
+- [IMPROVEMENT] Add CSEBase to Session Resource. 
 
 ## Version 0.7 (2018-05-13)
 - [IMPROVEMENT] Added support for &lt;remoteCSE> resource type.
