@@ -214,6 +214,7 @@ def _getHeaders(session, type=None):
 	headers = dict()
 	headers['X-M2M-Origin'] = session.originator
 	headers['X-M2M-RI'] = 'xyz'	# TODO
+	headers['X-M2M-RVI'] = '3' # needs to be either passed down or be saved in the session
 	if session.encoding == CON.Encoding_XML:
 		encoding = 'application/xml'
 	else:
@@ -232,12 +233,13 @@ def _getHeaders(session, type=None):
 def _getPath(session, path):
 	# logger.debug('session.address: ' + session.address)
 	# logger.debug('path: ' + path)
-	if path and path[0] == '/':
-		#return session.address + path
-		return session.address+'/~' + path
-	else:
-		#return session.address+'/' + path
-		return session.address+'/~/' + path
+	if not path:
+		return session.address
+	# SP relative path
+	if path.startswith('/'):
+		return f"{session.address}/~{path}"
+	# cse relative path
+	return f"{session.address}/{path}"
 
 def _isValidResource(resource):
 	return	(resource.type == CON.Type_CSEBase and resource.session is not None) or \
