@@ -42,7 +42,16 @@ class AE(ResourceBase):
 		self.appID = appID
 		""" String. The identifier of the Application. Assigned by the application or the CSE. """
 		if not self.appID:
-			self.appID = self.resourceName
+			if self.resourceName is not None:
+				self.appID = self.resourceName
+			else:
+				self.appID = None
+
+		if self.appID:
+			self.appID = 'N' + self.appID
+
+		# For non-registered entities, the appID has to start with an 'N'
+
 
 		self.AEID = AEID
 		""" String. The identifier of the Application Entity. Assigned by the application or the CSE. """
@@ -59,6 +68,9 @@ class AE(ResourceBase):
 		of the node on which the AE represented by this &lt;AE> resource resides.
 		"""
 
+		self.supportedReleaseVersions = ['3']
+		""" List of String. The list of supported release versions. """
+
 		# TODO more attributes
 
 		if instantly:
@@ -74,6 +86,7 @@ class AE(ResourceBase):
 		result += INT.strResource('requestReachability', 'rr', self.requestReachability)
 		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
 		result += INT.strResource('nodeLink', 'nl', self.nodeLink)
+		result += INT.strResource('supportedReleaseVersions', 'srv', self.supportedReleaseVersions)
 		return result
 
 

@@ -166,7 +166,7 @@ class Group(ResourceBase):
 		return self._parseFanOutPointResponse(response)
 
 
-	def createGroupResources(self, resource):
+	def createGroupResources(self, resource, originator=None):
 		"""
 		Create/add a resource at all the resources managed by this &lt;group> resource.
 
@@ -180,7 +180,7 @@ class Group(ResourceBase):
 		else:
 			logger.error('Encoding not supported: ' + str(self.session.encoding))
 			raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
-		response = MCA.create(self.session, self.fanOutPoint, resource.type, body)
+		response = MCA.create(self.session, self.fanOutPoint, resource.type, body, originator=self.originator)
 		return self._parseFanOutPointResponse(response)
 
 
