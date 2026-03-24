@@ -171,7 +171,7 @@ def getNotificationURI():
 _subscriptions = {}
 _subscriptionIDToParentResourceID = {}
 
-def addSubscription(resource, callback=None):
+def addSubscription(resource, callback=None, originator=None):
 	"""
 	Add a subscription to the given resource. This creates a &lt;subscription> resource for
 	that resource.
@@ -184,6 +184,9 @@ def addSubscription(resource, callback=None):
 	- *resource*: Resource to add the resource to.
 	- *callback*: Optional reference to a callback function. This function is called instead of
 	the one provided with the `onem2mlib.notifications.setupNotifications`() function.
+ 
+ 	- *orignator*: when doing a subscription from a different device, you have to specify the 
+		X-Origin in order to be able to post.
 
 	The method returns a Boolean indicating whether the subscription was successfully added.
 	"""
@@ -193,7 +196,7 @@ def addSubscription(resource, callback=None):
 	if resource.type not in _allowedSubscriptionResources:
 		logger.error('Subscription not supported for this resource type: ' + INT.nameAndType(resource))
 		raise EXC.NotSupportedError('Subscription not supported for this resource type: ' + INT.nameAndType(resource))
-	sub = onem2mlib.Subscription(resource, notificationURI=[_notificationURI])
+	sub = onem2mlib.Subscription(resource, notificationURI=[_notificationURI], originator=originator)
 	if not sub:
 		return False
 	_addSubscription(resource, sub, callback)

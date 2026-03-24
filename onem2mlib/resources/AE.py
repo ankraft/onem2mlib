@@ -22,7 +22,7 @@ class AE(ResourceBase):
 	application and the sub-structure of resources beneath it.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, nodeLink=None, labels=[], instantly=True):
+	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, nodeLink=None, labels=[], originator=None, instantly=True):
 		"""
 		Initialize the &lt;AE> resource. 
 
@@ -35,7 +35,7 @@ class AE(ResourceBase):
 		- All other arguments initialize the status variables of the same name in the
 			&lt;AE> instance or `onem2mlib.ResourceBase`.
 		"""
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_AE, CON.Type_AE_SN, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_AE, CON.Type_AE_SN, labels=labels, originator=originator,)
 		self._marshallers = [M._AE_parseXML, M._AE_createXML,
 							 M._AE_parseJSON, M._AE_createJSON]
 
@@ -84,13 +84,13 @@ class AE(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Container)
 
 
-	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[]):
+	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None):
 		"""
 		Add a new container. This is a convenience function that actually creates a new
 		&lt;container> resource in the &lt;AE>. It returns the new
 		*Container* object, or None.
 		"""
-		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels)
+		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels, originator=originator)
 
 
 	# def flexContainers(self):
@@ -114,13 +114,13 @@ class AE(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Group)
 
 
-	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], instantly=True):
+	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], originator=None,  instantly=True):
 		"""
 		Add a new group. This is a convenience function that actually creates a new
 		&lt;group> resource in the &lt;AE>. It returns the new
 		*Group* object, or None.
 		"""
-		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels)
+		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels, originator=originator)
 
 
 	def _copy(self, resource):

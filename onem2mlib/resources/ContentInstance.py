@@ -35,7 +35,7 @@ class ContentInstance(ResourceBase):
 	"""
 
 
-	def __init__(self, parent=None, resourceName=None, content=None, contentInfo=None, resourceID=None, labels = [], instantly=True):
+	def __init__(self, parent=None, resourceName=None, content=None, contentInfo=None, resourceID=None, labels = [], originator=None, instantly=True):
 		"""
 		Initialize the &lt;contentInstance> resource. 
 
@@ -48,7 +48,7 @@ class ContentInstance(ResourceBase):
 		- All other arguments initialize the status variables of the same name in
 			&lt;contentInstance> instance or `onem2mlib.ResourceBase`.
 		"""
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ContentInstance, CON.Type_ContentInstance_SN, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ContentInstance, CON.Type_ContentInstance_SN, labels=labels, originator=originator)
 		self._marshallers = [M._ContentInstance_parseXML, M._ContentInstance_createXML,
 							 M._ContentInstance_parseJSON, M._ContentInstance_createJSON]
 

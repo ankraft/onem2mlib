@@ -24,7 +24,7 @@ class Container(ResourceBase):
 	It is usually a sub-resource of the &lt;AE> or other resources.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], instantly=True):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None, instantly=True):
 		"""
 		Initialize the &lt;container> resource. 
 
@@ -38,7 +38,7 @@ class Container(ResourceBase):
 			&lt;container> instance or `onem2mlib.ResourceBase`.
 		"""	
 
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Container, CON.Type_Container_SN, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Container, CON.Type_Container_SN, labels=labels, originator=originator)
 		self._marshallers = [M._Container_parseXML, M._Container_createXML,
 							 M._Container_parseJSON, M._Container_createJSON]
 
@@ -99,13 +99,13 @@ class Container(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Container)
 
 
-	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[]):
+	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None):
 		"""
 		Add a new container. This is a convenience function that actually creates a new
 		&lt;container> resource in the &lt;container>. It returns the new
 		*Container* object, or None.
 		"""
-		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels)
+		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels, originator=originator)
 
 
 	def contentInstances(self):
@@ -122,7 +122,7 @@ class Container(ResourceBase):
 		return [cin.content for cin in self.contentInstances()]
 
 
-	def addContent(self, value, labels=[]):
+	def addContent(self, value, labels=[], originator=None):
 		"""
 		Add a new value to a container. The value is automatically converted to its string
 		representation.
@@ -134,7 +134,7 @@ class Container(ResourceBase):
  
 		if not isinstance(value, str):
 			value = str(value)
-		return ContentInstance(self, content=value, labels=labels)
+		return ContentInstance(self, content=value, labels=labels, originator=originator)
 
 
 	def latestContentInstance(self):

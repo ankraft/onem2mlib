@@ -71,7 +71,7 @@ def newTypeFilterCriteria(type):
 #	Retrieval functions
 #
 
-def retrieveResourceFromCSE(parent, resourceID):
+def retrieveResourceFromCSE(parent, resourceID, originator=None):
 	"""
 	Retrieve a resource by its *resourceID* from the CSE. Any valid *parent* resource
 	instance from that CSE must be given as the first parameter to pass on various internal
@@ -86,7 +86,7 @@ def retrieveResourceFromCSE(parent, resourceID):
 	if not parent.session or not resourceID or not len(resourceID):
 		return False
 	result = None
-	response = onem2mlib.mcarequests.get(parent.session, resourceID)
+	response = onem2mlib.mcarequests.get(parent.session, resourceID, originator=originator)
 	if response and response.status_code == 200:
 		ty = onem2mlib.internal.getTypeFromResponse(response, parent.session.encoding)
 		if parent.session.encoding == CON.Encoding_XML:
