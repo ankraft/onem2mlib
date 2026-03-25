@@ -25,114 +25,262 @@ logger = logging.getLogger(__name__)
 #
 
 # retrieve a resource either through its resourceID or resourceName
-def retrieveFromCSE(resource):
-	global lastError
-	lastError = ''
+def retrieveFromCSE(resource, originator=None):
+    global lastError
+    lastError = ''
 
-	logger.debug('Retrieve resource: ' + str(resource))
-	if not _isValidResource(resource):
-		logger.error('Invalid resource')
-		lastError = 'Invalid resource'
-		return False
-	if resource.resourceName:
-		response = get(resource.session, resource._structuredResourceID())
-	else:
-		response = get(resource.session, resource.resourceID)
-	if response and response.status_code == 200:
-		resource._parseResponse(response)
-		return True
-	if response:
-		lastError = str(response.status_code) + ' - ' + response.text
-		logger.error('Retrieve: ' + str(response.status_code) + ' - ' + response.text)
-	return False
+    if not _isValidResource(resource):
+        lastError = 'Invalid resource'
+        logger.error(lastError)
+        return False
+
+    # Define the order of IDs we want to try
+    # Logic: If we have an RI, try it first (more stable). 
+    # Otherwise, use Structured ID.
+    ids_to_try = []
+    if resource.resourceID:
+        ids_to_try.append(("unstructured", resource._unstructuredResourceID()))
+    
+    # Always add structured as a candidate if name is known
+    if resource.resourceName:
+        ids_to_try.append(("structured", resource._structuredResourceID()))
+
+    for id_type, target_id in ids_to_try:
+        try:
+            logger.debug(f'Attempting retrieval via {id_type} ID: {target_id}')
+            response = get(resource.session, target_id, originator=originator)
+            
+            if response is not None:
+                if response.status_code == 200:
+                    resource._parseResponse(response)
+                    return True
+                
+                # If 404, we don't return yet; we try the next ID in the list
+                if response.status_code == 404:
+                    lastError = f"404 - Not Found ({target_id})"
+                    continue 
+                
+                # If it's a different error (403, 500, etc.), stop and fail
+                lastError = f"{response.status_code} - {response.text}"
+                logger.error(f'Retrieve failed: {lastError}')
+                return False
+
+        except Exception as e:
+            lastError = f"Request failed for {target_id}: {e}"
+            logger.debug(lastError)
+            continue
+
+    # If we are here, all attempts failed
+    logger.error(f'All retrieval attempts failed. Last error: {lastError}')
+    return False
 
 
 def createInCSE(resource, type):
-	global lastError
-	lastError = ''
+    global lastError
+    lastError = ''
 
-	logger.debug('Create resource: ' + str(resource))
-	if not _isValidResource(resource):
-		logger.error('Invalid resource')
-		lastError = 'Invalid resource'
-		return False
-	content = resource._createContent(False)
-	response =  create(resource.session, resource.parent.resourceID, type, content)
-	#response =  create(resource.session, resource.parent.resourceName, type, content)
-	if response and response.status_code == 201:
-		resource._parseResponse(response)	# update own fields with response
-		return True
-	if response:
-		lastError = str(response.status_code) + ' - ' + response.text
-		logger.error('Create: ' + str(response.status_code) + ' - ' + response.text)
-	return False
+    logger.debug('Create resource: ' + str(resource))
+    if not _isValidResource(resource) or not resource.parent:
+        lastError = 'Invalid resource or missing parent'
+        logger.error(lastError)
+        return False
 
+    content = resource._createContent(False)
+    
+    # Collect potential parent IDs to try
+    parent_targets = []
+    if resource.parent.resourceID:
+        parent_targets.append(('unstructured', resource.parent._unstructuredResourceID()))
+    if resource.parent.resourceName:
+        parent_targets.append(('structured', resource.parent._structuredResourceID()))
+
+    for id_type, target_id in parent_targets:
+        try:
+            logger.debug(f'Attempting CREATE under parent ({id_type}): {target_id}')
+            response = create(resource.session, target_id, type, content)
+            
+            if response is not None:
+                if response.status_code == 201:
+                    resource._parseResponse(response)
+                    return True
+                
+                # If parent not found on this ID, try the next one
+                if response.status_code == 404:
+                    lastError = f"404 - Parent Not Found ({target_id})"
+                    continue
+                
+                # Critical error (e.g. 403, 409) - Fail immediately
+                lastError = f"{response.status_code} - {response.text}"
+                logger.error(f'Create failed: {lastError}')
+                return False
+        except Exception as e:
+            lastError = f"Create request failed: {e}"
+            continue
+
+    return False
 
 def deleteFromCSE(resource):
-	global lastError
-	lastError = ''
+    global lastError
+    lastError = ''
 
-	logger.debug('Delete resource: ' + str(resource))
-	if not _isValidResource(resource) or not resource.resourceID :
-		logger.error('Invalid resource')
-		lastError = 'Invalid resource'
-		return False
-	response = delete(resource.session, resource.resourceID)
-	if response and response.status_code == 200:
-		return True
-	if response:
-		lastError = str(response.status_code) + ' - ' + response.text
-		logger.error('Delete: ' + str(response.status_code))
-	return False
+    logger.debug('Delete resource: ' + str(resource))
+    if not _isValidResource(resource):
+        lastError = 'Invalid resource'
+        logger.error(lastError)
+        return False
 
+    targets = []
+    if resource.resourceID:
+        targets.append(('unstructured', resource._unstructuredResourceID()))
+    if resource.resourceName:
+        targets.append(('structured', resource._structuredResourceID()))
+
+    for id_type, target_id in targets:
+        try:
+            logger.debug(f'Attempting DELETE via {id_type} ID: {target_id}')
+            response = delete(resource.session, target_id)
+            
+            if response is not None:
+                if response.status_code == 200:
+                    return True
+                
+                if response.status_code == 404:
+                    lastError = f"404 - Not Found ({target_id})"
+                    continue
+                
+                lastError = f"{response.status_code} - {response.text}"
+                logger.error(f'Delete failed: {lastError}')
+                return False
+        except Exception as e:
+            lastError = f"Delete request failed: {e}"
+            continue
+
+    return False
 
 def updateInCSE(resource, type):
-	global lastError
-	lastError = ''
+    global lastError
+    lastError = ''
 
-	logger.debug('Update resource: ' + str(resource))
-	if not _isValidResource(resource):
-		lastError = 'Invalid resource'
-		return False
-	content = resource._createContent(True)
-	response = update(resource.session, resource.resourceID, type, content)
-	if response and response.status_code == 200:
-		resource._parseResponse(response)	# update own fields with response
-		return True
-	if response:
-		lastError = str(response.status_code) + ' - ' + response.text
-		logger.error('Update: ' + str(response.status_code))
-	return False
+    logger.debug('Update resource: ' + str(resource))
+    if not _isValidResource(resource):
+        lastError = 'Invalid resource'
+        logger.error(lastError)
+        return False
+
+    content = resource._createContent(True)
+    
+    targets = []
+    if resource.resourceID:
+        targets.append(('unstructured', resource._unstructuredResourceID()))
+    if resource.resourceName:
+        targets.append(('structured', resource._structuredResourceID()))
+
+    for id_type, target_id in targets:
+        try:
+            logger.debug(f'Attempting UPDATE via {id_type} ID: {target_id}')
+            response = update(resource.session, target_id, type, content)
+            
+            if response is not None:
+                if response.status_code == 200:
+                    resource._parseResponse(response)
+                    return True
+                
+                if response.status_code == 404:
+                    lastError = f"404 - Not Found ({target_id})"
+                    continue
+                
+                lastError = f"{response.status_code} - {response.text}"
+                logger.error(f'Update failed: {lastError}')
+                return False
+        except Exception as e:
+            lastError = f"Update request failed: {e}"
+            continue
+
+    return False
 
 
 # Find resources under a resource in the CSE
 def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=False):
-	global lastError
-	lastError = ''
+    global lastError
+    lastError = ''
 
-	path = resource.resourceID + '?fu=1&drt='+str(1 if structuredResult else 2)
-	if filter and isinstance(filter, list):						# Construct the filter parameters
-		for key,val in filter:
-			path += '&' + key + '=' + val
-	if filterOperation and isinstance(filterOperation, int):	# Add filter operation
-		path += '&fo=' + str(filterOperation)
-	#print(path)
-	response = get(resource.session, path)
-	if response and response.status_code == 200:
-		#print(response.text)
-		if resource.session.encoding == CON.Encoding_XML:
-			return onem2mlib.internal.getElement(onem2mlib.internal.responseToXML(response), 'm2m:uril', default=[])	# setting default because: Make sure that the result is a list
-		elif resource.session.encoding == CON.Encoding_JSON:
-			return onem2mlib.internal.getElementJSON(response.json(), 'm2m:uril', default=[])
-		logger.error('Encoding not supported: ' + str(self.session.encoding))
-		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
+    logger.debug('Discovery on resource: ' + str(resource))
+    if not _isValidResource(resource):
+        lastError = 'Invalid resource'
+        logger.error(lastError)
+        return None
 
-	if response:
-		lastError = str(response.status_code) + ' - ' + response.text
-	else:
-		logger.critical('Response from CSE must not be None.')
-		raise EXC.CSEOperationError('Response from CSE must not be None.')
-	return None
+    # 1. Build the query parameter string
+    # fu=1 is discovery, drt defines the result format (1=structured, 2=unstructured)
+    query_params = '?fu=1&drt=' + str(1 if structuredResult else 2)
+    
+    if filter and isinstance(filter, list):
+        for key, val in filter:
+            query_params += '&' + key + '=' + val
+            
+    if filterOperation and isinstance(filterOperation, int):
+        query_params += '&fo=' + str(filterOperation)
+
+    # 2. Define the target IDs to try
+    targets = []
+    if resource.resourceID:
+        targets.append(('unstructured', resource._unstructuredResourceID()))
+    if resource.resourceName:
+        targets.append(('structured', resource._structuredResourceID()))
+
+    # 3. Iterate through targets with fallback logic
+    for id_type, base_path in targets:
+        full_path = base_path + query_params
+        try:
+            logger.debug(f'Attempting DISCOVERY via {id_type} ID: {full_path}')
+            response = get(resource.session, full_path)
+            
+            if response is not None:
+                if response.status_code == 200:
+                    # Success: Parse the URI List (m2m:uril)
+                    if resource.session.encoding == CON.Encoding_XML:
+                        return onem2mlib.internal.getElement(
+                            onem2mlib.internal.responseToXML(response), 
+                            'm2m:uril', 
+                            default=[]
+                        )
+                    elif resource.session.encoding == CON.Encoding_JSON:
+                        return onem2mlib.internal.getElementJSON(
+                            response.json(), 
+                            'm2m:uril', 
+                            default=[]
+                        )
+                    else:
+                        msg = 'Encoding not supported: ' + str(resource.session.encoding)
+                        logger.error(msg)
+                        raise EXC.NotSupportedError(msg)
+
+                # If 404, the resource wasn't found at this ID; try the next target
+                if response.status_code == 404:
+                    lastError = f"404 - Not Found ({base_path})"
+                    continue
+                
+                # If any other error (403, 400, etc.), stop and report it
+                lastError = str(response.status_code) + ' - ' + response.text
+                logger.error('Discovery failed: ' + lastError)
+                return None
+
+        except Exception as e:
+            lastError = f"Discovery request failed for {id_type}: {e}"
+            logger.debug(lastError)
+            continue
+
+    # 4. Final error handling if all attempts fail
+    if not lastError:
+        lastError = 'No valid IDs available for discovery'
+        
+    # If the response was None (network failure) and we haven't returned yet
+    # we raise an exception as per the original logic's critical error handling
+    if targets and lastError.startswith('Discovery request failed'):
+        logger.critical('Response from CSE must not be None.')
+        raise EXC.CSEOperationError('Response from CSE must not be None.')
+        
+    return None
 
 
 ###############################################################################
