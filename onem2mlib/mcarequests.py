@@ -282,6 +282,53 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
         
     return None
 
+def retrieveResourceByID(parent, targetID):
+    """
+	Retrieve a resource by its *resourceID* from the CSE. Any valid *parent* resource
+	instance from that CSE must be given as the first parameter to pass on various internal
+	attributes. 
+	The type of the resource is determined during retrieval.
+
+	When successful, this method returns the retrieved resource, or None otherwise.
+	"""
+    global lastError
+    lastError = ''
+
+    if not parent.session or not targetID:
+        lastError = 'Invalid parent session or target ID'
+        return None
+
+    logger.debug(f'Retrieving new resource object via ID: {targetID}')
+    
+    # Perform the GET request
+    response = get(parent.session, targetID)
+    
+    if response and response.status_code == 200:
+        import onem2mlib.internal as INT # Local import to avoid circular dependency
+        
+        # Determine the type to create the correct Python class instance
+        ty = INT.getTypeFromResponse(response, parent.session.encoding)
+        resource = INT._newResourceFromRID(ty, targetID, parent)
+        
+        if resource:
+            # Populate the object with the server data
+            if parent.session.encoding == CON.Encoding_XML:
+                root = INT.responseToXML(response)
+                resource._parseXML(root)
+            elif parent.session.encoding == CON.Encoding_JSON:
+                jsn = response.json()
+                resource._parseJSON(jsn)
+            return resource
+        else:
+            lastError = f'Could not instantiate resource type: {ty}'
+            logger.error(lastError)
+    
+    if response:
+        lastError = f'{response.status_code} - {response.text}'
+        logger.error(f'RetrieveByID failed: {lastError}')
+    
+    return None
+
 
 ###############################################################################
 
@@ -380,12 +427,16 @@ def _getHeaders(session, type=None):
 def _getPath(session, path):
 	# logger.debug('session.address: ' + session.address)
 	# logger.debug('path: ' + path)
-	if path and path[0] == '/':
-		#return session.address + path
-		return session.address+'/~' + path
-	else:
-		#return session.address+'/' + path
-		return session.address+'/~/' + path
+	if not path:
+		return session.address
+
+	if path.startswith('//'):
+		return f"{session.address}/_/{path[2:]}"
+
+	if path.startswith('/'):
+		return f"{session.address}/~{path}"
+
+	return f"{session.address}/{path}"
 
 def _isValidResource(resource):
 	return	(resource.type == CON.Type_CSEBase and resource.session is not None) or \

@@ -13,7 +13,6 @@ import onem2mlib.mcarequests as MCA
 import onem2mlib.internal as INT
 import onem2mlib.exceptions as EXC
 import onem2mlib.notifications as NOT
-import onem2mlib.utilities as UT
 
 
 logger = logging.getLogger(__name__)
@@ -230,28 +229,36 @@ class ResourceBase:
 
 	def discover(self, filter, filterOperation=CON.Dsc_AND):
 		"""
-		Discover a rsource on the CSE, starting with the resource as a root for
-		discovery.
+			Discover a rsource on the CSE, starting with the resource as a root for
+			discovery.
 
-		Args:
+			Args:
 
-		- *filter*: A list of *filterCriteria*. These critera can be constructed using the
-		*onem2mlib.utilties.new...FilterCriteria* functions.
-		- *filterOperation*. A boolean value that Indicates the logical operation (AND/OR) 
-		to be used for different condition tags. The default value is logical AND.
+			- *filter*: A list of *filterCriteria*. These critera can be constructed using the
+			*onem2mlib.utilties.new...FilterCriteria* functions.
+			- *filterOperation*. A boolean value that Indicates the logical operation (AND/OR) 
+			to be used for different condition tags. The default value is logical AND.
 
-		The method returns a list of found resources, or an empty list.
+			The method returns a list of found resources, or an empty list.
 
-		**Note**
+			**Note**
 
-		Currently, only *label* and *resoureType* are supported in filters.
-		"""
-		import onem2mlib.utilities
+			Currently, only *label* and *resoureType* are supported in filters.
+			"""
 
+		# 1. Get the list of IDs (URIs) from the CSE
 		rids = MCA.discoverInCSE(self, filter=filter, filterOperation=filterOperation)
 		if rids is None:
 			return []
-		return [ UT.retrieveResourceFromCSE(self, id) for id in rids ]
+
+		# 2. Convert each ID string into a real Python Resource object
+		results = []
+		for rid in rids:
+			res = MCA.retrieveResourceByID(self, rid)
+			if res:
+				results.append(res)
+		
+		return results
 
 
 	def subscribe(self, callback=None):
