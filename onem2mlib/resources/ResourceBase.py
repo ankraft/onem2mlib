@@ -395,14 +395,57 @@ class ResourceBase:
 
 
 
-	# Recursivly construct a structured resourceName
+	def _prefixResourceIDAbsolute(self) -> str:
+		# returns absolute prefix or None
+		if self.cseID:
+			return f"//{self.cseID.lstrip('/')}"
+		return None
+
+	def _prefixResourceIDSPRelative(self) -> str:
+		# returns SP relative prefix or None
+		if self.resourceID:
+			return f"/{self.resourceID.lstrip('/')}"
+		return None
+
+	def _prefixResourceIDCSERelative(self) -> str:
+		# returns CSE relative path (empty string)
+		return ''
+
+	def _unstructuredResourceID(self):
+		root = self
+		while hasattr(root, 'parent') and root.parent is not None:
+			root = root.parent
+		
+		# Determine base prefix based on root type
+		if root.type == CON.Type_RemoteCSE:
+			base = root._prefixResourceIDAbsolute()
+		elif root.type == CON.Type_CSEBase:
+			base = root._prefixResourceIDSPRelative()
+			if base is None:
+				base = root._prefixResourceIDCSERelative()
+		else:
+			base = ''
+			
+		prefix = (base or '').rstrip('/')
+		ri = self.resourceID.lstrip('/')
+		return f"{prefix}/{ri}"
+
+	# Recursively construct a structured resourceName
 	def _structuredResourceID(self):
 		logger.debug('ResourceID: ' + str(self.resourceID))
-		if self.type == CON.Type_CSEBase:		# CSEBase means end of recursion
-			if self.resourceID.startswith('/'):	# special handling for CSE ID's that start with a /
-				return self.resourceID + '/' + self.resourceName
-			return '/' + self.resourceID + '/' + self.resourceName
-			#return '/'  + self.resourceName
+		
+		# Handle RemoteCSE case
+		if self.type == CON.Type_RemoteCSE:
+			prefix = self._prefixResourceIDAbsolute()
+			return (prefix if prefix is not None else '') + '/' + self.resourceName
+			
+		# Handle CSEBase case
+		if self.type == CON.Type_CSEBase:
+			prefix = self._prefixResourceIDSPRelative()
+			if prefix is None:
+				prefix = self._prefixResourceIDCSERelative()
+			return prefix + '/' + self.resourceName
+			
 		return self.parent._structuredResourceID() + '/' + self.resourceName
 
 
