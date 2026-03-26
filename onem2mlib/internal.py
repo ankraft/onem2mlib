@@ -96,7 +96,7 @@ if CON.Support_XML:
 			if isinstance(content, list):
 				elem.text = ' '.join(content)
 			else:
-			 	elem.text = str(content)
+				elem.text = str(content)
 			root.append(elem)
 			return elem
 		return None
@@ -270,13 +270,13 @@ def typeToString(ty):
 #
 
 # Find a sub-resource
-def _findSubResource(resource, type):
+def _findSubResource(resource, type, originator=None):
 	import onem2mlib.utilities
 
 	if not resource or not resource.session or not resource.resourceID: 
 		return None
 	result = []
-	ris = onem2mlib.mcarequests.discoverInCSE(resource, filter=[onem2mlib.utilities.newTypeFilterCriteria(int(type))], structuredResult=True)
+	ris = onem2mlib.mcarequests.discoverInCSE(resource, filter=[onem2mlib.utilities.newTypeFilterCriteria(int(type))], structuredResult=True, originator=originator)
 	if ris:
 		#	The following is a hack to restrict the search result to the direct child
 		#	level. Yes, the oneM2M "level" attribute could be used for that, but it

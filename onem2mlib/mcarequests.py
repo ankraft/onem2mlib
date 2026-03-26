@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 #
 
 # retrieve a resource either through its resourceID or resourceName
-def retrieveFromCSE(resource):
+def retrieveFromCSE(resource, originator=None):
 	global lastError
 	lastError = ''
 
@@ -35,7 +35,7 @@ def retrieveFromCSE(resource):
 		lastError = 'Invalid resource'
 		return False
 	if resource.resourceName:
-		response = get(resource.session, resource._structuredResourceID())
+		response = get(resource.session, resource._structuredResourceID(), originator=originator)
 	else:
 		response = get(resource.session, resource.resourceID)
 	if response and response.status_code == 200:
@@ -47,7 +47,7 @@ def retrieveFromCSE(resource):
 	return False
 
 
-def createInCSE(resource, type):
+def createInCSE(resource, type, originator=None):
 	global lastError
 	lastError = ''
 
@@ -57,7 +57,7 @@ def createInCSE(resource, type):
 		lastError = 'Invalid resource'
 		return False
 	content = resource._createContent(False)
-	response =  create(resource.session, resource.parent.resourceID, type, content)
+	response =  create(resource.session, resource.parent.resourceID, type, content, originator=originator)
 	#response =  create(resource.session, resource.parent.resourceName, type, content)
 	if response and response.status_code == 201:
 		resource._parseResponse(response)	# update own fields with response
@@ -68,7 +68,7 @@ def createInCSE(resource, type):
 	return False
 
 
-def deleteFromCSE(resource):
+def deleteFromCSE(resource, originator=None):
 	global lastError
 	lastError = ''
 
@@ -77,7 +77,7 @@ def deleteFromCSE(resource):
 		logger.error('Invalid resource')
 		lastError = 'Invalid resource'
 		return False
-	response = delete(resource.session, resource.resourceID)
+	response = delete(resource.session, resource.resourceID, originator=originator)
 	if response and response.status_code == 200:
 		return True
 	if response:
@@ -86,7 +86,7 @@ def deleteFromCSE(resource):
 	return False
 
 
-def updateInCSE(resource, type):
+def updateInCSE(resource, type, originator=None):
 	global lastError
 	lastError = ''
 
@@ -106,7 +106,7 @@ def updateInCSE(resource, type):
 
 
 # Find resources under a resource in the CSE
-def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=False):
+def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=False, originator=None):
 	global lastError
 	lastError = ''
 
@@ -117,7 +117,7 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
 	if filterOperation and isinstance(filterOperation, int):	# Add filter operation
 		path += '&fo=' + str(filterOperation)
 	#print(path)
-	response = get(resource.session, path)
+	response = get(resource.session, path, originator=originator)
 	if response and response.status_code == 200:
 		#print(response.text)
 		if resource.session.encoding == CON.Encoding_XML:
@@ -143,10 +143,10 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
 
 
 # Get a resource from the CSE
-def get(session, path):
+def get(session, path, originator=None):
 	try:
 		realPath = _getPath(session, path)
-		headers = _getHeaders(session)
+		headers = _getHeaders(session, originator=originator)
 		_logRequest(realPath, headers)
 		return _logResponse(requests.get(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
@@ -154,10 +154,10 @@ def get(session, path):
 		return None
 
 # Delete an existing resource on the CSE
-def delete(session, path):
+def delete(session, path, originator=None):
 	try:
 		realPath = _getPath(session, path)
-		headers = _getHeaders(session)
+		headers = _getHeaders(session, originator=originator)
 		_logRequest(realPath, headers, 'DELETE')
 		return _logResponse(requests.delete(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
@@ -165,10 +165,10 @@ def delete(session, path):
 		return None
 
 # Create a new resource on the CSE
-def create(session, path, type, body):
+def create(session, path, type, body, originator=None):
 	try:
 		realPath = _getPath(session, path)
-		headers = _getHeaders(session, type)
+		headers = _getHeaders(session, type, originator=originator)
 		_logRequest(realPath, headers, 'POST', body)
 		return _logResponse(requests.post(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
@@ -176,10 +176,10 @@ def create(session, path, type, body):
 		return None
 
 # Update an existing resource on the CSE
-def update(session, path, type, body):
+def update(session, path, type, body, originator=None):
 	try:
 		realPath = _getPath(session, path)
-		headers = _getHeaders(session)
+		headers = _getHeaders(session, originator=originator)
 		_logRequest(realPath, headers, 'PUT', body)
 		return _logResponse(requests.put(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
@@ -210,10 +210,11 @@ def _logResponse(response):
 #	Internal helpers
 #
 
-def _getHeaders(session, type=None):
+def _getHeaders(session, type=None, originator=None):
 	headers = dict()
-	headers['X-M2M-Origin'] = session.originator
+	headers['X-M2M-Origin'] = originator if originator is not None else session.originator
 	headers['X-M2M-RI'] = 'xyz'	# TODO
+	headers['X-M2M-RVI'] = '3' # needs to be either passed down or be saved in the session
 	if session.encoding == CON.Encoding_XML:
 		encoding = 'application/xml'
 	else:
@@ -232,12 +233,13 @@ def _getHeaders(session, type=None):
 def _getPath(session, path):
 	# logger.debug('session.address: ' + session.address)
 	# logger.debug('path: ' + path)
-	if path and path[0] == '/':
-		#return session.address + path
-		return session.address+'/~' + path
-	else:
-		#return session.address+'/' + path
-		return session.address+'/~/' + path
+	if not path:
+		return session.address
+	# SP relative path
+	if path.startswith('/'):
+		return f"{session.address}/~{path}"
+	# cse relative path
+	return f"{session.address}/{path}"
 
 def _isValidResource(resource):
 	return	(resource.type == CON.Type_CSEBase and resource.session is not None) or \
