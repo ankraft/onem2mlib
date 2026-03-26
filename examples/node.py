@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	session = Session(conf.CSEURL, conf.ORIGINATOR)
 
 	# Get the <CSEBase> resource
-	cse = CSEBase(session, conf.CSEID)
+	cse = session.getCSEBase()
 	print(cse)
 
 	# Create a Node
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
 	# Create an AE
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName)
+	ae = AE(cse, resourceName=aeName, originator='C'+aeName)
 	ae.nodeLink = node.resourceID
 	ae.updateInCSE()
 	print(ae)

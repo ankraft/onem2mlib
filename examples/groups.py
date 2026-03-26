@@ -22,11 +22,11 @@ if __name__ == '__main__':
 	session = Session(conf.CSEURL, conf.ORIGINATOR)
 
 	# get the <CSEBase> resource
-	cse = CSEBase(session, conf.CSEID)
+	cse = session.getCSEBase()
 
 	# create an <AE> resource
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName)
+	ae = AE(cse, resourceName=aeName, originator='C' + aeName)
 
 	# create two <container>'s' and add them to the <AE>
 	cnt1 = Container(ae, resourceName='container1')

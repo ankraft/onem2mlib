@@ -24,7 +24,7 @@ class FlexContainer(ResourceBase):
 	"""
 
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, namespace=None, resourceSpecialization=None, contentDefinition=None, attributes=None, labels = [], instantly=True):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, namespace=None, resourceSpecialization=None, contentDefinition=None, attributes=None, labels = [], originator=None, instantly=True):
 		"""
 		Initialize the &lt;flexContainer> resource. 
 
@@ -42,7 +42,7 @@ class FlexContainer(ResourceBase):
 		TODO docu
 		"""
 	
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_FlexContainer, resourceSpecialization, labels=labels, namespace=namespace)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_FlexContainer, resourceSpecialization, labels=labels, originator=originator, namespace=namespace)
 		self._marshallers = [M._FlexContainer_parseXML, M._FlexContainer_createXML,
 							 M._FlexContainer_parseJSON, M._FlexContainer_createJSON]
 

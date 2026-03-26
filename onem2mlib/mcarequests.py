@@ -338,10 +338,10 @@ def retrieveResourceByID(parent, targetID):
 
 
 # Get a resource from the CSE
-def get(session, path):
+def get(session, path, originator=None):
 	try:
 		realPath = _getPath(session, path)
-		headers = _getHeaders(session)
+		headers = _getHeaders(session, originator=originator)
 		_logRequest(realPath, headers)
 		return _logResponse(requests.get(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
@@ -349,10 +349,10 @@ def get(session, path):
 		return None
 
 # Delete an existing resource on the CSE
-def delete(session, path):
+def delete(session, path, originator=None):
 	try:
 		realPath = _getPath(session, path)
-		headers = _getHeaders(session)
+		headers = _getHeaders(session, originator=originator)
 		_logRequest(realPath, headers, 'DELETE')
 		return _logResponse(requests.delete(realPath, headers=headers, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
@@ -360,10 +360,10 @@ def delete(session, path):
 		return None
 
 # Create a new resource on the CSE
-def create(session, path, type, body):
+def create(session, path, type, body, originator=None):
 	try:
 		realPath = _getPath(session, path)
-		headers = _getHeaders(session, type)
+		headers = _getHeaders(session, type, originator=originator)
 		_logRequest(realPath, headers, 'POST', body)
 		return _logResponse(requests.post(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
@@ -371,10 +371,10 @@ def create(session, path, type, body):
 		return None
 
 # Update an existing resource on the CSE
-def update(session, path, type, body):
+def update(session, path, type, body, originator=None):
 	try:
 		realPath = _getPath(session, path)
-		headers = _getHeaders(session)
+		headers = _getHeaders(session, originator=originator)
 		_logRequest(realPath, headers, 'PUT', body)
 		return _logResponse(requests.put(realPath, headers=headers, data=body, timeout=CON.NETWORK_REQUEST_TIMEOUT))
 	except Exception as e:
@@ -405,10 +405,11 @@ def _logResponse(response):
 #	Internal helpers
 #
 
-def _getHeaders(session, type=None):
+def _getHeaders(session, type=None, originator=None):
 	headers = dict()
-	headers['X-M2M-Origin'] = session.originator
+	headers['X-M2M-Origin'] = originator if originator is not None else session.originator
 	headers['X-M2M-RI'] = 'xyz'	# TODO
+	headers['X-M2M-RVI'] = '3' # needs to be either passed down or be saved in the session
 	if session.encoding == CON.Encoding_XML:
 		encoding = 'application/xml'
 	else:

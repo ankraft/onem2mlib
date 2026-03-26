@@ -25,7 +25,7 @@ class Group(ResourceBase):
 	the group and the &lt;fanOutPoint> virtual resource that enables generic operations to be applied 
 	to all the resources represented by those members.
 	"""
-	def __init__(self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], instantly=True):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], originator=None, instantly=True):
 		"""
 		Initialize the &lt;group> resource. 
 
@@ -38,7 +38,7 @@ class Group(ResourceBase):
 		- All other arguments initialize the status variables of the same name in
 			&lt;group> instance or `onem2mlib.ResourceBase`.
 		"""		
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Group, CON.Type_Group_SN, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Group, CON.Type_Group_SN, labels=labels, originator=originator)
 		self._marshallers = [M._Group_parseXML, M._Group_createXML,
 							 M._Group_parseJSON, M._Group_createJSON]
 
@@ -123,7 +123,7 @@ class Group(ResourceBase):
 		the resources, or *None*.
 		"""
 		if not self._isValidFanOutPoint: return None
-		response = MCA.get(self.session, self.fanOutPoint)
+		response = MCA.get(self.session, self.fanOutPoint, originator=self.originator)
 		return self._parseFanOutPointResponse(response)
 
 
@@ -166,7 +166,7 @@ class Group(ResourceBase):
 		return self._parseFanOutPointResponse(response)
 
 
-	def createGroupResources(self, resource):
+	def createGroupResources(self, resource, originator=None):
 		"""
 		Create/add a resource at all the resources managed by this &lt;group> resource.
 
@@ -180,7 +180,7 @@ class Group(ResourceBase):
 		else:
 			logger.error('Encoding not supported: ' + str(self.session.encoding))
 			raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
-		response = MCA.create(self.session, self.fanOutPoint, resource.type, body)
+		response = MCA.create(self.session, self.fanOutPoint, resource.type, body, originator=self.originator)
 		return self._parseFanOutPointResponse(response)
 
 

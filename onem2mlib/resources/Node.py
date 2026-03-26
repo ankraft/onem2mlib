@@ -23,7 +23,7 @@ class Node(ResourceBase):
 	It is used represent nodes, or devices.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, nodeID=None, mgmtClientAddress=None, labels = [], instantly=True):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, nodeID=None, mgmtClientAddress=None, labels = [], originator=None, instantly=True):
 		"""
 		Initialize the &lt;node> resource. 
 
@@ -37,7 +37,7 @@ class Node(ResourceBase):
 			&lt;subscription> instance or `onem2mlib.ResourceBase`.
 		"""
 	
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Node, CON.Type_Node_SN, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Node, CON.Type_Node_SN, labels=labels, originator=originator)
 		self._marshallers = [M._Node_parseXML, M._Node_createXML,
 							 M._Node_parseJSON, M._Node_createJSON]
 

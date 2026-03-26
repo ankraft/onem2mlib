@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	session = Session(conf.CSEURL, conf.ORIGINATOR)
 
 	# Get the <CSEBase> resource
-	cse = CSEBase(session, conf.CSEID)
+	cse = session.getCSEBase()
 	print(cse)
 
 	#
@@ -30,14 +30,14 @@ if __name__ == '__main__':
 	# is created or, if it already exsists, the existing resource is returned.
 	#
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName)	# create or retrieve
+	ae = AE(cse, resourceName=aeName, originator='C' + aeName)	# create or retrieve
 	print(ae)	# This should be the same <AE> as before
 
 	#
 	# Create an <AE> with the convenient method and print it.
 	#
 	aeName2 = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae2 = cse.addAE(aeName2)
+	ae2 = cse.addAE(aeName2, originator='C' + aeName2)
 	print(ae2)
 
 

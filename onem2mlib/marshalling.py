@@ -262,6 +262,7 @@ def _AE_createXML(obj, isUpdate=False):
 	INT.addToElement(root, 'rr', obj.requestReachability)
 	INT.addToElement(root, 'poa', obj.pointOfAccess)
 	INT.addToElement(root, 'nl', obj.nodeLink)
+	INT.addToElement(root, 'srv', obj.supportedReleaseVersions)
 	return root
 
 
@@ -283,6 +284,7 @@ def _AE_createJSON(obj, isUpdate=False):
 	INT.addToElementJSON(jsn, 'rr', obj.requestReachability)
 	INT.addToElementJSON(jsn, 'poa', obj.pointOfAccess)
 	INT.addToElementJSON(jsn, 'nl', obj.nodeLink)
+	INT.addToElementJSON(jsn, 'srv', obj.supportedReleaseVersions)
 	return INT.wrapJSON(obj, jsn)
 
 

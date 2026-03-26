@@ -23,7 +23,7 @@ class CSEBase(ResourceBase):
 	CSE immediatly.
 	"""
 
-	def __init__(self, session=None, cseID=None, resourceName=None, instantly=True):
+	def __init__(self, session=None, cseID=None, resourceName=None, originator = None, instantly=True):
 		"""
 		Initialize a CSEBase object.
 
@@ -35,7 +35,7 @@ class CSEBase(ResourceBase):
 		Internally, the *cseID* is assigned to the `onem2mlib.ResourceBase.resourceID` attribute, and the *csename* is handled
 		by the *resourceName*. 
 		"""
-		ResourceBase.__init__(self, None, resourceName, cseID, CON.Type_CSEBase, CON.Type_CSEBase_SN)
+		ResourceBase.__init__(self, None, resourceName, cseID, CON.Type_CSEBase, CON.Type_CSEBase_SN, originator=originator)
 
 		self.session = session # Must assign session manually.
 		self._marshallers = [M._CSEBase_parseXML, None, M._CSEBase_parseJSON, None]
@@ -80,13 +80,13 @@ class CSEBase(ResourceBase):
 		return INT._findSubResource(self, CON.Type_AE)
 
 
-	def addAE(self, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[]):
+	def addAE(self, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[], originator=None):
 		"""
 		Add a new AE. This is a convenience function that actually creates a new
 		&lt;AE> resource in the &lt;CSEBase>. It returns the new
 		*AE* object, or None.
 		"""
-		return AE(self, resourceName, appID, AEID, resourceID, requestReachability, labels=labels)
+		return AE(self, resourceName, appID, AEID, resourceID, requestReachability, labels=labels, originator=originator)
 
 
 	def containers(self):
@@ -96,13 +96,13 @@ class CSEBase(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Container)
 
 
-	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[]):
+	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None):
 		"""
 		Add a new container. This is a convenience function that actually creates a new
 		&lt;container> resource in the &lt;CSEBase>. It returns the new
 		*Container* object, or None.
 		"""
-		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels)
+		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels, originator=originator)
 
 
 	def groups(self):
@@ -112,13 +112,13 @@ class CSEBase(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Group)
 
 
-	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], instantly=True):
+	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], originator=None, instantly=True):
 		"""
 		Add a new group. This is a convenience function that actually creates a new
 		&lt;group> resource in the &lt;CSEBase>. It returns the new
 		*Group* object, or None.
 		"""
-		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels)
+		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels, originator=originator)
 
 
 	def remoteCSEs(self):

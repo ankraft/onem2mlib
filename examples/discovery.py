@@ -21,12 +21,13 @@ if __name__ == '__main__':
 
 	# Create session & get CSE
 	session = Session(conf.CSEURL, conf.ORIGINATOR)
-	cse = CSEBase(session, conf.CSEID)
+	cse = session.getCSEBase()
 
 	#
 	# Create an AE, a container, and a couple of contentInstances first
 	#
-	ae = AE(cse, resourceName='exampleAE_'+str(uuid.uuid4().hex), instantly=True)
+	aeName = 'exampleAE_'+str(uuid.uuid4().hex)
+	ae = AE(cse, resourceName=aeName, originator='C' + aeName, instantly=True)
 	cnt = Container(ae, instantly=True)
 	ContentInstance(cnt, resourceName='Label1', content='value1', labels=['label1/label', 'label2/anotherLabel'], instantly=True)	# both labels
 	ContentInstance(cnt, resourceName='Label2', content='value2', labels=['label1/label'], instantly=True)						# only label 1
