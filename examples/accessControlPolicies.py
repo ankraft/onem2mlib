@@ -22,7 +22,7 @@ if __name__ == '__main__':
 	session = Session(conf.CSEURL, conf.ORIGINATOR)
 
 	# Get the <CSEBase> resource
-	cse = CSEBase(session, conf.CSEID)
+	cse = session.getCSEBase()
 
 	# Create AccessControlRules for privileges and self-privileges
 	privileges = [ 

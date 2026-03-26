@@ -8,8 +8,10 @@
 #
 
 import logging
-import onem2mlib.marshalling as M
 import onem2mlib.constants as CON
+import onem2mlib.exceptions as EXC
+import onem2mlib.internal as INT
+import onem2mlib.mcarequests as MCA
 
 
 logger = logging.getLogger(__name__)
@@ -58,6 +60,33 @@ class Session:
 		if not self.originator:
 			logger.error('Missing accessControlOriginator')
 			raise EXC.AuthenticationError('Missing accessControlOriginator')
+
+	
+	def getCSEBase(self):
+		"""
+		Retrieves the CSEBase resource directly from the root path.
+		Returns a populated CSEBase object.
+		"""
+  
+		response = MCA.get(self, '-') 
+
+		if response and response.status_code == 200:
+			from onem2mlib import CSEBase
+   
+			resource = CSEBase(session=self, instantly=False)
+			
+			resource._parseResponse(response)
+			
+			return resource
+
+		error_text = ""
+		if response:
+			error_text = f"{response.status_code} - {response.text}"
+		else:
+			error_text = "No response received from CSE"
+
+		logger.error('Retrieve CSEBase failed: ' + error_text)
+		raise EXC.CSEOperationError('Cannot get CSEBase. ' + error_text)
 
 
 	def __str__(self):

@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
 
 	# get the <CSEBase> resource
-	cse = CSEBase(session, conf.CSEID)
+	cse = session.getCSEBase()
 	print(cse)
 
 

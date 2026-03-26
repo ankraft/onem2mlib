@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
 	# Create session & get CSE
 	session = Session(conf.CSEURL, conf.ORIGINATOR)
-	cse = CSEBase(session, conf.CSEID)
+	cse = session.getCSEBase()
 
 	#
 	# Create an AE, a container, and a couple of contentInstances first

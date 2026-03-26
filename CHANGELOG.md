@@ -7,6 +7,7 @@
 - [FIX] Group resource creation fixed.
 - [IMPROVEMENT] Now using logging for debug output.
 - [IMPROVEMENT] Simplified marshalling.
+- [IMPROVEMENT] Add CSEBase to Session Resource. 
 - [IMPROVEMENT] Add Originator to Resources.
 
 
