@@ -24,7 +24,7 @@ class AccessControlPolicy(ResourceBase):
 	**Note**: Delete associated resources first before deleting the	&lt;accessControlPolicy> resource.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, privileges = [], selfPrivileges=[], instantly=True):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, privileges = [], selfPrivileges=[], originator=None, instantly=True):
 		"""
 		Initialize the &lt;accessControlPolicy> resource. 
 
@@ -38,7 +38,7 @@ class AccessControlPolicy(ResourceBase):
 		- All other arguments initialize the status variables of the same name in the
 			&lt;accessControlPolicy> instance or `onem2mlib.ResourceBase`.
 		"""
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ACP, CON.Type_ACP_SN)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ACP, CON.Type_ACP_SN, originator=originator)
 		self._marshallers = [M._accessControlPolicy_parseXML, M._accessControlPolicy_createXML, 
 							 M._accessControlPolicy_parseJSON, M._accessControlPolicy_createJSON]
 

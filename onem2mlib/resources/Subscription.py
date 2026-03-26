@@ -22,7 +22,7 @@ class Subscription(ResourceBase):
 	is changed.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, notificationURI=[], labels = [], instantly=True):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, notificationURI=[], labels = [], originator=None, instantly=True):
 		"""
 		Initialize the &lt;subscription> resource. 
 
@@ -38,7 +38,7 @@ class Subscription(ResourceBase):
 			&lt;subscription> instance or `onem2mlib.ResourceBase`.
 		"""
 	
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Subscription, CON.Type_Subscription_SN, labels=labels)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Subscription, CON.Type_Subscription_SN, labels=labels, originator=originator)
 		self._marshallers = [M._Subscription_parseXML, M._Subscription_createXML,
 							 M._Subscription_parseJSON, M._Subscription_createJSON]
 

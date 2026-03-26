@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
 	# create an <AE> resource
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, aeName)
+	ae = AE(cse, aeName, originator='C'+aeName)
 
 	# create a <container> and add it to the <AE>
 	cnt = Container(ae)

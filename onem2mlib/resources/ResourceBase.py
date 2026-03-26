@@ -24,7 +24,7 @@ class ResourceBase:
 	resource attributes.
 	"""
 
-	def __init__(self, parent, resourceName, resourceID, type, typeShortName, namespace='m2m', labels=[]):
+	def __init__(self, parent, resourceName, resourceID, type, typeShortName, namespace='m2m', labels=[], originator=None):
 		"""
 		Initialize a ResourceBase instance.
 
@@ -56,6 +56,10 @@ class ResourceBase:
 		self.resourceName = resourceName
 		""" String. The resource name of the resource. Assigned by the application or the CSE. 
 			For a &lt;CSEBase> this is the *cseName*."""
+		
+		self.originator = originator
+		""" String. The originator of the resource. Assigned by the application or the CSE. 
+			For a &lt;CSEBase> this is the *x-origin*."""
 
 		self.namespace = namespace
 		""" String. The namespace of the resource. """
@@ -105,6 +109,7 @@ class ResourceBase:
 		result += INT.strResource('resourceName', 'rn', self.resourceName)
 		result += INT.strResource('resourceID', 'ri', self.resourceID)
 		result += INT.strResource('parentID', 'pi', self.parentID)
+		result += INT.strResource('originator', 'org', self.originator)
 		result += INT.strResource('creationTime', 'ct', self.creationTime)
 		result += INT.strResource('lastModifiedTime', 'lt', self.lastModifiedTime)
 		result += INT.strResource('stateTag', 'st', self.stateTag)
@@ -156,7 +161,7 @@ class ResourceBase:
 		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
 		must be set to a valid value.
 		"""
-		return MCA.retrieveFromCSE(self)
+		return MCA.retrieveFromCSE(self, originator=self.originator)
 
 
 	def deleteFromCSE(self):
@@ -173,7 +178,7 @@ class ResourceBase:
 		if self.type in [CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
 			logger.error('Resource doesn''t support deleting: ' + INT.nameAndType(self))
 			raise EXC.NotSupportedError('Resource doesn''t support deleting: ' + INT.nameAndType(self))
-		return MCA.deleteFromCSE(self)
+		return MCA.deleteFromCSE(self, originator=self.originator)
 
 
 	def createInCSE(self):
@@ -190,7 +195,7 @@ class ResourceBase:
 		if self.type in [CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
 			logger.error('Resource doesn''t support creating: ' + INT.nameAndType(self))
 			raise EXC.NotSupportedError('Resource doesn''t support creating: ' + INT.nameAndType(self))
-		return MCA.createInCSE(self, self.type)
+		return MCA.createInCSE(self, self.type, originator=self.originator)
 
 
 	def updateInCSE(self):
@@ -207,7 +212,7 @@ class ResourceBase:
 		if self.type in [CON.Type_ContentInstance, CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
 			logger.error('Resource doesn''t support updating: ' + INT.nameAndType(self))
 			raise EXC.NotSupportedError('Resource doesn''t support updating: ' + INT.nameAndType(self))
-		return MCA.updateInCSE(self, self.type)
+		return MCA.updateInCSE(self, self.type, originator=self.originator)
 
 
 	def get(self):
@@ -248,13 +253,13 @@ class ResourceBase:
 		"""
 		import onem2mlib.utilities
 
-		rids = MCA.discoverInCSE(self, filter=filter, filterOperation=filterOperation)
+		rids = MCA.discoverInCSE(self, filter=filter, filterOperation=filterOperation, originator=self.originator)
 		if rids is None:
 			return []
-		return [ UT.retrieveResourceFromCSE(self, id) for id in rids ]
+		return [ UT.retrieveResourceFromCSE(self, id, originator=self.originator) for id in rids ]
 
 
-	def subscribe(self, callback=None):
+	def subscribe(self, originator=None, callback=None):
 		"""
 		Create a &lt;subscription> to resource and receive notifications. For this, the notification
 		sub-module must be enabled, ie. `onem2mlib.notifications.setupNotifications`() must have
@@ -265,6 +270,9 @@ class ResourceBase:
 		the target resource type doesn't support subscriptions.
 
 		Args:
+		- *originator*: when doing a subscription from a different device, you have to specify the 
+		X-Origin in order to be able to post.
+
 
 		- *callback*: An optional reference to a callback functions that is called when a
 		notification is received for the subscription. If this argument is ommitted then the
@@ -285,8 +293,7 @@ class ResourceBase:
 			raise EXC.NotSupportedError('Subscription not supported for this resource type: ' + INT.nameAndType(self))
 		if not NOT.isNotificationEnabled():
 			return False
-		return NOT.addSubscription(self, callback)
-
+		return NOT.addSubscription(self, callback, originator=originator)
 
 	def unsubscribe(self):
 		"""
