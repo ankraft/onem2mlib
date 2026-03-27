@@ -75,7 +75,7 @@ def retrieveFromCSE(resource, originator=None):
     return False
 
 
-def createInCSE(resource, type):
+def createInCSE(resource, type, originator=None):
     global lastError
     lastError = ''
 
@@ -97,7 +97,7 @@ def createInCSE(resource, type):
     for id_type, target_id in parent_targets:
         try:
             logger.debug(f'Attempting CREATE under parent ({id_type}): {target_id}')
-            response = create(resource.session, target_id, type, content)
+            response = create(resource.session, target_id, type, content, originator=originator)
             
             if response is not None:
                 if response.status_code == 201:
@@ -119,7 +119,7 @@ def createInCSE(resource, type):
 
     return False
 
-def deleteFromCSE(resource):
+def deleteFromCSE(resource, originator=None):
     global lastError
     lastError = ''
 
@@ -138,7 +138,7 @@ def deleteFromCSE(resource):
     for id_type, target_id in targets:
         try:
             logger.debug(f'Attempting DELETE via {id_type} ID: {target_id}')
-            response = delete(resource.session, target_id)
+            response = delete(resource.session, target_id, originator=originator)
             
             if response is not None:
                 if response.status_code == 200:
@@ -157,7 +157,7 @@ def deleteFromCSE(resource):
 
     return False
 
-def updateInCSE(resource, type):
+def updateInCSE(resource, type, originator=None):
     global lastError
     lastError = ''
 
@@ -178,7 +178,7 @@ def updateInCSE(resource, type):
     for id_type, target_id in targets:
         try:
             logger.debug(f'Attempting UPDATE via {id_type} ID: {target_id}')
-            response = update(resource.session, target_id, type, content)
+            response = update(resource.session, target_id, type, content, originator=originator)
             
             if response is not None:
                 if response.status_code == 200:
@@ -200,7 +200,7 @@ def updateInCSE(resource, type):
 
 
 # Find resources under a resource in the CSE
-def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=False):
+def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=False, originator=None):
     global lastError
     lastError = ''
 
@@ -233,7 +233,7 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
         full_path = base_path + query_params
         try:
             logger.debug(f'Attempting DISCOVERY via {id_type} ID: {full_path}')
-            response = get(resource.session, full_path)
+            response = get(resource.session, full_path, originator=originator)
             
             if response is not None:
                 if response.status_code == 200:
@@ -282,7 +282,7 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
         
     return None
 
-def retrieveResourceByID(parent, targetID):
+def retrieveResourceByID(parent, targetID, originator=None):
     """
 	Retrieve a resource by its *resourceID* from the CSE. Any valid *parent* resource
 	instance from that CSE must be given as the first parameter to pass on various internal
@@ -301,14 +301,14 @@ def retrieveResourceByID(parent, targetID):
     logger.debug(f'Retrieving new resource object via ID: {targetID}')
     
     # Perform the GET request
-    response = get(parent.session, targetID)
+    response = get(parent.session, targetID, originator=originator)
     
     if response and response.status_code == 200:
         import onem2mlib.internal as INT # Local import to avoid circular dependency
         
         # Determine the type to create the correct Python class instance
         ty = INT.getTypeFromResponse(response, parent.session.encoding)
-        resource = INT._newResourceFromRID(ty, targetID, parent)
+        resource = INT._newResourceFromRID(ty, targetID, parent, originator=originator)
         
         if resource:
             # Populate the object with the server data

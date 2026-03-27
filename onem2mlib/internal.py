@@ -313,50 +313,50 @@ def _findResourceInList(resources, resourceName):
 
 
 # Create a new resource object with a given type, RI and parent
-def _newResourceFromRID(type, ri, parent):
-	res = _newResourceFromType(type, parent)
+def _newResourceFromRID(type, ri, parent, originator=None):
+	res = _newResourceFromType(type, parent, originator=originator)
 	if res:
 		res.resourceID = ri
 	return res
 
 
-def _newResourceFromType(type, parent):
-	if type == CON.Type_ContentInstance:	return onem2mlib.ContentInstance(parent, instantly=False)
-	elif type == CON.Type_Container:		return onem2mlib.Container(parent, instantly=False)
-	elif type == CON.Type_AE:				return onem2mlib.AE(parent, instantly=False)
-	elif type == CON.Type_Group:			return onem2mlib.Group(parent, instantly=False)
-	elif type == CON.Type_ACP:				return onem2mlib.AccessControlPolicy(parent, instantly=False)
-	elif type == CON.Type_Subscription:		return onem2mlib.Subscription(parent, instantly=False)
-	elif type == CON.Type_RemoteCSE:		return onem2mlib.RemoteCSE(parent, instantly=False)
-	elif type == CON.Type_FlexContainer:	return onem2mlib.FlexContainer(parent, instantly=False)
+def _newResourceFromType(type, parent, originator=None):
+	if type == CON.Type_ContentInstance:	return onem2mlib.ContentInstance(parent, originator=originator, instantly=False)
+	elif type == CON.Type_Container:		return onem2mlib.Container(parent, originator=originator, instantly=False)
+	elif type == CON.Type_AE:				return onem2mlib.AE(parent, originator=originator, instantly=False)
+	elif type == CON.Type_Group:			return onem2mlib.Group(parent, originator=originator, instantly=False)
+	elif type == CON.Type_ACP:				return onem2mlib.AccessControlPolicy(parent, originator=originator, instantly=False)
+	elif type == CON.Type_Subscription:		return onem2mlib.Subscription(parent, originator=originator, instantly=False)
+	elif type == CON.Type_RemoteCSE:		return onem2mlib.RemoteCSE(parent, originator=originator, instantly=False)
+	elif type == CON.Type_FlexContainer:	return onem2mlib.FlexContainer(parent, originator=originator, instantly=False)
 	return None
 
 
-def _newResourceFromTypeString(typeString, parent, namespace='m2m'):
+def _newResourceFromTypeString(typeString, parent, namespace='m2m', originator=None):
 	if namespace == 'm2m':
-		if typeString == 'cin':		return _newResourceFromType(CON.Type_ContentInstance, parent)
-		elif typeString == 'cnt':	return _newResourceFromType(CON.Type_Container, parent)
-		elif typeString == 'ae':	return _newResourceFromType(CON.Type_AE, parent)
-		elif typeString == 'grp':	return _newResourceFromType(CON.Type_Group, parent)
-		elif typeString == 'acp':	return _newResourceFromType(CON.Type_ACP, parent)
-		elif typeString == 'sub':	return _newResourceFromType(CON.Type_Subscription, parent)
-		elif typeString == 'csr':	return _newResourceFromType(CON.Type_RemoteCSE, parent)
+		if typeString == 'cin':		return _newResourceFromType(CON.Type_ContentInstance, parent, originator=originator)
+		elif typeString == 'cnt':	return _newResourceFromType(CON.Type_Container, parent, originator=originator)
+		elif typeString == 'ae':	return _newResourceFromType(CON.Type_AE, parent, originator=originator)
+		elif typeString == 'grp':	return _newResourceFromType(CON.Type_Group, parent, originator=originator)
+		elif typeString == 'acp':	return _newResourceFromType(CON.Type_ACP, parent, originator=originator)
+		elif typeString == 'sub':	return _newResourceFromType(CON.Type_Subscription, parent, originator=originator)
+		elif typeString == 'csr':	return _newResourceFromType(CON.Type_RemoteCSE, parent, originator=originator)
 	return None
 
 
 # Get a resource from the CSE by its resourceName
-def _getResourceFromCSEByResourceName(type, rn, parent):
+def _getResourceFromCSEByResourceName(type, rn, parent, originator=None):
 	res = None
 	if rn.startswith('/'):	# Remove leading '/' in case we do a deep search
 		rn = rn[1:]
-	if type == CON.Type_ContentInstance:		res = onem2mlib.ContentInstance(parent, resourceName=rn, instantly=False)
-	elif type == CON.Type_Container:			res = onem2mlib.Container(parent, resourceName=rn, instantly=False)
-	elif type == CON.Type_AE:					res = onem2mlib.AE(parent, resourceName=rn, instantly=False)
-	elif type == CON.Type_Group:				res = onem2mlib.Group(parent, resourceName=rn, instantly=False)
-	elif type == CON.Type_ACP:					res = onem2mlib.AccessControlPolicy(parent, resourceName=rn, instantly=False)
-	elif type == CON.Type_Subscription:			res = onem2mlib.Subscription(parent, resourceName=rn, instantly=False)
-	elif type == CON.Type_RemoteCSE:			res = onem2mlib.RemoteCSE(parent, resourceName=rn, instantly=False)
-	elif type == CON.Type_FlexContainer: 		res = onem2mlib.FlexContainer(paretnt, resourceName=rn, instantly=False)
+	if type == CON.Type_ContentInstance:		res = onem2mlib.ContentInstance(parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_Container:			res = onem2mlib.Container(parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_AE:					res = onem2mlib.AE(parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_Group:				res = onem2mlib.Group(parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_ACP:					res = onem2mlib.AccessControlPolicy(parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_Subscription:			res = onem2mlib.Subscription(parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_RemoteCSE:			res = onem2mlib.RemoteCSE(parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_FlexContainer: 		res = onem2mlib.FlexContainer(parent, resourceName=rn, originator=originator, instantly=False)
 	if res is not None and res.retrieveFromCSE():
 		return res
 	return None
