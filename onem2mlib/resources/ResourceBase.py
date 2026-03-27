@@ -425,12 +425,13 @@ class ResourceBase:
 		# returns CSE relative path (empty string)
 		return ''
 
-	def _unstructuredResourceID(self, withoutPrefix:bool = False) -> str:
+	def _unstructuredResourceID(self, withRIScope: bool = False) -> str:
 		ri = self.resourceID.lstrip('/')
-		if withoutPrefix:
+		
+		if not withRIScope:
 			return ri
 
-		# Find the root only if prefix is needed
+		# Find the root 
 		root = self
 		while hasattr(root, 'parent') and root.parent is not None:
 			root = root.parent
@@ -446,23 +447,22 @@ class ResourceBase:
 		prefix = (base or '').rstrip('/')
 		return f"{prefix}/{ri}"
 
-	def _structuredResourceID(self, withoutPrefix:bool = False) -> str:
+	def _structuredResourceID(self, withRIScope: bool = False) -> str:
 		# Handle RemoteCSE case
 		if self.type == CON.Type_RemoteCSE:
-			if withoutPrefix:
+			if not withRIScope:
 				return self.resourceName
 			prefix = self._prefixResourceIDAbsolute()
 			return f"{(prefix or '')}/{self.resourceName}"
 			
 		# Handle CSEBase case
 		if self.type == CON.Type_CSEBase:
-			if withoutPrefix:
+			if not withRIScope:
 				return self.resourceName
 			prefix = self._prefixResourceIDSPRelative() or self._prefixResourceIDCSERelative()
 			return f"{(prefix or '')}/{self.resourceName}"
-			
-		# Recursive Case: Propagate the 'withoutPrefix' flag
-		return f"{self.parent._structuredResourceID(withoutPrefix)}/{self.resourceName}"
+				
+		return f"{self.parent._structuredResourceID(withRIScope)}/{self.resourceName}"
 
 
 	def _parseResponse(self, response):

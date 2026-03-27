@@ -297,7 +297,7 @@ def _findSubResource(resource, type, filter=None, originator=None):
 		#	number of path elements, and only add those from the response to the result
 		#	which have count+1 path elements.
 
-		sid = resource._structuredResourceID(withoutPrefix=True)
+		sid = resource._structuredResourceID()
 		count = sid.count('/') + 1
 
 		for ri in ris:

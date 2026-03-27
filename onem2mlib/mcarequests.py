@@ -39,11 +39,11 @@ def retrieveFromCSE(resource, originator=None):
     # Otherwise, use Structured ID.
     ids_to_try = []
     if resource.resourceID:
-        ids_to_try.append(("unstructured", resource._unstructuredResourceID()))
+        ids_to_try.append(("unstructured", resource._unstructuredResourceID(withRIScope=True)))
     
     # Always add structured as a candidate if name is known
     if resource.resourceName:
-        ids_to_try.append(("structured", resource._structuredResourceID()))
+        ids_to_try.append(("structured", resource._structuredResourceID(withRIScope=True)))
 
     for id_type, target_id in ids_to_try:
         try:
@@ -90,9 +90,9 @@ def createInCSE(resource, type, originator=None):
     # Collect potential parent IDs to try
     parent_targets = []
     if resource.parent.resourceID:
-        parent_targets.append(('unstructured', resource.parent._unstructuredResourceID()))
+        parent_targets.append(('unstructured', resource.parent._unstructuredResourceID(withRIScope=True)))
     if resource.parent.resourceName:
-        parent_targets.append(('structured', resource.parent._structuredResourceID()))
+        parent_targets.append(('structured', resource.parent._structuredResourceID(withRIScope=True)))
 
     for id_type, target_id in parent_targets:
         try:
@@ -131,9 +131,9 @@ def deleteFromCSE(resource, originator=None):
 
     targets = []
     if resource.resourceID:
-        targets.append(('unstructured', resource._unstructuredResourceID()))
+        targets.append(('unstructured', resource._unstructuredResourceID(withRIScope=True)))
     if resource.resourceName:
-        targets.append(('structured', resource._structuredResourceID()))
+        targets.append(('structured', resource._structuredResourceID(withRIScope=True)))
 
     for id_type, target_id in targets:
         try:
@@ -171,9 +171,9 @@ def updateInCSE(resource, type, originator=None):
     
     targets = []
     if resource.resourceID:
-        targets.append(('unstructured', resource._unstructuredResourceID()))
+        targets.append(('unstructured', resource._unstructuredResourceID(withRIScope=True)))
     if resource.resourceName:
-        targets.append(('structured', resource._structuredResourceID()))
+        targets.append(('structured', resource._structuredResourceID(withRIScope=True)))
 
     for id_type, target_id in targets:
         try:
@@ -224,9 +224,9 @@ def discoverInCSE(resource, filter=None, filterOperation=None, structuredResult=
     # 2. Define the target IDs to try
     targets = []
     if resource.resourceID:
-        targets.append(('unstructured', resource._unstructuredResourceID()))
+        targets.append(('unstructured', resource._unstructuredResourceID(withRIScope=True)))
     if resource.resourceName:
-        targets.append(('structured', resource._structuredResourceID()))
+        targets.append(('structured', resource._structuredResourceID(withRIScope=True)))
 
     # 3. Iterate through targets with fallback logic
     for id_type, base_path in targets:
