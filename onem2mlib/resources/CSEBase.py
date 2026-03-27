@@ -66,18 +66,18 @@ class CSEBase(ResourceBase):
 		return result
 
 
-	def accessControlPolicies(self):
+	def accessControlPolicies(self, filter=None):
 		"""
 		Return a list of &lt;accessControlPolicy> resources from this CSE, or an empty list.
 		"""
-		return INT._findSubResource(self, CON.Type_ACP)
+		return INT._findSubResource(self, CON.Type_ACP, filter=filter)
 
 
-	def aes(self):
+	def aes(self, filter=None):
 		"""
 		Return a list of &lt;AE> resources from this CSE, or an empty list.
 		"""
-		return INT._findSubResource(self, CON.Type_AE)
+		return INT._findSubResource(self, CON.Type_AE, filter=filter)
 
 
 	def addAE(self, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[], originator=None):
@@ -89,11 +89,11 @@ class CSEBase(ResourceBase):
 		return AE(self, resourceName, appID, AEID, resourceID, requestReachability, labels=labels, originator=originator)
 
 
-	def containers(self):
+	def containers(self, filter=None):
 		"""
 		Return a list of all &lt;container> resources of this &lt;CSEBase>, or an empty list.
 		"""
-		return INT._findSubResource(self, CON.Type_Container)
+		return INT._findSubResource(self, CON.Type_Container, filter=filter)
 
 
 	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None):
@@ -105,11 +105,11 @@ class CSEBase(ResourceBase):
 		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels, originator=originator)
 
 
-	def groups(self):
+	def groups(self, filter=None):
 		"""
 		Return a list of &lt;group> resources from this CSE, or an empty list.
 		"""
-		return INT._findSubResource(self, CON.Type_Group)
+		return INT._findSubResource(self, CON.Type_Group, filter=filter)
 
 
 	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], originator=None, instantly=True):
@@ -121,11 +121,11 @@ class CSEBase(ResourceBase):
 		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels, originator=originator)
 
 
-	def remoteCSEs(self):
+	def remoteCSEs(self, filter=None):
 		"""
 		Return a list of &lt;remoteCSE> resources from this CSE, or an empty list.
 		"""
-		return INT._findSubResource(self, CON.Type_RemoteCSE)
+		return INT._findSubResource(self, CON.Type_RemoteCSE, filter=filter)
 
 
 	def _copy(self, resource):

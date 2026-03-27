@@ -92,11 +92,11 @@ class Container(ResourceBase):
 		return result
 
 
-	def containers(self):
+	def containers(self, filter=None):
 		"""
 		Return all &lt;container> sub-resources from this container, or an empty list.
 		"""
-		return INT._findSubResource(self, CON.Type_Container)
+		return INT._findSubResource(self, CON.Type_Container, filter=filter)
 
 
 	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None):
@@ -108,18 +108,18 @@ class Container(ResourceBase):
 		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels, originator=originator)
 
 
-	def contentInstances(self):
+	def contentInstances(self, filter=None):
 		"""
 		Return all &lt;contentInstance> sub-resources from this container, or an empty list.
 		"""
-		return INT._findSubResource(self, CON.Type_ContentInstance)
+		return INT._findSubResource(self, CON.Type_ContentInstance, filter=filter)
 
 
-	def contents(self):
+	def contents(self, filter=None):
 		"""
 		Return all content from all &lt;contentInstance>'s in list, or an empty list.
 		"""
-		return [cin.content for cin in self.contentInstances()]
+		return [cin.content for cin in self.contentInstances(filter=filter)]
 
 
 	def addContent(self, value, labels=[], originator=None):
