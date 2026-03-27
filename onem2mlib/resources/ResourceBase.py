@@ -13,7 +13,6 @@ import onem2mlib.mcarequests as MCA
 import onem2mlib.internal as INT
 import onem2mlib.exceptions as EXC
 import onem2mlib.notifications as NOT
-import onem2mlib.utilities as UT
 
 
 logger = logging.getLogger(__name__)
@@ -235,28 +234,36 @@ class ResourceBase:
 
 	def discover(self, filter, filterOperation=CON.Dsc_AND):
 		"""
-		Discover a rsource on the CSE, starting with the resource as a root for
-		discovery.
+			Discover a rsource on the CSE, starting with the resource as a root for
+			discovery.
 
-		Args:
+			Args:
 
-		- *filter*: A list of *filterCriteria*. These critera can be constructed using the
-		*onem2mlib.utilties.new...FilterCriteria* functions.
-		- *filterOperation*. A boolean value that Indicates the logical operation (AND/OR) 
-		to be used for different condition tags. The default value is logical AND.
+			- *filter*: A list of *filterCriteria*. These critera can be constructed using the
+			*onem2mlib.utilties.new...FilterCriteria* functions.
+			- *filterOperation*. A boolean value that Indicates the logical operation (AND/OR) 
+			to be used for different condition tags. The default value is logical AND.
 
-		The method returns a list of found resources, or an empty list.
+			The method returns a list of found resources, or an empty list.
 
-		**Note**
+			**Note**
 
-		Currently, only *label* and *resoureType* are supported in filters.
-		"""
-		import onem2mlib.utilities
+			Currently, only *label* and *resoureType* are supported in filters.
+			"""
 
-		rids = MCA.discoverInCSE(self, filter=filter, filterOperation=filterOperation, originator=self.originator)
+		# 1. Get the list of IDs (URIs) from the CSE
+		rids = MCA.discoverInCSE(self, filter=filter, filterOperation=filterOperation)
 		if rids is None:
 			return []
-		return [ UT.retrieveResourceFromCSE(self, id, originator=self.originator) for id in rids ]
+
+		# 2. Convert each ID string into a real Python Resource object
+		results = []
+		for rid in rids:
+			res = MCA.retrieveResourceByID(self, rid)
+			if res:
+				results.append(res)
+		
+		return results
 
 
 	def subscribe(self, originator=None, callback=None):
@@ -402,14 +409,57 @@ class ResourceBase:
 
 
 
-	# Recursivly construct a structured resourceName
+	def _prefixResourceIDAbsolute(self) -> str:
+		# returns absolute prefix or None
+		if self.cseID:
+			return f"//{self.cseID.lstrip('/')}"
+		return None
+
+	def _prefixResourceIDSPRelative(self) -> str:
+		# returns SP relative prefix or None
+		if self.resourceID:
+			return f"/{self.resourceID.lstrip('/')}"
+		return None
+
+	def _prefixResourceIDCSERelative(self) -> str:
+		# returns CSE relative path (empty string)
+		return ''
+
+	def _unstructuredResourceID(self):
+		root = self
+		while hasattr(root, 'parent') and root.parent is not None:
+			root = root.parent
+		
+		# Determine base prefix based on root type
+		if root.type == CON.Type_RemoteCSE:
+			base = root._prefixResourceIDAbsolute()
+		elif root.type == CON.Type_CSEBase:
+			base = root._prefixResourceIDSPRelative()
+			if base is None:
+				base = root._prefixResourceIDCSERelative()
+		else:
+			base = ''
+			
+		prefix = (base or '').rstrip('/')
+		ri = self.resourceID.lstrip('/')
+		return f"{prefix}/{ri}"
+
+	# Recursively construct a structured resourceName
 	def _structuredResourceID(self):
 		logger.debug('ResourceID: ' + str(self.resourceID))
-		if self.type == CON.Type_CSEBase:		# CSEBase means end of recursion
-			if self.resourceID.startswith('/'):	# special handling for CSE ID's that start with a /
-				return self.resourceID + '/' + self.resourceName
-			return '/' + self.resourceID + '/' + self.resourceName
-			#return '/'  + self.resourceName
+		
+		# Handle RemoteCSE case
+		if self.type == CON.Type_RemoteCSE:
+			prefix = self._prefixResourceIDAbsolute()
+			return (prefix if prefix is not None else '') + '/' + self.resourceName
+			
+		# Handle CSEBase case
+		if self.type == CON.Type_CSEBase:
+			prefix = self._prefixResourceIDSPRelative()
+			if prefix is None:
+				prefix = self._prefixResourceIDCSERelative()
+			return prefix + '/' + self.resourceName
+			
 		return self.parent._structuredResourceID() + '/' + self.resourceName
 
 
