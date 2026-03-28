@@ -270,13 +270,25 @@ def typeToString(ty):
 #
 
 # Find a sub-resource
-def _findSubResource(resource, type, originator=None):
+def _findSubResource(resource, type, filter=None, originator=None):
 	import onem2mlib.utilities
 
 	if not resource or not resource.session or not resource.resourceID: 
 		return None
 	result = []
-	ris = onem2mlib.mcarequests.discoverInCSE(resource, filter=[onem2mlib.utilities.newTypeFilterCriteria(int(type))], structuredResult=True, originator=originator)
+ 
+	combined_filter = [onem2mlib.utilities.newTypeFilterCriteria(int(type))]
+	
+	if filter:
+		if isinstance(filter, list):
+			combined_filter.extend(filter)
+		else:
+			# Handle case where only a single tuple was passed instead of a list
+			combined_filter.append(filter)
+
+ 
+ 
+	ris = onem2mlib.mcarequests.discoverInCSE(resource, filter=combined_filter, structuredResult=True, originator=originator)
 	if ris:
 		#	The following is a hack to restrict the search result to the direct child
 		#	level. Yes, the oneM2M "level" attribute could be used for that, but it

@@ -241,14 +241,14 @@ def hasSubscription(resource):
 def _addSubscription(resource, sub, callback):
 	_subscriptions[resource.resourceID] = (sub, resource, callback)
 	_subscriptionIDToParentResourceID[sub.resourceID] = resource.resourceID
-	_subscriptionIDToParentResourceID[sub._structuredResourceID()] = resource.resourceID
+	_subscriptionIDToParentResourceID[sub._structuredResourceID(withRIScope=True)] = resource.resourceID
 
 
 # Remove a subscription from the internal data structures
 def _removeSubscriptionByID(resourceID):
 	(sub, _, _) = _subscriptions.pop(resourceID)
 	_subscriptionIDToParentResourceID.pop(sub.resourceID)
-	_subscriptionIDToParentResourceID.pop(sub._structuredResourceID())
+	_subscriptionIDToParentResourceID.pop(sub._structuredResourceID(withRIScope=True))
 	return sub.deleteFromCSE()
 
 

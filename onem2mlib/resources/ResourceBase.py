@@ -318,7 +318,7 @@ class ResourceBase:
 		return NOT.removeSubscription(self)
 
 
-	def subscriptions(self):
+	def subscriptions(self, filter=None):
 		"""
 		Return a list of &lt;subscription> resources of a rersource, or an empty list.
 
@@ -328,7 +328,7 @@ class ResourceBase:
 		if self.type not in NOT._allowedSubscriptionResources:
 			logger.error('Subscription not supported for this resource type: ' + INT.nameAndType(self))
 			raise EXC.NotSupportedError('Subscription not supported for this resource type')
-		return INT._findSubResource(self, CON.Type_Subscription)
+		return INT._findSubResource(self, CON.Type_Subscription, filter=filter)
 
 
 	def findAccessControlPolicy(self, resourceName):
@@ -425,7 +425,13 @@ class ResourceBase:
 		# returns CSE relative path (empty string)
 		return ''
 
-	def _unstructuredResourceID(self):
+	def _unstructuredResourceID(self, withRIScope: bool = False) -> str:
+		ri = self.resourceID.lstrip('/')
+		
+		if not withRIScope:
+			return ri
+
+		# Find the root 
 		root = self
 		while hasattr(root, 'parent') and root.parent is not None:
 			root = root.parent
@@ -434,33 +440,29 @@ class ResourceBase:
 		if root.type == CON.Type_RemoteCSE:
 			base = root._prefixResourceIDAbsolute()
 		elif root.type == CON.Type_CSEBase:
-			base = root._prefixResourceIDSPRelative()
-			if base is None:
-				base = root._prefixResourceIDCSERelative()
+			base = root._prefixResourceIDSPRelative() or root._prefixResourceIDCSERelative()
 		else:
 			base = ''
 			
 		prefix = (base or '').rstrip('/')
-		ri = self.resourceID.lstrip('/')
 		return f"{prefix}/{ri}"
 
-	# Recursively construct a structured resourceName
-	def _structuredResourceID(self):
-		logger.debug('ResourceID: ' + str(self.resourceID))
-		
+	def _structuredResourceID(self, withRIScope: bool = False) -> str:
 		# Handle RemoteCSE case
 		if self.type == CON.Type_RemoteCSE:
+			if not withRIScope:
+				return self.resourceName
 			prefix = self._prefixResourceIDAbsolute()
-			return (prefix if prefix is not None else '') + '/' + self.resourceName
+			return f"{(prefix or '')}/{self.resourceName}"
 			
 		# Handle CSEBase case
 		if self.type == CON.Type_CSEBase:
-			prefix = self._prefixResourceIDSPRelative()
-			if prefix is None:
-				prefix = self._prefixResourceIDCSERelative()
-			return prefix + '/' + self.resourceName
-			
-		return self.parent._structuredResourceID() + '/' + self.resourceName
+			if not withRIScope:
+				return self.resourceName
+			prefix = self._prefixResourceIDSPRelative() or self._prefixResourceIDCSERelative()
+			return f"{(prefix or '')}/{self.resourceName}"
+				
+		return f"{self.parent._structuredResourceID(withRIScope)}/{self.resourceName}"
 
 
 	def _parseResponse(self, response):

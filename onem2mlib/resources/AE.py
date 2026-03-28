@@ -90,11 +90,11 @@ class AE(ResourceBase):
 		return result
 
 
-	def containers(self):
+	def containers(self, filter=None):
 		"""
 		Return a list of all &lt;container> resources of this &lt;AE>, or an empty list.
 		"""
-		return INT._findSubResource(self, CON.Type_Container)
+		return INT._findSubResource(self, CON.Type_Container, filter=filter)
 
 
 	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None):
@@ -106,11 +106,11 @@ class AE(ResourceBase):
 		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels, originator=originator)
 
 
-	# def flexContainers(self):
+	# def flexContainers(self, filter=None):
 	# 	"""
 	# 	Return a list of all &lt;flexContainer> resources of this &lt;AE>, or an empty list.
 	# 	"""
-	# 	return _findSubResource(self, CON.Type_FlexContainer)
+	# 	return _findSubResource(self, CON.Type_FlexContainer, filter=filter)
 
 
 	# def findFlexContainer(self, resourceName):
@@ -120,11 +120,11 @@ class AE(ResourceBase):
 	# 	return _getResourceFromCSEByResourceName(CON.Type_FlexContainer, resourceName, self)
 
 
-	def groups(self):
+	def groups(self, filter=None):
 		"""
 		Return a list of all &lt;group> resources of this &lt;AE>, or an empty list.
 		"""
-		return INT._findSubResource(self, CON.Type_Group)
+		return INT._findSubResource(self, CON.Type_Group, filter=filter)
 
 
 	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], originator=None,  instantly=True):
