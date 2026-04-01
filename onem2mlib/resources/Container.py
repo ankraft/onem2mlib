@@ -24,7 +24,7 @@ class Container(ResourceBase):
 	It is usually a sub-resource of the &lt;AE> or other resources.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None, instantly=True):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None, accessControlPolicies=None, instantly=True):
 		"""
 		Initialize the &lt;container> resource. 
 
@@ -38,7 +38,7 @@ class Container(ResourceBase):
 			&lt;container> instance or `onem2mlib.ResourceBase`.
 		"""	
 
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Container, CON.Type_Container_SN, labels=labels, originator=originator)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Container, CON.Type_Container_SN, labels=labels, originator=originator, accessControlPolicies=accessControlPolicies)
 		self._marshallers = [M._Container_parseXML, M._Container_createXML,
 							 M._Container_parseJSON, M._Container_createJSON]
 
@@ -183,7 +183,7 @@ class Container(ResourceBase):
 		from .ContentInstance import ContentInstance
  
 		if not self.session or not path: return None
-		response = MCA.get(self.session, path)
+		response = MCA.get(self.session, path, originator=self.originator)
 		if response and response.status_code == 200:
 			contentInstance = ContentInstance(self, instantly=False)
 			contentInstance._parseResponse(response)

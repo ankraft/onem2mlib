@@ -10,6 +10,7 @@
 import uuid, sys, logging
 sys.path.append('..')
 from onem2mlib import *
+import onem2mlib.constants as CON
 import conf
 
 
@@ -23,6 +24,23 @@ if __name__ == '__main__':
 	# Get the <CSEBase> resource
 	cse = session.getCSEBase()
 	print(cse)
+ 
+ 
+	#
+	# Add a default AccessControlPolicy
+	#
+	privileges = [ 
+		AccessControlRule([conf.ORIGINATOR], CON.Acp_ALL),
+		AccessControlRule(['user:user'], CON.Acp_RETRIEVE+CON.Acp_DISCOVER)
+	]
+	selfPrivileges = [ 
+		AccessControlRule([conf.ORIGINATOR], CON.Acp_ALL)
+	]
+
+	# # Create a new accessControlPolicy with the previous created privileges and self-privileges
+	acpName = 'exampleACP'	# unique name
+	acp = AccessControlPolicy(cse, resourceName=acpName, privileges=privileges, selfPrivileges=selfPrivileges)
+
 
 	#
 	# Create and print an <AE> resource on the CSE in one step.
@@ -30,7 +48,7 @@ if __name__ == '__main__':
 	# is created or, if it already exsists, the existing resource is returned.
 	#
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName, originator='C' + aeName)	# create or retrieve
+	ae = AE(cse, resourceName=aeName, originator='C' + aeName, accessControlPolicies=acp)	# create or retrieve
 	print(ae)	# This should be the same <AE> as before
 
 	#
@@ -38,6 +56,11 @@ if __name__ == '__main__':
 	#
 	aeName2 = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
 	ae2 = cse.addAE(aeName2, originator='C' + aeName2)
+ 
+	# add AccessControlPolicy after creating the AE
+
+	ae2.addAccessControlPolicy(acp)
+
 	print(ae2)
 
 

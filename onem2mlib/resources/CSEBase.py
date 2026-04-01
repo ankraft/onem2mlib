@@ -23,7 +23,7 @@ class CSEBase(ResourceBase):
 	CSE immediatly.
 	"""
 
-	def __init__(self, session=None, cseID=None, resourceName=None, originator = None, instantly=True):
+	def __init__(self, session=None, cseID=None, resourceName=None, originator = None, accessControlPolicies=None, instantly=True):
 		"""
 		Initialize a CSEBase object.
 
@@ -35,7 +35,7 @@ class CSEBase(ResourceBase):
 		Internally, the *cseID* is assigned to the `onem2mlib.ResourceBase.resourceID` attribute, and the *csename* is handled
 		by the *resourceName*. 
 		"""
-		ResourceBase.__init__(self, None, resourceName, cseID, CON.Type_CSEBase, CON.Type_CSEBase_SN, originator=originator)
+		ResourceBase.__init__(self, None, resourceName, cseID, CON.Type_CSEBase, CON.Type_CSEBase_SN, originator=originator, accessControlPolicies=accessControlPolicies)
 
 		self.session = session # Must assign session manually.
 		self._marshallers = [M._CSEBase_parseXML, None, M._CSEBase_parseJSON, None]

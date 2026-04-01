@@ -20,7 +20,7 @@ class RemoteCSE(ResourceBase):
 	It is  a sub-resource of the &lt;CSEBase> resource, and it represents and grants access to a
 	remote CSE.
 	"""
-	def __init__(self, parent=None, resourceName=None, resourceID=None, requestReachability=None,  originator=None, instantly=True):
+	def __init__(self, parent=None, resourceName=None, resourceID=None, requestReachability=None,  originator=None, accessControlPolicies=None, instantly=True):
 	
 		"""
 		Initialize a RemoteCSE object.
@@ -36,7 +36,7 @@ class RemoteCSE(ResourceBase):
 		- All other arguments initialize the status variables of the same name in the
 			&lt;remoteCSE> instance or `onem2mlib.ResourceBase`.
 		"""
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_RemoteCSE, CON.Type_RemoteCSE_SN, originator=originator)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_RemoteCSE, CON.Type_RemoteCSE_SN, originator=originator, accessControlPolicies=accessControlPolicies)
 		self._marshallers = [M._remoteCSE_parseXML, None, M._remoteCSE_parseJSON, None]
 
 		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:

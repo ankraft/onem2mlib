@@ -23,7 +23,7 @@ class ResourceBase:
 	resource attributes.
 	"""
 
-	def __init__(self, parent, resourceName, resourceID, type, typeShortName, namespace='m2m', labels=[], originator=None):
+	def __init__(self, parent, resourceName, resourceID, type, typeShortName, namespace='m2m', labels=[], originator=None, accessControlPolicies=None):
 		"""
 		Initialize a ResourceBase instance.
 
@@ -73,6 +73,8 @@ class ResourceBase:
 		""" String. The time of the last modification of the resource. Assigned by the CSE. R/O. """
 		
 		self.accessControlPolicyIDs = []
+		if accessControlPolicies:
+			self.setAccessControlPolicies(accessControlPolicies)
 		""" List of String. A list of ACP resources. This might be an empty list."""
 		
 		self.expirationTime	= None
@@ -121,7 +123,7 @@ class ResourceBase:
 		return result
 
 
-	def setAccessControlPolicies(self, acps):
+	def setAccessControlPolicies(self, acps, overwrite=True):
 		"""
 		Set the &lt;ccessControlPolicy> resource ID(s) for a resource (if the resource type supports 
 		AccessControlPolicies). 
@@ -133,7 +135,8 @@ class ResourceBase:
 		This method may throw a `onem2mlib.exceptions.NotSupportedError` exception when called on a resource that doesn't
 		support accessControlPolicies.
 		"""
-		self.accessControlPolicyIDs = []
+		if overwrite:
+			self.accessControlPolicyIDs = []
 
 		from .ContentInstance import ContentInstance
 
@@ -149,6 +152,16 @@ class ResourceBase:
 				for acp in acps:
 					if acps.resourceID is not None:
 						self.accessControlPolicyIDs.append(acps.resourceID)
+
+	def addAccessControlPolicy(self, acps, overwrite=True):
+		"""
+		Update a ResourceBase's AccessControlPolicy.
+		
+		:param self: Description
+		:param acps: AccessControlPolicies
+		"""
+		self.setAccessControlPolicies(acps, overwrite)
+		self.updateAcpiInCSE()
 
 
 	def retrieveFromCSE(self):
@@ -197,7 +210,7 @@ class ResourceBase:
 		return MCA.createInCSE(self, self.type, originator=self.originator)
 
 
-	def updateInCSE(self):
+	def updateInCSE(self, isAcpiUpdate=False):
 		"""
 		Update the existing resource with new attributes.
 
@@ -211,8 +224,20 @@ class ResourceBase:
 		if self.type in [CON.Type_ContentInstance, CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
 			logger.error('Resource doesn''t support updating: ' + INT.nameAndType(self))
 			raise EXC.NotSupportedError('Resource doesn''t support updating: ' + INT.nameAndType(self))
-		return MCA.updateInCSE(self, self.type, originator=self.originator)
+		return MCA.updateInCSE(self, self.type, originator=self.originator, isAcpiUpdate=isAcpiUpdate)
 
+	def updateAcpiInCSE(self):
+		"""
+		Update the existing resource with new attributes for AccessControlPolicyId.
+
+		The method returns *True* or *False*, depending on the success of the operation.
+		It may throw a `onem2mlib.exceptions.NotSupportedError` exception when the operation is not supported
+		by the resource type.
+
+		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		return self.updateInCSE(True)
 
 	def get(self):
 		"""
@@ -474,11 +499,11 @@ class ResourceBase:
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
 
-	def _createContent(self, isUpdate=False):
+	def _createContent(self, isUpdate=False, isAcpiUpdate=False):
 		if self.session.encoding == CON.Encoding_XML:
-			return INT.xmlToString(self._createXML(isUpdate))
+			return INT.xmlToString(self._createXML(isUpdate, isAcpiUpdate=isAcpiUpdate))
 		elif self.session.encoding == CON.Encoding_JSON:
-			return json.dumps(self._createJSON(isUpdate))
+			return json.dumps(self._createJSON(isUpdate, isAcpiUpdate=isAcpiUpdate))
 		logger.error('Encoding not supported: ' + str(self.session.encoding))
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
@@ -488,10 +513,9 @@ class ResourceBase:
 		if self._marshallers[0] is not None:
 			self._marshallers[0](self, root)
 
-
-	def _createXML(self, isUpdate=False):
+	def _createXML(self, isUpdate=False, isAcpiUpdate=False):
 		if self._marshallers[1] is not None:
-			return self._marshallers[1](self, isUpdate)
+			return self._marshallers[1](self, isUpdate, isAcpiUpdate)
 		return None
 
 
@@ -500,9 +524,9 @@ class ResourceBase:
 			self._marshallers[2](self, jsn)
 
 
-	def _createJSON(self, isUpdate=False):
+	def _createJSON(self, isUpdate=False, isAcpiUpdate=False):
 		if self._marshallers[3] is not None:
-			return self._marshallers[3](self, isUpdate)
+			return self._marshallers[3](self, isUpdate, isAcpiUpdate)
 		return None
 
 

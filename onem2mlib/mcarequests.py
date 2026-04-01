@@ -157,7 +157,7 @@ def deleteFromCSE(resource, originator=None):
 
     return False
 
-def updateInCSE(resource, type, originator=None):
+def updateInCSE(resource, type, originator=None, isAcpiUpdate=False):
     global lastError
     lastError = ''
 
@@ -167,7 +167,7 @@ def updateInCSE(resource, type, originator=None):
         logger.error(lastError)
         return False
 
-    content = resource._createContent(True)
+    content = resource._createContent(True, isAcpiUpdate)
     
     targets = []
     if resource.resourceID:

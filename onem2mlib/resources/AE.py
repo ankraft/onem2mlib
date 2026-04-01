@@ -22,7 +22,7 @@ class AE(ResourceBase):
 	application and the sub-structure of resources beneath it.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, nodeLink=None, labels=[], originator=None, instantly=True):
+	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, nodeLink=None, labels=[], originator=None, accessControlPolicies=None, instantly=True):
 		"""
 		Initialize the &lt;AE> resource. 
 
@@ -35,7 +35,7 @@ class AE(ResourceBase):
 		- All other arguments initialize the status variables of the same name in the
 			&lt;AE> instance or `onem2mlib.ResourceBase`.
 		"""
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_AE, CON.Type_AE_SN, labels=labels, originator=originator,)
+		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_AE, CON.Type_AE_SN, labels=labels, originator=originator, accessControlPolicies=accessControlPolicies)
 		self._marshallers = [M._AE_parseXML, M._AE_createXML,
 							 M._AE_parseJSON, M._AE_createJSON]
 
