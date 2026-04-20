@@ -179,17 +179,16 @@ class Container(ResourceBase):
 
 		from .ContentInstance import ContentInstance
  
-		return self._getContentInstance(self.latest)
+		latest = self._structuredResourceID() + "/la"
+		return self._getContentInstance(latest)
 
 
 	def oldestContentInstance(self):
 		"""
 		Return the oldest &lt;contentInstance> sub-resource from this container, or None.
 		"""
-  
-		from .ContentInstance import ContentInstance
-  
-		return self._getContentInstance(self.oldest)
+		oldest = self._structuredResourceID() + "/ol"
+		return self._getContentInstance(oldest)
 
 
 	def latestContent(self):
