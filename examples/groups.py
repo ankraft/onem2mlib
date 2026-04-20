@@ -13,7 +13,6 @@ sys.path.append('..')
 from onem2mlib import *
 import conf
 
-
 if __name__ == '__main__':
 	logging.basicConfig(level=conf.LOGGINGLEVEL)
 	logging.getLogger('urllib3').setLevel(logging.CRITICAL)
@@ -25,17 +24,16 @@ if __name__ == '__main__':
 	cse = session.getCSEBase()
 
 	# create an <AE> resource
-	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName, originator='C' + aeName)
+	aeName = 'exampleAE_'+str(uuid.uuid4().hex)
+	ae = AE(parent=cse, resourceName=aeName, originator='C' + aeName)
 
 	# create two <container>'s' and add them to the <AE>
-	cnt1 = Container(ae, resourceName='container1')
-	cnt2 = Container(ae, resourceName='container2')
+	cnt1 = Container(parent=ae, resourceName='container1')
+	cnt2 = Container(parent=ae, resourceName='container2')
 
 	# create a <group> reosurce that contains both containers, and add it to the <ae>
-	grp = Group(ae, resourceName='myGroup', resources=[cnt1, cnt2])
+	grp = Group(parent=ae, resourceName='myGroup', resources=[cnt1, cnt2])
 	
-	# print the group
 	print(grp)
 
 	# add a <contentInstance> to each <container> via the <group> resource's fanOutPoint

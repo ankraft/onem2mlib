@@ -4,55 +4,62 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the &lt;AE> resource.
+#	This module implements the class for the <AE> resource.
 #
 
 import logging
 import onem2mlib.marshalling as M
-from .ResourceBase import *
+import onem2mlib.constants as CON
+import onem2mlib.exceptions as EXC
+import onem2mlib.mcarequests as MCA
+import onem2mlib.internal as INT
+from .ResourceBase import ResourceBase
+
 
 logger = logging.getLogger(__name__)
 
-
 class AE(ResourceBase):
 	"""
-	This class implements the oneM2M &lt;AE> resource. 
+	This class implements the oneM2M <AE> resource. 
 
-	It is usually a sub-resource of the &lt;CSEBase> resource, and it represents an 
+	It is usually a sub-resource of the <CSEBase> resource, and it represents an 
 	application and the sub-structure of resources beneath it.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, nodeLink=None, labels=[], originator=None, accessControlPolicies=None, instantly=True):
+	def __init__(self,
+              	 appID: str | None = None,
+              	 AEID: str | None = None,
+                 requestReachability: bool = True, 
+				 nodeLink: str | None = None,
+     			 instantly: bool = True,
+         		 **kwargs):
 		"""
 		Initialize the &lt;AE> resource. 
 
 		Args:
-
-		- *parent*: The parent resource object in which the &lt;AE> resource
-			will be created.
-		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
-			a `onem2mlib.exceptions.CSEOperationError` exception in case of an error.
-		- All other arguments initialize the status variables of the same name in the
-			&lt;AE> instance or `onem2mlib.ResourceBase`.
+			appID: Identifier of the Application. Defaults to resourceName if not provided.
+			AEID: Identifier of the Application Entity.
+			requestReachability: Reachability status of the AE.
+			nodeLink: Resource ID of the associated node resource.
+			instantly: If True, the resource is immediately synced with the CSE.
+			**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
 		"""
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_AE, CON.Type_AE_SN, labels=labels, originator=originator, accessControlPolicies=accessControlPolicies)
+		if not appID:
+			appID = kwargs.get('resourceName')
+		
+		# For non-registered entities, the appID has to start with an 'N'
+		if appID and not appID.startswith('N'):
+			appID = 'N' + appID
+
+		super().__init__(type=CON.Type_AE, typeShortName=CON.Type_AE_SN, **kwargs)
+
+		# 3. Set Marshallers
 		self._marshallers = [M._AE_parseXML, M._AE_createXML,
 							 M._AE_parseJSON, M._AE_createJSON]
 
+		# 4. Set AE-Specific Attributes
 		self.appID = appID
 		""" String. The identifier of the Application. Assigned by the application or the CSE. """
-		if not self.appID:
-			if self.resourceName is not None:
-				self.appID = self.resourceName
-			else:
-				self.appID = None
-
-		if self.appID:
-			self.appID = 'N' + self.appID
-
-		# For non-registered entities, the appID has to start with an 'N'
-
-
 		self.AEID = AEID
 		""" String. The identifier of the Application Entity. Assigned by the application or the CSE. """
 
@@ -71,16 +78,14 @@ class AE(ResourceBase):
 		self.supportedReleaseVersions = ['3']
 		""" List of String. The list of supported release versions. """
 
-		# TODO more attributes
-
 		if instantly:
 			if not self.get():
-				EXC.CSEOperationError('Cannot get or create AE. '  + MCA.lastError)
+				raise EXC.CSEOperationError(f'Cannot get or create AE. {MCA.lastError}')
 
 
 	def __str__(self):
 		result = 'AE:\n'
-		result += ResourceBase.__str__(self)
+		result += super().__str__()
 		result += INT.strResource('appID', 'api', self.appID)
 		result += INT.strResource('AEID', 'aei', self.AEID)
 		result += INT.strResource('requestReachability', 'rr', self.requestReachability)
@@ -97,49 +102,80 @@ class AE(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Container, filter=filter)
 
 
-	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None):
+	def addContainer(self, 
+					 resourceName: str | None = None, 
+					 maxNrOfInstances: int | None = None, 
+					 maxByteSize: int | None = None, 
+					 maxInstanceAge: int | None = None, 
+					 instantly: bool = True, 
+					 **kwargs):
 		"""
-		Add a new container. This is a convenience function that actually creates a new
-		&lt;container> resource in the &lt;AE>. It returns the new
-		*Container* object, or None.
+		Add a new <container> sub-resource. 
+
+		Args:
+			resourceName: Name of the new container.
+			maxNrOfInstances: Max number of contentInstances allowed.
+			maxByteSize: Max total byte size allowed.
+			maxInstanceAge: Max age of instances in seconds.
+			instantly: If True, immediately sync with the CSE.
+			**kwargs: Optional attributes like labels, originator, etc.
 		"""
-		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels, originator=originator)
-
-
-	# def flexContainers(self, filter=None):
-	# 	"""
-	# 	Return a list of all &lt;flexContainer> resources of this &lt;AE>, or an empty list.
-	# 	"""
-	# 	return _findSubResource(self, CON.Type_FlexContainer, filter=filter)
-
-
-	# def findFlexContainer(self, resourceName):
-	# 	"""
-	# 	Find a &lt;flexContainer> resource by its *resourceName*, or None.
-	# 	"""
-	# 	return _getResourceFromCSEByResourceName(CON.Type_FlexContainer, resourceName, self)
+		from .Container import Container
+		return Container(
+			parent=self, 
+			resourceName=resourceName, 
+			maxNrOfInstances=maxNrOfInstances, 
+			maxByteSize=maxByteSize, 
+			maxInstanceAge=maxInstanceAge, 
+			instantly=instantly, 
+			**kwargs
+		)
 
 
 	def groups(self, filter=None):
 		"""
-		Return a list of all &lt;group> resources of this &lt;AE>, or an empty list.
+		Return a list of all <group> resources of this <AE>, or an empty list.
 		"""
 		return INT._findSubResource(self, CON.Type_Group, filter=filter)
 
 
-	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], originator=None,  instantly=True):
+	def addGroup(self, 
+				 resourceName: str | None = None, 
+				 resources: list | None = None, 
+				 maxNrOfMembers: int = CON.Grp_def_maxNrOfMembers, 
+				 consistencyStrategy: int = CON.Grp_ABANDON_MEMBER, 
+				 groupName: str | None = None, 
+				 instantly: bool = True, 
+				 **kwargs):
 		"""
-		Add a new group. This is a convenience function that actually creates a new
-		&lt;group> resource in the &lt;AE>. It returns the new
-		*Group* object, or None.
+		Add a new <group> sub-resource.
+
+		Args:
+			resourceName: Name of the group resource.
+			resources: List of member resource objects.
+			maxNrOfMembers: Max members allowed in the group.
+			consistencyStrategy: Strategy for member type validation.
+			groupName: Human-readable name for the group.
+			instantly: If True, immediately sync with the CSE.
+			**kwargs: Optional attributes like labels, originator, etc.
 		"""
-		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels, originator=originator)
+		from .Group import Group
+		return Group(
+			parent=self, 
+			resourceName=resourceName, 
+			resources=resources, 
+			maxNrOfMembers=maxNrOfMembers, 
+			consistencyStrategy=consistencyStrategy, 
+			groupName=groupName, 
+			instantly=instantly, 
+			**kwargs
+		)
 
 
-	def _copy(self, resource):
-		ResourceBase._copy(self, resource)
+	def _copy(self, resource: 'AE'):
+		super()._copy(resource)
 		self.appID = resource.appID
 		self.AEID = resource.AEID
 		self.requestReachability = resource.requestReachability
 		self.pointOfAccess = resource.pointOfAccess
-
+		self.nodeLink = resource.nodeLink

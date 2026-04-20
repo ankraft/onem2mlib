@@ -4,45 +4,48 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the &lt;Node> resource.
+#	This module implements the class for the <Node> resource.
 #
 
 import logging
 import onem2mlib.marshalling as M
 import onem2mlib.constants as CON
 import onem2mlib.internal as INT
+import onem2mlib.mcarequests as MCA
+import onem2mlib.exceptions as EXC
 from .ResourceBase import ResourceBase
 
 logger = logging.getLogger(__name__)
-# TODO: support mgmtObjects
 
 class Node(ResourceBase):
 	"""
-	This class implements the oneM2M &lt;node> resource. 
+	This class implements the oneM2M <node> resource. 
 
-	It is used represent nodes, or devices.
+	It is used to represent nodes, or devices.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, nodeID=None, mgmtClientAddress=None, labels = [], originator=None, instantly=True):
+	def __init__(self, 
+				 nodeID: str | None = None, 
+				 mgmtClientAddress: str | None = None, 
+				 instantly: bool = True, 
+				 **kwargs):
 		"""
 		Initialize the &lt;node> resource. 
 
 		Args:
-
-		- *parent*: The parent resource object in which the &lt;contentInstance> resource
-			will be created.
-		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
-			a `onem2mlib.exceptions.CSEOperationError` exception in case of an error.
-		- All other arguments initialize the status variables of the same name in
-			&lt;subscription> instance or `onem2mlib.ResourceBase`.
+			nodeID: The M2M-Node-ID (Mandatory).
+			mgmtClientAddress: Physical address of the management client.
+			instantly: If True, immediately sync with the CSE.
+			**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
 		"""
-	
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Node, CON.Type_Node_SN, labels=labels, originator=originator)
+
+		super().__init__(type=CON.Type_Node, typeShortName=CON.Type_Node_SN, **kwargs)
+
 		self._marshallers = [M._Node_parseXML, M._Node_createXML,
 							 M._Node_parseJSON, M._Node_createJSON]
 
-		if nodeID == None or len(nodeID) == 0:
-			raise EXC.ParameterError('nodeID is mandatory.')
+		if not nodeID:
+			raise EXC.ParameterError('nodeID is mandatory for <node> resources.')
 		self.nodeID = nodeID
 		"""The M2M-Node-ID of the node which is represented by this &lt;node> resource."""
 
@@ -89,31 +92,25 @@ class Node(ResourceBase):
 		
 		if instantly:
 			if not self.get():
-				logger.error('Cannot get or create Node. '  + MCA.lastError)
-				raise EXC.CSEOperationError('Cannot get or create Node. '  + MCA.lastError)
+				logger.error(f'Cannot get or create Node. {MCA.lastError}')
+				raise EXC.CSEOperationError(f'Cannot get or create Node. {MCA.lastError}')
 
 
 	def __str__(self):
 		result = 'Node:\n'
-		result += ResourceBase.__str__(self)
+		result += super().__str__()
 		result += INT.strResource('nodeID', 'ni', self.nodeID)
-		if self.hostedCSELink:
-			result += INT.strResource('hostedCSELink', 'hcl', self.hostedCSELink)
-		if self.hostedAELinks != -1:
-			result += INT.strResource('hostedAELinks', 'hael', self.hostedAELinks)
-		if self.hostedServiceLinks:
-			result += INT.strResource('hostedServiceLinks', 'hsl', self.hostedServiceLinks)
-		if self.mgmtClientAddress:
-			result += INT.strResource('mgmtClientAddress', 'mgca', self.mgmtClientAddress)
-		if self.roamingStatus:
-			result += INT.strResource('roamingStatus', 'rms', self.roamingStatus)
-		if self.networkID:
-			result += INT.strResource('networkID', 'nid', self.networkID)
+		result += INT.strResource('hostedCSELink', 'hcl', self.hostedCSELink)
+		result += INT.strResource('hostedAELinks', 'hael', self.hostedAELinks)
+		result += INT.strResource('hostedServiceLinks', 'hsl', self.hostedServiceLinks)
+		result += INT.strResource('mgmtClientAddress', 'mgca', self.mgmtClientAddress)
+		result += INT.strResource('roamingStatus', 'rms', self.roamingStatus)
+		result += INT.strResource('networkID', 'nid', self.networkID)
 		return result
 
 
-	def _copy(self, resource):
-		ResourceBase._copy(self, resource)
+	def _copy(self, resource: 'Node'):
+		super()._copy(resource)
 		self.nodeID = resource.nodeID
 		self.hostedCSELink = resource.hostedCSELink
 		self.hostedAELinks = resource.hostedAELinks
@@ -121,4 +118,3 @@ class Node(ResourceBase):
 		self.mgmtClientAddress = resource.mgmtClientAddress
 		self.roamingStatus = resource.roamingStatus
 		self.networkID = resource.networkID
-

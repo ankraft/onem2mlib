@@ -22,8 +22,7 @@ class ResourceBase:
 	The ResourceBase is the base class for most of resource classes. It handles the common
 	resource attributes.
 	"""
-
-	def __init__(self, parent, resourceName, resourceID, type, typeShortName, namespace='m2m', labels=[], originator=None, accessControlPolicies=None):
+	def __init__(self, **kwargs):
 		"""
 		Initialize a ResourceBase instance.
 
@@ -34,35 +33,44 @@ class ResourceBase:
 		- All other arguments initialize the status variables of the same name in the
 			ResourceBase instance.
 		"""		
-		self.parent	= parent
+		self.parent = kwargs.pop('parent', None)
 		""" Resource instance object. The parent resource of this resource. """
 
 		self.session = None
 		""" Session. The Session object of the parent. """
-		if parent:
-			self.session = parent.session
-		
-		self.type = type
+		if self.parent:
+			self.session = self.parent.session   
+
+		self.type = kwargs.pop('type', None)
 		""" Integer. The type of the resource. """
 
-		self.typeShortName = typeShortName
+		self.typeShortName = kwargs.pop('typeShortName', None)
 		""" String. The resource type as a shortname. """
-		
-		self.resourceID	= resourceID
+
+		self.resourceID = kwargs.pop('resourceID', None)
 		""" String. The resource ID of the resource. Assigned by the CSE.
 			For a &lt;CSEBase> this is the *cseID*.2"""
-		
-		self.resourceName = resourceName
+
+		self.resourceName = kwargs.pop('resourceName', None)
 		""" String. The resource name of the resource. Assigned by the application or the CSE. 
 			For a &lt;CSEBase> this is the *cseName*."""
-		
-		self.originator = originator
+
+		self.originator = kwargs.pop('originator', None)
 		""" String. The originator of the resource. Assigned by the application or the CSE. 
 			For a &lt;CSEBase> this is the *x-origin*."""
 
-		self.namespace = namespace
+		self.namespace = kwargs.pop('namespace', 'm2m')
 		""" String. The namespace of the resource. """
-		
+  
+		self.labels = kwargs.pop('labels', [])
+		""" List of String. A list of labels of the resource. This might be an empty list. """
+  
+		accessControlPolicies = kwargs.pop('accessControlPolicies', None)
+		self.accessControlPolicyIDs = []
+		""" List of String. A list of ACP resources. This might be an empty list."""
+		if accessControlPolicies:
+			self.setAccessControlPolicies(accessControlPolicies)
+
 		self.parentID = None
 		""" String. The resource ID of the parent resource. Assigned by the CSE. """
 		
@@ -71,20 +79,11 @@ class ResourceBase:
 		
 		self.lastModifiedTime = None
 		""" String. The time of the last modification of the resource. Assigned by the CSE. R/O. """
-		
-		self.accessControlPolicyIDs = []
-		if accessControlPolicies:
-			self.setAccessControlPolicies(accessControlPolicies)
-		""" List of String. A list of ACP resources. This might be an empty list."""
-		
 		self.expirationTime	= None
 		""" String. The expiration time of the resource, or None. Assigned by the CSE. R/O. """
 		
 		self.stateTag = 0
 		"""Integer. An incremental counter of modification on the resource. Assigned by the CSE. R/O."""
-		
-		self.labels = labels
-		""" List of String. A list of labels of the resource. This might be an empty list. """
 		
 		self.dynamicAuthorizationConsultationIDs = []
 		""" List of String. A List of dynamic authorization consultation IDs. This might be an empty list. """
@@ -100,8 +99,8 @@ class ResourceBase:
 		# Internal list of per-class marshalling methods
 		# [ parseXML, createXML, parseJSON, createJSON ]
 		self._marshallers = [ None, None, None, None ]
-		# TODO for all classes
-		# TODO move methods to resourceBase
+
+		super().__init__()
 
 
 	def __str__(self):

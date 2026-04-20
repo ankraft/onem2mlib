@@ -25,7 +25,6 @@ def callback(resource):
 	else:
 		print(resource)
 
-
 if __name__ == '__main__':
 	logging.basicConfig(level=conf.LOGGINGLEVEL)
 	logging.getLogger('urllib3').setLevel(logging.CRITICAL)
@@ -41,11 +40,11 @@ if __name__ == '__main__':
 	cse = session.getCSEBase()
 
 	# create an <AE> resource
-	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, aeName, originator='C'+aeName)
+	aeName = 'exampleAE_'+str(uuid.uuid4().hex) # unique name for the <AE>
+	ae = AE(parent=cse, resourceName=aeName, originator='C'+aeName)
 
 	# create a <container> and add it to the <AE>
-	cnt = Container(ae)
+	cnt = Container(parent=ae)
 	cnt.subscribe()
 
 	# Change the <container> to trigger a notification for that resource
@@ -65,5 +64,3 @@ if __name__ == '__main__':
 
 	# Cleanup
 	ae.deleteFromCSE()
-
-

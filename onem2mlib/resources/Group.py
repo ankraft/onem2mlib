@@ -4,16 +4,18 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the &lt;Group> resource.
+#	This module implements the class for the <Group> resource.
 #
 
 import logging
 import onem2mlib.marshalling as M
 import onem2mlib.constants as CON
-from .ResourceBase import *
+import onem2mlib.internal as INT
+import onem2mlib.mcarequests as MCA
+import onem2mlib.exceptions as EXC
+from .ResourceBase import ResourceBase
 
 logger = logging.getLogger(__name__)
-
 
 class Group(ResourceBase):
 	"""
@@ -25,22 +27,25 @@ class Group(ResourceBase):
 	the group and the &lt;fanOutPoint> virtual resource that enables generic operations to be applied 
 	to all the resources represented by those members.
 	"""
-	def __init__(self, parent=None, resourceName=None, resourceID=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], originator=None, accessControlPolicies=None, instantly=True):
+
+	def __init__(self, resources: list | None = None, maxNrOfMembers: int = CON.Grp_def_maxNrOfMembers, 
+				consistencyStrategy: int = CON.Grp_ABANDON_MEMBER, groupName: str | None = None, 
+				instantly: bool = True, **kwargs):
 		"""
 		Initialize the &lt;group> resource. 
 
 		Args:
+			resources: A list of resource instances to be members of the group.
+			maxNrOfMembers: Maximum number of members allowed.
+			consistencyStrategy: How to handle type inconsistencies.
+			groupName: Human readable name of the group.
+			instantly: If True, the resource is immediately synced with the CSE.
+			**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
+		"""
+		super().__init__(type=CON.Type_Group, typeShortName=CON.Type_Group_SN, **kwargs)
 
-		- *parent*: The parent resource object in which the &lt;group> resource
-			will be created.
-		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
-			a `onem2mlib.exceptions.CSEOperationError` exception in case of an error.
-		- All other arguments initialize the status variables of the same name in
-			&lt;group> instance or `onem2mlib.ResourceBase`.
-		"""		
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Group, CON.Type_Group_SN, labels=labels, originator=originator, accessControlPolicies=accessControlPolicies)
 		self._marshallers = [M._Group_parseXML, M._Group_createXML,
-							 M._Group_parseJSON, M._Group_createJSON]
+							M._Group_parseJSON, M._Group_createJSON]
 
 		self.maxNrOfMembers = maxNrOfMembers
 		""" Integer. Maximum number of members in the &lt;group>. """
@@ -75,19 +80,7 @@ class Group(ResourceBase):
 		to the &lt;fanOutPoint> resource, the request is fanned out to each of the members of the
 		&lt;group> resource indicated by the `onem2mlib.Group.memberIDs` attribute of the &lt;group> resource. R/O. """
 
-		# Find the common type, or mixed
-		t = -1
-		for res in self.resources:
-			if res.type != t:
-				if t == -1:
-					t = res.type
-				else:
-					t = CON.Type_Mixed
-					break
-		if t == -1:
-			t = CON.Type_Mixed
-		
-		self.memberType = t
+		self.memberType = self._determineMemberType()
 		""" Integer. This is the resource type of the member resources of the group, if all member
 		resources (including the member resources in any sub-groups) are of the same type.
 		Otherwise, it is of type 'mixed'. W/O. """
@@ -99,13 +92,25 @@ class Group(ResourceBase):
 
 		if instantly:
 			if not self.get():
-				logger.critical('Cannot get or create Group. '  + MCA.lastError)
-				raise EXC.CSEOperationError('Cannot get or create Group. '  + MCA.lastError)
+				logger.critical(f'Cannot get or create Group. {MCA.lastError}')
+				raise EXC.CSEOperationError(f'Cannot get or create Group. {MCA.lastError}')
+
+
+	def _determineMemberType(self) -> int:
+		""" Internal helper to determine if the group is of a specific type or 'Mixed'. """
+		if not self.resources:
+			return CON.Type_Mixed
+		
+		first_type = self.resources[0].type
+		for res in self.resources:
+			if res.type != first_type:
+				return CON.Type_Mixed
+		return first_type
 
 
 	def __str__(self):
 		result = 'Group:\n'
-		result += ResourceBase.__str__(self)
+		result += super().__str__()
 		result += INT.strResource('maxNrOfMembers', 'mnm', self.maxNrOfMembers)
 		result += INT.strResource('memberType', 'mt', self.memberType)
 		result += INT.strResource('currentNrOfMembers', 'cnm', self.currentNrOfMembers)
@@ -122,7 +127,7 @@ class Group(ResourceBase):
 		Return the resources that are managed by this &lt;group> resource. This method returns a list of
 		the resources, or *None*.
 		"""
-		if not self._isValidFanOutPoint: return None
+		if not self._isValidFanOutPoint(): return None
 		response = MCA.get(self.session, self.fanOutPoint, originator=self.originator)
 		return self._parseFanOutPointResponse(response)
 
@@ -135,8 +140,9 @@ class Group(ResourceBase):
 		Note, that the &lt;group> itself is not deleted or altered. It must be deleted separately, 
 		if necessary.
 		"""
-		if not self._isValidFanOutPoint: return None
-		response = MCA.delete(self.session, self.fanOutPoint)
+		if not self._isValidFanOutPoint():
+			return False
+		response = MCA.delete(self.session, self.fanOutPoint, originator=self.originator)
 		return response and response.status_code == 200
 
 
@@ -154,32 +160,22 @@ class Group(ResourceBase):
 		`onem2mlib.ResourceBase.lastModifiedTime`. The order of the instances in the result list is the same as the order of 
 		the resource identifiers in `onem2mlib.Group.memberIDs`.
 		"""
-		if not self._isValidFanOutPoint: return None
-		if self.session.encoding == CON.Encoding_XML:
-			body = INT.xmlToString(resource._createXML(isUpdate=True))
-		elif self.session.encoding == CON.Encoding_JSON:
-			body = json.dumps(resource._createJSON(isUpdate=True))
-		else:
-			logger.error('Encoding not supported: ' + str(self.session.encoding))
-			raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
-		response = MCA.update(self.session, self.fanOutPoint, resource.type, body)
+		if not self._isValidFanOutPoint(): return None
+		
+		# Use internal helper to generate body based on encoding
+		body = resource._createContent(isUpdate=True)
+		response = MCA.update(self.session, self.fanOutPoint, resource.type, body, originator=self.originator)
 		return self._parseFanOutPointResponse(response)
 
 
-	def createGroupResources(self, resource, originator=None):
+	def createGroupResources(self, resource):
 		"""
 		Create/add a resource at all the resources managed by this &lt;group> resource.
 
 		It returns a list of the created resources, or *None* in case of an error.
 		"""
-		if not self._isValidFanOutPoint: return None
-		if self.session.encoding == CON.Encoding_XML:
-			body = INT.xmlToString(resource._createXML(isUpdate=True))
-		elif self.session.encoding == CON.Encoding_JSON:
-			body = json.dumps(resource._createJSON(isUpdate=True))
-		else:
-			logger.error('Encoding not supported: ' + str(self.session.encoding))
-			raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
+		if not self._isValidFanOutPoint(): return None
+		body = resource._createContent(isUpdate=True)
 		response = MCA.create(self.session, self.fanOutPoint, resource.type, body, originator=self.originator)
 		return self._parseFanOutPointResponse(response)
 
@@ -226,8 +222,8 @@ class Group(ResourceBase):
 		return  self.fanOutPoint and len(self.fanOutPoint) > 0 and self.session
 
 
-	def _copy(self, resource):
-		ResourceBase._copy(self, resource)
+	def _copy(self, resource: 'Group'):
+		super()._copy(resource)
 		self.maxNrOfMembers = resource.maxNrOfMembers
 		self.memberType = resource.memberType
 		self.currentNrOfMembers = resource.currentNrOfMembers

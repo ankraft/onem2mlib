@@ -31,7 +31,7 @@ if __name__ == '__main__':
 	#
 	privileges = [ 
 		AccessControlRule([conf.ORIGINATOR], CON.Acp_ALL),
-		AccessControlRule(['user:user'], CON.Acp_RETRIEVE+CON.Acp_DISCOVER)
+		AccessControlRule(['user:user'], CON.Acp_RETRIEVE + CON.Acp_DISCOVER)
 	]
 	selfPrivileges = [ 
 		AccessControlRule([conf.ORIGINATOR], CON.Acp_ALL)
@@ -39,8 +39,12 @@ if __name__ == '__main__':
 
 	# # Create a new accessControlPolicy with the previous created privileges and self-privileges
 	acpName = 'exampleACP'	# unique name
-	acp = AccessControlPolicy(cse, resourceName=acpName, privileges=privileges, selfPrivileges=selfPrivileges)
-
+	acp = AccessControlPolicy(
+		parent=cse, 
+		resourceName=acpName, 
+		privileges=privileges, 
+		selfPrivileges=selfPrivileges
+	)
 
 	#
 	# Create and print an <AE> resource on the CSE in one step.
@@ -48,20 +52,25 @@ if __name__ == '__main__':
 	# is created or, if it already exsists, the existing resource is returned.
 	#
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName, originator='C' + aeName, accessControlPolicies=acp)	# create or retrieve
-	print(ae)	# This should be the same <AE> as before
+	ae = AE(
+		parent=cse, 
+		resourceName=aeName, 
+		originator='C' + aeName, 
+		accessControlPolicies=acp
+	)
+	print(ae)
 
 	#
 	# Create an <AE> with the convenient method and print it.
 	#
 	aeName2 = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae2 = cse.addAE(aeName2, originator='C' + aeName2)
+	ae2 = cse.addAE(
+		resourceName=aeName2, 
+		originator='C' + aeName2
+	)
  
 	# add AccessControlPolicy after creating the AE
 
 	ae2.addAccessControlPolicy(acp)
 
 	print(ae2)
-
-
-

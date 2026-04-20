@@ -12,6 +12,7 @@ import onem2mlib.marshalling as M
 import onem2mlib.constants as CON
 import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
+import onem2mlib.exceptions as EXC
 
 from .ResourceBase import ResourceBase
 
@@ -24,21 +25,24 @@ class Container(ResourceBase):
 	It is usually a sub-resource of the &lt;AE> or other resources.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None, accessControlPolicies=None, instantly=True):
+	def __init__(self,
+                 maxNrOfInstances: int | None = None,
+                 maxByteSize: int | None = None, 
+				 maxInstanceAge: int |None = None,
+     			 instantly: bool = True,
+        		 **kwargs):
 		"""
 		Initialize the &lt;container> resource. 
 
 		Args:
+			maxNrOfInstances: Maximum number of direct child <contentInstance> resources.
+			maxByteSize: Maximum size in bytes of data allocated for the container.
+			maxInstanceAge: Maximum age (seconds) of a child <contentInstance>.
+			instantly: If True, the resource is immediately synced with the CSE.
+			**kwargs: Inherited attributes (parent, resourceName, resourceID, labels, originator, etc.)
+		"""
+		super().__init__(type=CON.Type_Container, typeShortName=CON.Type_Container_SN, **kwargs)
 
-		- *parent*: The parent resource object in which the &lt;container> resource
-			will be created.
-		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
-			a `onem2mlib.exceptions.CSEOperationError` exception in case of an error.
-		- All other arguments initialize the status variables of the same name in the
-			&lt;container> instance or `onem2mlib.ResourceBase`.
-		"""	
-
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_Container, CON.Type_Container_SN, labels=labels, originator=originator, accessControlPolicies=accessControlPolicies)
 		self._marshallers = [M._Container_parseXML, M._Container_createXML,
 							 M._Container_parseJSON, M._Container_createJSON]
 
@@ -75,13 +79,13 @@ class Container(ResourceBase):
 
 		if instantly:
 			if not self.get():
-				logger.critical('Cannot get or create Container. '  + MCA.lastError)
-				raise EXC.CSEOperationError('Cannot get or create Container. '  + MCA.lastError)
+				logger.critical(f'Cannot get or create Container. {MCA.lastError}')
+				raise EXC.CSEOperationError(f'Cannot get or create Container. {MCA.lastError}')
 
 
 	def __str__(self):
 		result = 'Container:\n'
-		result += ResourceBase.__str__(self)
+		result += super().__str__()
 		result += INT.strResource('maxNrOfInstances', 'mni', self.maxNrOfInstances)
 		result += INT.strResource('maxByteSize', 'mbs', self.maxByteSize)
 		result += INT.strResource('maxInstanceAge', 'mia', self.maxInstanceAge)
@@ -99,13 +103,34 @@ class Container(ResourceBase):
 		return INT._findSubResource(self, CON.Type_Container, filter=filter)
 
 
-	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None):
+	def addContainer(self,
+                     resourceName: str | None = None,
+                     maxNrOfInstances: int | None = None, 
+                 	 maxByteSize: int | None = None,
+                     maxInstanceAge: int | None = None,
+                     **kwargs):
 		"""
-		Add a new container. This is a convenience function that actually creates a new
-		&lt;container> resource in the &lt;container>. It returns the new
-		*Container* object, or None.
+		Add a new <container> sub-resource. 
+
+		Args:
+			resourceName: The name of the new container.
+			maxNrOfInstances: Maximum number of child contentInstances.
+			maxByteSize: Maximum byte size of all child contentInstances.
+			maxInstanceAge: Maximum age of child contentInstances (seconds).
+			**kwargs: Optional base attributes (labels, originator, accessControlPolicies, etc.)
+		
+		Returns:
+			The new Container object.
 		"""
-		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels, originator=originator)
+
+		return Container(
+			parent=self,
+			resourceName=resourceName,
+			maxNrOfInstances=maxNrOfInstances,
+			maxByteSize=maxByteSize,
+			maxInstanceAge=maxInstanceAge,
+			**kwargs
+		)
 
 
 	def contentInstances(self, filter=None):
@@ -122,19 +147,29 @@ class Container(ResourceBase):
 		return [cin.content for cin in self.contentInstances(filter=filter)]
 
 
-	def addContent(self, value, labels=[], originator=None):
+	def addContent(self,
+                   value,
+                   contentInfo: str | None = None,
+                   **kwargs):
 		"""
-		Add a new value to a container. The value is automatically converted to its string
-		representation.
-		This is a convenience function that actually creates a new&lt;contentInstance> resource
-		for that value in the &lt;container>. returns the new *ContentInstance* object, or None.
+		Add a new value to a container as a <contentInstance>.
+		
+		Args:
+			value: The content to be added (converted to str if necessary).
+			contentInfo: Optional metadata (e.g., 'text/plain:0').
+			**kwargs: Optional attributes common to all resources (resourceName, labels, originator).
 		"""
-
 		from .ContentInstance import ContentInstance
- 
-		if not isinstance(value, str):
+		
+		if value is not None and not isinstance(value, str):
 			value = str(value)
-		return ContentInstance(self, content=value, labels=labels, originator=originator)
+			
+		return ContentInstance(
+			parent=self, 
+			content=value, 
+			contentInfo=contentInfo, 
+			**kwargs
+		)
 
 
 	def latestContentInstance(self):
@@ -151,6 +186,9 @@ class Container(ResourceBase):
 		"""
 		Return the oldest &lt;contentInstance> sub-resource from this container, or None.
 		"""
+  
+		from .ContentInstance import ContentInstance
+  
 		return self._getContentInstance(self.oldest)
 
 
@@ -179,20 +217,25 @@ class Container(ResourceBase):
 
 
 	def _getContentInstance(self, path):
-
+		""" Internal helper to retrieve a child resource by its path (URI). """
 		from .ContentInstance import ContentInstance
- 
-		if not self.session or not path: return None
+		
+		if not self.session or not path: 
+			return None
+		
 		response = MCA.get(self.session, path, originator=self.originator)
 		if response and response.status_code == 200:
-			contentInstance = ContentInstance(self, instantly=False)
+			contentInstance = ContentInstance(
+				parent=self, 
+				instantly=False
+			)
 			contentInstance._parseResponse(response)
 			return contentInstance
 		return None
 
 
-	def _copy(self, resource):
-		ResourceBase._copy(self, resource)
+	def _copy(self, resource: 'Container'):
+		super()._copy(resource)
 		self.maxNrOfInstances = resource.maxNrOfInstances
 		self.maxByteSize = resource.maxByteSize
 		self.maxInstanceAge = resource.maxInstanceAge

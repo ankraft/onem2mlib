@@ -1,19 +1,21 @@
 #
-#	AE.py
+#	CSEBase.py
 #
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the &lt;CSEBase> resource.
+#	This module implements the class for the <CSEBase> resource.
 #
 
 import logging
 import onem2mlib.marshalling as M
-from .ResourceBase import *
-from .AE import *
+import onem2mlib.constants as CON
+import onem2mlib.internal as INT
+import onem2mlib.mcarequests as MCA
+import onem2mlib.exceptions as EXC
+from .ResourceBase import ResourceBase
 
 logger = logging.getLogger(__name__)
-
 
 class CSEBase(ResourceBase):
 	"""
@@ -23,24 +25,32 @@ class CSEBase(ResourceBase):
 	CSE immediatly.
 	"""
 
-	def __init__(self, session=None, cseID=None, resourceName=None, originator = None, accessControlPolicies=None, instantly=True):
+	def __init__(self, 
+				 session=None, 
+				 cseID: str | None = None, 
+				 instantly: bool = True, 
+				 **kwargs):
 		"""
 		Initialize a CSEBase object.
 
 		Args:
-
-		- *session*: A `onem2mlib.Session` object that holds the information to connect to a CSE.
-		- *cseid*: The CSE-ID of the CSE.
-
-		Internally, the *cseID* is assigned to the `onem2mlib.ResourceBase.resourceID` attribute, and the *csename* is handled
-		by the *resourceName*. 
+			session: A Session object holding connection info.
+			cseID: The CSE-ID of the CSE (assigned to resourceID).
+			instantly: If True, the resource is immediately retrieved from the CSE.
+			**kwargs: Inherited attributes (resourceName, originator, etc.)
 		"""
-		ResourceBase.__init__(self, None, resourceName, cseID, CON.Type_CSEBase, CON.Type_CSEBase_SN, originator=originator, accessControlPolicies=accessControlPolicies)
+		super().__init__(
+			parent=None, 
+			resourceID=cseID, 
+			type=CON.Type_CSEBase, 
+			typeShortName=CON.Type_CSEBase_SN, 
+			**kwargs
+		)
 
-		self.session = session # Must assign session manually.
 		self._marshallers = [M._CSEBase_parseXML, None, M._CSEBase_parseJSON, None]
 		
-		self.cseType = None
+		self.session = session
+		self.cseType: int | None = None
 		""" Integer. The type of the CSE. See also the `Constants.CSE_Type_*` constants.
 			Assigned by the CSE. R/O."""
 		
@@ -53,18 +63,109 @@ class CSEBase(ResourceBase):
 
 		if instantly:
 			if not self.retrieveFromCSE():
-				logger.critical('Cannot get CSEBase. ' + MCA.lastError)
-				raise EXC.CSEOperationError('Cannot get CSEBase. ' + MCA.lastError)
+				logger.critical(f'Cannot get CSEBase. {MCA.lastError}')
+				raise EXC.CSEOperationError(f'Cannot get CSEBase. {MCA.lastError}')
 
 
 	def __str__(self):
 		result = 'CSEBase:\n'
-		result += ResourceBase.__str__(self)
+		result += super().__str__()
 		result += INT.strResource('cseType', 'cst', self.cseType)
 		result += INT.strResource('supportedResourceTypes', 'srt', self.supportedResourceTypes)
 		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
 		return result
 
+
+	# --- Convenience Methods for Child Resources ---
+
+	def addAE(self, 
+			  resourceName: str | None = None, 
+			  appID: str | None = None, 
+			  AEID: str | None = None, 
+			  requestReachability: bool = True, 
+			  instantly: bool = True, 
+			  **kwargs):
+		"""
+		Convenience function to create a new <AE> in the <CSEBase>.
+		"""
+		from .AE import AE
+		return AE(
+			parent=self,
+			resourceName=resourceName,
+			appID=appID,
+			AEID=AEID,
+			requestReachability=requestReachability,
+			instantly=instantly,
+			**kwargs
+		)
+
+
+	def addContainer(self, 
+					 resourceName: str | None = None, 
+					 maxNrOfInstances: int | None = None, 
+					 maxByteSize: int | None = None, 
+					 maxInstanceAge: int | None = None, 
+					 instantly: bool = True, 
+					 **kwargs):
+		"""
+		Convenience function to create a new <container> in the <CSEBase>.
+		"""
+		from .Container import Container
+		return Container(
+			parent=self,
+			resourceName=resourceName,
+			maxNrOfInstances=maxNrOfInstances,
+			maxByteSize=maxByteSize,
+			maxInstanceAge=maxInstanceAge,
+			instantly=instantly,
+			**kwargs
+		)
+
+
+	def addGroup(self, 
+				 resourceName: str | None = None, 
+				 resources: list | None = None, 
+				 maxNrOfMembers: int = CON.Grp_def_maxNrOfMembers, 
+				 consistencyStrategy: int = CON.Grp_ABANDON_MEMBER, 
+				 groupName: str | None = None, 
+				 instantly: bool = True, 
+				 **kwargs):
+		"""
+		Convenience function to create a new <group> in the <CSEBase>.
+		"""
+		from .Group import Group
+		return Group(
+			parent=self,
+			resourceName=resourceName,
+			resources=resources,
+			maxNrOfMembers=maxNrOfMembers,
+			consistencyStrategy=consistencyStrategy,
+			groupName=groupName,
+			instantly=instantly,
+			**kwargs
+		)
+
+	def addFlexContainer(self, 
+						 resourceSpecialization: str | None = None, 
+						 contentDefinition: str | None = None, 
+						 attributes: dict | None = None, 
+						 instantly: bool = True, 
+						 **kwargs):
+		"""
+		Convenience function to create a new <flexContainer> in the <CSEBase>.
+		"""
+		from .FlexContainer import FlexContainer
+		return FlexContainer(
+			parent=self,
+			resourceSpecialization=resourceSpecialization,
+			contentDefinition=contentDefinition,
+			attributes=attributes,
+			instantly=instantly,
+			**kwargs
+		)
+
+
+	# --- Resource Discovery Helpers ---
 
 	def accessControlPolicies(self, filter=None):
 		"""
@@ -72,22 +173,11 @@ class CSEBase(ResourceBase):
 		"""
 		return INT._findSubResource(self, CON.Type_ACP, filter=filter)
 
-
 	def aes(self, filter=None):
 		"""
 		Return a list of &lt;AE> resources from this CSE, or an empty list.
 		"""
 		return INT._findSubResource(self, CON.Type_AE, filter=filter)
-
-
-	def addAE(self, resourceName=None, appID=None, AEID=None, resourceID=None, requestReachability=True, labels=[], originator=None):
-		"""
-		Add a new AE. This is a convenience function that actually creates a new
-		&lt;AE> resource in the &lt;CSEBase>. It returns the new
-		*AE* object, or None.
-		"""
-		return AE(self, resourceName, appID, AEID, resourceID, requestReachability, labels=labels, originator=originator)
-
 
 	def containers(self, filter=None):
 		"""
@@ -95,42 +185,18 @@ class CSEBase(ResourceBase):
 		"""
 		return INT._findSubResource(self, CON.Type_Container, filter=filter)
 
-
-	def addContainer(self, resourceName=None, maxNrOfInstances=None, maxByteSize=None, maxInstanceAge=None, labels=[], originator=None):
-		"""
-		Add a new container. This is a convenience function that actually creates a new
-		&lt;container> resource in the &lt;CSEBase>. It returns the new
-		*Container* object, or None.
-		"""
-		return Container(self, resourceName, maxNrOfInstances=maxNrOfInstances, maxByteSize=maxByteSize, maxInstanceAge=maxInstanceAge, labels=labels, originator=originator)
-
-
 	def groups(self, filter=None):
 		"""
 		Return a list of &lt;group> resources from this CSE, or an empty list.
 		"""
 		return INT._findSubResource(self, CON.Type_Group, filter=filter)
 
-
-	def addGroup(self, resourceName=None, resources=[], maxNrOfMembers=CON.Grp_def_maxNrOfMembers, consistencyStrategy=CON.Grp_ABANDON_MEMBER, groupName=None, labels = [], originator=None, instantly=True):
-		"""
-		Add a new group. This is a convenience function that actually creates a new
-		&lt;group> resource in the &lt;CSEBase>. It returns the new
-		*Group* object, or None.
-		"""
-		return Group(self, resourceName=resourceName, resources=resources, maxNrOfMembers=maxNrOfMembers, consistencyStrategy=consistencyStrategy, groupName=groupName, labels=labels, originator=originator)
-
-
 	def remoteCSEs(self, filter=None):
-		"""
-		Return a list of &lt;remoteCSE> resources from this CSE, or an empty list.
-		"""
 		return INT._findSubResource(self, CON.Type_RemoteCSE, filter=filter)
 
 
-	def _copy(self, resource):
-		ResourceBase._copy(self, resource)
+	def _copy(self, resource: 'CSEBase'):
+		super()._copy(resource)
 		self.cseType = resource.cseType
 		self.supportedResourceTypes = resource.supportedResourceTypes
-		self.pointOfAccess = self.pointOfAccess
-
+		self.pointOfAccess = resource.pointOfAccess

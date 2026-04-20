@@ -15,7 +15,6 @@ sys.path.append('..')
 from onem2mlib import *
 import conf
 
-
 if __name__ == '__main__':
 	logging.basicConfig(level=conf.LOGGINGLEVEL)
 	logging.getLogger('urllib3').setLevel(logging.CRITICAL)
@@ -45,7 +44,7 @@ if __name__ == '__main__':
 		print(remoterCSE)
 		
 		# Create an AE through the local CSE resrource
-		ae = AE(localrCSE, 'testAE')
+		ae = AE(parent=localrCSE, resourceName='testAE')
 		print(ae)
 
 		# Fetch that AE via the remote CSE resource
@@ -54,5 +53,4 @@ if __name__ == '__main__':
 
 		# And delete the AE via the remote CSE
 		aer.deleteFromCSE()
-
-
+  

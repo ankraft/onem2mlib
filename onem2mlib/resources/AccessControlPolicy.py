@@ -4,15 +4,18 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the &lt;AccessControlPolicy> resource.
+#	This module implements the class for the <AccessControlPolicy> resource.
 #
 
 import logging
 import onem2mlib.marshalling as M
-from .ResourceBase import *
+import onem2mlib.constants as CON
+import onem2mlib.internal as INT
+import onem2mlib.mcarequests as MCA
+import onem2mlib.exceptions as EXC
+from .ResourceBase import ResourceBase
 
 logger = logging.getLogger(__name__)
-
 
 class AccessControlPolicy(ResourceBase):
 	"""
@@ -24,44 +27,42 @@ class AccessControlPolicy(ResourceBase):
 	**Note**: Delete associated resources first before deleting the	&lt;accessControlPolicy> resource.
 	"""
 
-	def __init__(self, parent=None, resourceName=None, resourceID=None, privileges = [], selfPrivileges=[], originator=None, instantly=True):
+	def __init__(self,
+              	 privileges: list | None = None,
+                 selfPrivileges: list | None = None, 
+				 instantly: bool = True, **kwargs):
 		"""
-		Initialize the &lt;accessControlPolicy> resource. 
+		Initialize the <accessControlPolicy> resource. 
 
 		Args:
-
-		- *parent*: The parent resource object in which the &lt;accessControlPolicy> resource
-			will be created. This must be a &lt;CSEBase> or &lt;remoteCSE> resource. This might throw a
-			*ParameterError* exception if this is not the case.
-		- *instantly*: The resource will be instantly retrieved from or created on the CSE. This might throw
-			a *CSEOperationError* exception in case of an error.
-		- All other arguments initialize the status variables of the same name in the
-			&lt;accessControlPolicy> instance or `onem2mlib.ResourceBase`.
+			privileges: List of AccessControlRules for external resources.
+			selfPrivileges: List of AccessControlRules for this ACP itself.
+			instantly: If True, sync immediately with the CSE.
+			**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
 		"""
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_ACP, CON.Type_ACP_SN, originator=originator)
+		super().__init__(type=CON.Type_ACP, typeShortName=CON.Type_ACP_SN, **kwargs)
+		
 		self._marshallers = [M._accessControlPolicy_parseXML, M._accessControlPolicy_createXML, 
 							 M._accessControlPolicy_parseJSON, M._accessControlPolicy_createJSON]
 
-		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:
-			logger.error('Parent must be <CSE> or <remoteCSE>.')
-			raise EXC.ParameterError('Parent must be <CSE> or <remoteCSE>.')
+		if self.parent is not None and self.parent.type not in [CON.Type_CSEBase, CON.Type_RemoteCSE]:
+			logger.error('Parent of <ACP> must be <CSEBase> or <remoteCSE>.')
+			raise EXC.ParameterError('Parent must be <CSEBase> or <remoteCSE>.')
 
-		self.privileges = privileges
+		self.privileges = privileges if privileges is not None else []
 		""" A list of *AccessControlRules* that applies to resources referencing this 
 		&lt;accessControlPolicy> resource using the accessControlPolicyID attribute. """
-		
-		self.selfPrivileges = selfPrivileges
+		self.selfPrivileges = selfPrivileges if selfPrivileges is not None else []
 		""" A list of *AccessControlRules* that apply to the &lt;accessControlPolicy> resource itself. """
 
 		if instantly:
 			if not self.get():
-				logger.critical('Cannot get or create ACP. ' + MCA.lastError)
-				raise EXC.CSEOperationError('Cannot get or create ACP. ' + MCA.lastError)
-
+				logger.critical(f'Cannot get or create ACP. {MCA.lastError}')
+				raise EXC.CSEOperationError(f'Cannot get or create ACP. {MCA.lastError}')
 
 	def __str__(self):
 		result = 'ACP:\n'
-		result += ResourceBase.__str__(self)
+		result += super().__str__()
 		result += '\tPrivileges:\n'
 		for p in self.privileges:
 			result += str(p)
@@ -70,43 +71,31 @@ class AccessControlPolicy(ResourceBase):
 			result += str(p)
 		return result
 
+	def _copy(self, resource: 'AccessControlPolicy'):
+		super()._copy(resource)
+		self.privileges = resource.privileges.copy() if resource.privileges else []
+		self.selfPrivileges = resource.selfPrivileges.copy() if resource.selfPrivileges else []
 
-	def _copy(self, resource):
-		ResourceBase._copy(self, resource)
-		self.privileges = resource.privileges
-		self.selfPrivileges = resource.selfPrivileges
 
-
-class AccessControlRule():
+class AccessControlRule:
 	"""
-	This class provides the structure for access control rules that shall be used to define
-	privileges in &lt;accessControlPolicy> resources. It contains:
-
-	- *accessControlOriginators* : The accessControlOriginators is a mandatory parameter in an
-		AccessControlRule. It represents the list of Originators that shall be allowed to use
-		an access control rule. The list of Originators is described as a list of parameters, where the
-		types of the parameter can vary within the list.
-		See also table Table 9.6.2.1-1 of oneM2M's TS-0001.
-	- *accessControlOperations* : The accessControlOperations is a mandatory parameter in an
-		AccessControlRule structure that represents the set of operations that are authorized
-		using this access control rule.
+	Structure for access control rules (acr) used in <ACP> resources.
 	"""
 
-	def __init__(self, accessControlOriginators=[], accessControlOperations=0):
+	def __init__(self,
+                 accessControlOriginators: list[str] | None = None,
+                 accessControlOperations: int = 0):
 		"""
-		Initialize the AccessControlRule. 
-
 		Args:
-
-		- *accessControlOriginators*: A list of originators.
-		- *accessControlOperations*: The combination of operation privileges.
+			accessControlOriginators: A list of originators.
+			accessControlOperations: The combination of operation privileges.
 		"""
-
-		self.accessControlOriginators = accessControlOriginators
+		self.accessControlOriginators = accessControlOriginators if accessControlOriginators is not None else []
 		""" List of string. This attribute specifies the list of originators. R/W. """
-		
+
 		self.accessControlOperations = accessControlOperations
 		""" Integer. This attribute is an OR'ed combination of the operation privileges for this AccessControlRule. R/W. """
+  
 
 	def __str__(self):
 		result =  '\t  accessControlRule(acr):\n'
