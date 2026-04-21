@@ -38,8 +38,11 @@ def _resourceBase_parseXML(obj, root):
 
 
 # Create the XML for only some of the writable attributes.
-def _resourceBase_createXML(obj, isUpdate):
+def _resourceBase_createXML(obj, isUpdate, isAcpiUpdate=False):
 	root = INT.createElement(obj.typeShortName, namespace=obj.namespace )
+	if isUpdate and isAcpiUpdate:
+			INT.addToElement(root, 'acpi', obj.accessControlPolicyIDs)
+			return root
 	if obj.resourceName and not isUpdate: 	# No RN when updating
 		root.attrib['rn'] = obj.resourceName
 	INT.addToElement(root, 'lbl', obj.labels)
@@ -74,8 +77,11 @@ def _resourceBase_parseJSON(obj, jsn):
 
 
 # Create the JSON for only some of the writable attributes.
-def _resourceBase_createJSON(obj, isUpdate):
+def _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate=False):
 	jsn = {}
+	if isUpdate and isAcpiUpdate:
+		INT.addToElementJSON(jsn, 'acpi', obj.accessControlPolicyIDs)
+		return jsn
 	if obj.resourceName and not isUpdate: 	# No RN when updating
 		INT.addToElementJSON(jsn, 'rn', obj.resourceName)
 	INT.addToElementJSON(jsn, 'lbl', obj.labels)
@@ -153,9 +159,9 @@ def _accessControlPolicy_parseXML(obj, root):
 			obj.selfPrivileges.append(acr)
 
 
-def _accessControlPolicy_createXML(obj, isUpdate=False):
+def _accessControlPolicy_createXML(obj, isUpdate=False, isAcpiUpdate=False):
 	# add resource attributes
-	root = _resourceBase_createXML(obj, isUpdate)
+	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
 	pv = INT.addElement(root, 'pv')
 	for p in obj.privileges:
 		_accessControlRule_createXML(p, pv)
@@ -191,8 +197,8 @@ def _accessControlPolicy_parseJSON(obj, jsn):
 				obj.selfPrivileges.append(acr)	
 
 
-def _accessControlPolicy_createJSON(obj, isUpdate=False):
-	jsn = _resourceBase_createJSON(obj, isUpdate)
+def _accessControlPolicy_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
 	if obj.privileges:
 		pv = {}
 		#pv['acr'] = [ p._createJSON() for p in obj.privileges ]
@@ -253,8 +259,10 @@ def _AE_parseXML(obj, root):
 	obj.nodeLink = INT.getElement(root, 'nl', obj.nodeLink)
 
 
-def _AE_createXML(obj, isUpdate=False):
-	root = _resourceBase_createXML(obj, isUpdate)
+def _AE_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return root
 	if obj.appID and not isUpdate: 		# No api when updating
 		INT.addToElement(root, 'api', obj.appID)
 	if obj.AEID and not isUpdate:	# No api when updating
@@ -275,8 +283,10 @@ def _AE_parseJSON(obj, jsn):
 	obj.nodeLink = INT.getElementJSON(_jsn, 'nl', obj.nodeLink)
 
 
-def _AE_createJSON(obj, isUpdate=False):
-	jsn = _resourceBase_createJSON(obj, isUpdate)
+def _AE_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return INT.wrapJSON(obj, jsn)
 	if obj.appID and not isUpdate: 		# No api when updating
 		INT.addToElementJSON(jsn, 'api', obj.appID)
 	if obj.AEID and not isUpdate:	# No api when updating
@@ -304,8 +314,10 @@ def _Container_parseXML(obj, root):
 	obj.latest = INT.getElement(root, 'la', obj.latest)
 
 
-def _Container_createXML(obj, isUpdate=False):
-	root = _resourceBase_createXML(obj, isUpdate)
+def _Container_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return root
 	INT.addToElement(root, 'mni', obj.maxNrOfInstances)
 	INT.addToElement(root, 'mbs', obj.maxByteSize)
 	INT.addToElement(root, 'mia', obj.maxInstanceAge)
@@ -323,8 +335,10 @@ def _Container_parseJSON(obj, jsn):
 	obj.latest = INT.getElementJSON(_jsn, 'la', obj.latest)
 
 
-def _Container_createJSON(obj, isUpdate=False):
-	jsn = _resourceBase_createJSON(obj, isUpdate)
+def _Container_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return INT.wrapJSON(obj, jsn)
 	INT.addToElementJSON(jsn, 'mni', obj.maxNrOfInstances)
 	INT.addToElementJSON(jsn, 'mbs', obj.maxByteSize)
 	INT.addToElementJSON(jsn, 'mia', obj.maxInstanceAge)
@@ -343,8 +357,8 @@ def _ContentInstance_parseXML(obj, root):
 	obj.content = INT.getElement(root, 'con', obj.content)
 
 
-def _ContentInstance_createXML(obj, isUpdate=False):
-	root = _resourceBase_createXML(obj, isUpdate)
+def _ContentInstance_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
 	INT.addToElement(root, 'cnf', obj.contentInfo)
 	INT.addToElement(root, 'con', obj.content)
 	return root
@@ -357,8 +371,8 @@ def _ContentInstance_parseJSON(obj, jsn):
 	obj.content = INT.getElementJSON(_jsn, 'con', obj.content)
 
 
-def _ContentInstance_createJSON(obj, isUpdate=False):
-	jsn = _resourceBase_createJSON(obj, isUpdate)
+def _ContentInstance_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
 	INT.addToElementJSON(jsn, 'cnf', obj.contentInfo)
 	INT.addToElementJSON(jsn, 'con', obj.content)
 	return INT.wrapJSON(obj, jsn)
@@ -381,8 +395,10 @@ def _Group_parseXML(obj, root):
 	obj.fanOutPoint = INT.getElement(root, 'fopt', obj.fanOutPoint)
 
 
-def _Group_createXML(obj, isUpdate):
-	root = _resourceBase_createXML(obj, isUpdate)
+def _Group_createXML(obj, isUpdate, isAcpiUpdate=False):
+	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return root
 	if obj.maxNrOfMembers and not isUpdate: 	# No mnm when updating
 		INT.addToElement(root, 'mnm', obj.maxNrOfMembers)
 	INT.addToElement(root, 'mt', obj.memberType)
@@ -405,8 +421,10 @@ def _Group_parseJSON(obj, jsn):
 	obj.fanOutPoint = INT.getElementJSON(_jsn, 'fopt', obj.fanOutPoint)
 
 
-def _Group_createJSON(obj, isUpdate):
-	jsn = _resourceBase_createJSON(obj, isUpdate)
+def _Group_createJSON(obj, isUpdate, isAcpiUpdate=False):
+	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return INT.wrapJSON(obj, jsn)
 	if obj.maxNrOfMembers and not isUpdate: 	# No mnm when updating
 		INT.addToElementJSON(jsn, 'mnm', obj.maxNrOfMembers)
 	INT.addToElementJSON(jsn, 'mt', obj.memberType)
@@ -434,8 +452,10 @@ def _Subscription_parseXML(obj, root):
 	obj.subscriberURI = INT.getElement(root, 'su', obj.subscriberURI)
 
 
-def _Subscription_createXML(obj, isUpdate=False):
-	root = _resourceBase_createXML(obj, isUpdate)
+def _Subscription_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+			return root
 	INT.addToElement(root, 'nu', obj.notificationURI)
 	INT.addToElement(root, 'nct', obj.notificationContentType)
 	if obj.expirationCounter != -1:
@@ -462,8 +482,10 @@ def _Subscription_parseJSON(obj, jsn):
 	obj.subscriberURI = INT.getElementJSON(_jsn, 'su', obj.subscriberURI)
 
 
-def _Subscription_createJSON(obj, isUpdate=False):
-	jsn = _resourceBase_createJSON(obj, isUpdate)
+def _Subscription_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return INT.wrapJSON(obj, jsn)
 	INT.addToElementJSON(jsn, 'nu', obj.notificationURI)
 	INT.addToElementJSON(jsn, 'nct', obj.notificationContentType)
 	if obj.expirationCounter != -1:
@@ -496,8 +518,10 @@ def _Node_parseXML(obj, root):
 	obj.networkID = INT.getElement(root, 'nid', obj.networkID)
 
 
-def _Node_createXML(obj, isUpdate=False):
-	root = _resourceBase_createXML(obj, isUpdate)
+def _Node_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return root
 	INT.addToElement(root, 'ni', obj.nodeID)
 	if obj.mgmtClientAddress:
 		INT.addToElement(root, 'mgca', obj.mgmtClientAddress)
@@ -515,8 +539,10 @@ def _Node_parseJSON(obj, jsn):
 	obj.networkID = INT.getElementJSON(_jsn, 'nid', obj.networkID)
 
 
-def _Node_createJSON(obj, isUpdate=False):
-	jsn = _resourceBase_createJSON(obj, isUpdate)
+def _Node_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return INT.wrapJSON(obj, jsn)
 	INT.addToElementJSON(jsn, 'ni', obj.nodeID)
 	if obj.mgmtClientAddress:
 		INT.addToElementJSON(jsn, 'mgca', obj.mgmtClientAddress)
@@ -535,21 +561,25 @@ def _FlexContainer_parseXML(obj, root):
 
 
 
-def _FlexContainer_createXML(obj, isUpdate=False):
-	root = _resourceBase_createXML(obj, isUpdate)
+def _FlexContainer_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return root
 	INT.addToElement(root, 'cnd', obj.contentDefinition)
 	# TODO attributes
 	return root
 
 
 def _FlexContainer_parseJSON(obj, jsn):
-	_resourceBase_parseJSON(obj, _jsn)
-	obj.contentDefinition = INT.getElementJSON(_jsn, 'cnd', obj.contentDefinition)
+	_resourceBase_parseJSON(obj, jsn)
+	obj.contentDefinition = INT.getElementJSON(jsn, 'cnd', obj.contentDefinition)
 	# TODO Attributes
 
 
-def _FlexContainer_createJSON(obj, isUpdate=False):
-	jsn = _resourceBase_createJSON(obj, isUpdate)
+def _FlexContainer_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+	jsn = _resourceBase_createJSON(obj, isUpdate,isAcpiUpdate)
+	if isUpdate and isAcpiUpdate:
+		return INT.wrapJSON(obj, jsn)
 	INT.addToElementJSON(data, 'cnd', obj.contentDefinition)
 	# >TODO attribues
 	return INT.wrapJSON(obj, jsn)

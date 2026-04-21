@@ -4,12 +4,16 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the &lt;RemoteCSE> resource.
+#	This module implements the class for the <RemoteCSE> resource.
 #
 
 import logging
 import onem2mlib.marshalling as M
-from .ResourceBase import *
+import onem2mlib.constants as CON
+import onem2mlib.internal as INT
+import onem2mlib.mcarequests as MCA
+import onem2mlib.exceptions as EXC
+from .ResourceBase import ResourceBase
 
 logger = logging.getLogger(__name__)
 
@@ -20,28 +24,31 @@ class RemoteCSE(ResourceBase):
 	It is  a sub-resource of the &lt;CSEBase> resource, and it represents and grants access to a
 	remote CSE.
 	"""
-	def __init__(self, parent=None, resourceName=None, resourceID=None, requestReachability=None,  originator=None, instantly=True):
-	
+
+	def __init__(self, 
+				 requestReachability: bool | None = None, 
+				 cseID: str | None = None, 
+				 cseBase: str | None = None, 
+				 instantly: bool = True, 
+				 **kwargs):
 		"""
 		Initialize a RemoteCSE object.
-		Usually, objects of this class are created only by the onem2m lib..
 
 		Args:
-
-		- *parent*: The parent resource object in which the &lt;remoteCSE> resource
-			will be created. This must be a &lt;CSEBase>. This might throw a *ParameterError*
-			exception if this is not the case.
-		- *instantly*: The resource will be instantly retrieved from the CSE. This might throw
-			a *CSEOperationError* exception in case of an error.
-		- All other arguments initialize the status variables of the same name in the
-			&lt;remoteCSE> instance or `onem2mlib.ResourceBase`.
+			requestReachability: Indicates the reachability of the RemoteCSE.
+			cseID: The CSE identifier of the remote CSE (SP-relative).
+			cseBase: The URI of the remote CSEBase resource.
+			instantly: If True, the resource is immediately retrieved from the CSE.
+			**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
 		"""
-		ResourceBase.__init__(self, parent, resourceName, resourceID, CON.Type_RemoteCSE, CON.Type_RemoteCSE_SN, originator=originator)
+		super().__init__(type=CON.Type_RemoteCSE, typeShortName=CON.Type_RemoteCSE_SN, **kwargs)
+
 		self._marshallers = [M._remoteCSE_parseXML, None, M._remoteCSE_parseJSON, None]
 
-		if parent is not None and parent.type != CON.Type_CSEBase and parent.type != CON.Type_RemoteCSE:
-			logger.error('Parent must be <CSE> or <remoteCSE>: ' + INT.nameAndType(self))
-			raise EXC.ParameterError('Parent must be <CSE> or <remoteCSE>: ' + INT.nameAndType(self))
+		if self.parent is not None and self.parent.type not in [CON.Type_CSEBase, CON.Type_RemoteCSE]:
+			msg = f'Parent of <remoteCSE> must be <CSEBase> or <remoteCSE>: {INT.nameAndType(self)}'
+			logger.error(msg)
+			raise EXC.ParameterError(msg)
 
 		self.pointOfAccess = []
 		""" List of String. A list of physical addresses to be used by remote CSEs to connect to this CSE.
@@ -58,13 +65,13 @@ class RemoteCSE(ResourceBase):
 
 		if instantly:
 			if not self.get():
-				logger.critical('Cannot get remoteCSE.' + MCA.lastError)
-				raise EXC.CSEOperationError('Cannot get remoteCSE.' + MCA.lastError)
+				logger.critical(f'Cannot get remoteCSE. {MCA.lastError}')
+				raise EXC.CSEOperationError(f'Cannot get remoteCSE. {MCA.lastError}')
 
 
 	def __str__(self):
 		result = 'RemoteCSE:\n'
-		result += ResourceBase.__str__(self)
+		result += super().__str__()
 		result += INT.strResource('requestReachability', 'rr', self.requestReachability)
 		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
 		result += INT.strResource('CSEBase', 'cb', self.cseBase)
@@ -72,7 +79,7 @@ class RemoteCSE(ResourceBase):
 		return result
 
 
-	def cseFromLocalCSE(self, instantly=True):
+	def cseFromLocalCSE(self, instantly: bool = True):
 		"""
 		Return a `onem2mlib.CSEBase` resource instance that grants access to the remote CSE via the local
 		(the CSE from which this &lt;RemoteCSE> resource originates). This means, that all requests to the
@@ -83,10 +90,17 @@ class RemoteCSE(ResourceBase):
 		- *instantly*: The CSE resource will be instantly retrieved from the CSE. This might throw
 			a *CSEOperationError* exception in case of an error.
 		"""
-		return CSEBase(self.session, self.cseID, self.resourceName, instantly=instantly)
+  
+		from .CSEBase import CSEBase
+		return CSEBase(
+			session=self.session, 
+			cseID=self.cseID, 
+			resourceName=self.resourceName, 
+			instantly=instantly
+		)
 
 
-	def cseFromRemoteCSE(self, session=None, instantly=True):
+	def cseFromRemoteCSE(self, session=None, instantly: bool = True):
 		"""
 		Return a `onem2mlib.CSEBase` resource instance that grants direct access to the remote CSE.
 		This means, that all requests to the remote CSE are directly targeting the remote CSE.
@@ -101,21 +115,25 @@ class RemoteCSE(ResourceBase):
 		- *instantly*: The CSE resource will be instantly retrieved from the CSE. This might throw
 			a *CSEOperationError* exception in case of an error.
 		"""
-		if self.pointOfAccess == None or len(self.pointOfAccess) == 0:
+		from .CSEBase import CSEBase
+		from onem2mlib.session import Session # Assuming Session class location
+
+		if not self.pointOfAccess:
 			logger.error('Missing PointOfAccess of remote CSE.')
 			raise EXC.CSEOperationError('Missing PointOfAccess of remote CSE.')
 
+		# Create a new session targeting the remote point of access
 		if session is None:
-			nSession = Session(self.pointOfAccess[0], self.session.originator, self.session.encoding)
+			target_session = Session(self.pointOfAccess[0], self.session.originator, self.session.encoding)
 		else:
-			nSession = Session(self.pointOfAccess[0], session.originator, session.encoding)
-		return CSEBase(nSession, self.cseID, instantly=instantly)
+			target_session = Session(self.pointOfAccess[0], session.originator, session.encoding)
+			
+		return CSEBase(session=target_session, cseID=self.cseID, instantly=instantly)
 
 
-	def _copy(self, resource):
-		ResourceBase._copy(self, resource)
+	def _copy(self, resource: 'RemoteCSE'):
+		super()._copy(resource)
 		self.cseBase = resource.cseBase
 		self.cseID = resource.cseID
-		self.pointOfAccess = resource.pointOfAccess
+		self.pointOfAccess = resource.pointOfAccess.copy() if resource.pointOfAccess else []
 		self.requestReachability = resource.requestReachability
-

@@ -22,8 +22,7 @@ class ResourceBase:
 	The ResourceBase is the base class for most of resource classes. It handles the common
 	resource attributes.
 	"""
-
-	def __init__(self, parent, resourceName, resourceID, type, typeShortName, namespace='m2m', labels=[], originator=None):
+	def __init__(self, **kwargs):
 		"""
 		Initialize a ResourceBase instance.
 
@@ -34,35 +33,44 @@ class ResourceBase:
 		- All other arguments initialize the status variables of the same name in the
 			ResourceBase instance.
 		"""		
-		self.parent	= parent
+		self.parent = kwargs.pop('parent', None)
 		""" Resource instance object. The parent resource of this resource. """
 
 		self.session = None
 		""" Session. The Session object of the parent. """
-		if parent:
-			self.session = parent.session
-		
-		self.type = type
+		if self.parent:
+			self.session = self.parent.session   
+
+		self.type = kwargs.pop('type', None)
 		""" Integer. The type of the resource. """
 
-		self.typeShortName = typeShortName
+		self.typeShortName = kwargs.pop('typeShortName', None)
 		""" String. The resource type as a shortname. """
-		
-		self.resourceID	= resourceID
+
+		self.resourceID = kwargs.pop('resourceID', None)
 		""" String. The resource ID of the resource. Assigned by the CSE.
 			For a &lt;CSEBase> this is the *cseID*.2"""
-		
-		self.resourceName = resourceName
+
+		self.resourceName = kwargs.pop('resourceName', None)
 		""" String. The resource name of the resource. Assigned by the application or the CSE. 
 			For a &lt;CSEBase> this is the *cseName*."""
-		
-		self.originator = originator
+
+		self.originator = kwargs.pop('originator', None)
 		""" String. The originator of the resource. Assigned by the application or the CSE. 
 			For a &lt;CSEBase> this is the *x-origin*."""
 
-		self.namespace = namespace
+		self.namespace = kwargs.pop('namespace', 'm2m')
 		""" String. The namespace of the resource. """
-		
+  
+		self.labels = kwargs.pop('labels', [])
+		""" List of String. A list of labels of the resource. This might be an empty list. """
+  
+		accessControlPolicies = kwargs.pop('accessControlPolicies', None)
+		self.accessControlPolicyIDs = []
+		""" List of String. A list of ACP resources. This might be an empty list."""
+		if accessControlPolicies:
+			self.setAccessControlPolicies(accessControlPolicies)
+
 		self.parentID = None
 		""" String. The resource ID of the parent resource. Assigned by the CSE. """
 		
@@ -71,18 +79,11 @@ class ResourceBase:
 		
 		self.lastModifiedTime = None
 		""" String. The time of the last modification of the resource. Assigned by the CSE. R/O. """
-		
-		self.accessControlPolicyIDs = []
-		""" List of String. A list of ACP resources. This might be an empty list."""
-		
 		self.expirationTime	= None
 		""" String. The expiration time of the resource, or None. Assigned by the CSE. R/O. """
 		
 		self.stateTag = 0
 		"""Integer. An incremental counter of modification on the resource. Assigned by the CSE. R/O."""
-		
-		self.labels = labels
-		""" List of String. A list of labels of the resource. This might be an empty list. """
 		
 		self.dynamicAuthorizationConsultationIDs = []
 		""" List of String. A List of dynamic authorization consultation IDs. This might be an empty list. """
@@ -98,8 +99,8 @@ class ResourceBase:
 		# Internal list of per-class marshalling methods
 		# [ parseXML, createXML, parseJSON, createJSON ]
 		self._marshallers = [ None, None, None, None ]
-		# TODO for all classes
-		# TODO move methods to resourceBase
+
+		super().__init__()
 
 
 	def __str__(self):
@@ -121,7 +122,7 @@ class ResourceBase:
 		return result
 
 
-	def setAccessControlPolicies(self, acps):
+	def setAccessControlPolicies(self, acps, overwrite=True):
 		"""
 		Set the &lt;ccessControlPolicy> resource ID(s) for a resource (if the resource type supports 
 		AccessControlPolicies). 
@@ -133,7 +134,8 @@ class ResourceBase:
 		This method may throw a `onem2mlib.exceptions.NotSupportedError` exception when called on a resource that doesn't
 		support accessControlPolicies.
 		"""
-		self.accessControlPolicyIDs = []
+		if overwrite:
+			self.accessControlPolicyIDs = []
 
 		from .ContentInstance import ContentInstance
 
@@ -149,6 +151,16 @@ class ResourceBase:
 				for acp in acps:
 					if acps.resourceID is not None:
 						self.accessControlPolicyIDs.append(acps.resourceID)
+
+	def addAccessControlPolicy(self, acps, overwrite=True):
+		"""
+		Update a ResourceBase's AccessControlPolicy.
+		
+		:param self: Description
+		:param acps: AccessControlPolicies
+		"""
+		self.setAccessControlPolicies(acps, overwrite)
+		self.updateAcpiInCSE()
 
 
 	def retrieveFromCSE(self):
@@ -197,7 +209,7 @@ class ResourceBase:
 		return MCA.createInCSE(self, self.type, originator=self.originator)
 
 
-	def updateInCSE(self):
+	def updateInCSE(self, isAcpiUpdate=False):
 		"""
 		Update the existing resource with new attributes.
 
@@ -211,8 +223,20 @@ class ResourceBase:
 		if self.type in [CON.Type_ContentInstance, CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
 			logger.error('Resource doesn''t support updating: ' + INT.nameAndType(self))
 			raise EXC.NotSupportedError('Resource doesn''t support updating: ' + INT.nameAndType(self))
-		return MCA.updateInCSE(self, self.type, originator=self.originator)
+		return MCA.updateInCSE(self, self.type, originator=self.originator, isAcpiUpdate=isAcpiUpdate)
 
+	def updateAcpiInCSE(self):
+		"""
+		Update the existing resource with new attributes for AccessControlPolicyId.
+
+		The method returns *True* or *False*, depending on the success of the operation.
+		It may throw a `onem2mlib.exceptions.NotSupportedError` exception when the operation is not supported
+		by the resource type.
+
+		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
+		must be set to a valid value.
+		"""
+		return self.updateInCSE(True)
 
 	def get(self):
 		"""
@@ -474,11 +498,11 @@ class ResourceBase:
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
 
-	def _createContent(self, isUpdate=False):
+	def _createContent(self, isUpdate=False, isAcpiUpdate=False):
 		if self.session.encoding == CON.Encoding_XML:
-			return INT.xmlToString(self._createXML(isUpdate))
+			return INT.xmlToString(self._createXML(isUpdate, isAcpiUpdate=isAcpiUpdate))
 		elif self.session.encoding == CON.Encoding_JSON:
-			return json.dumps(self._createJSON(isUpdate))
+			return json.dumps(self._createJSON(isUpdate, isAcpiUpdate=isAcpiUpdate))
 		logger.error('Encoding not supported: ' + str(self.session.encoding))
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
@@ -488,10 +512,9 @@ class ResourceBase:
 		if self._marshallers[0] is not None:
 			self._marshallers[0](self, root)
 
-
-	def _createXML(self, isUpdate=False):
+	def _createXML(self, isUpdate=False, isAcpiUpdate=False):
 		if self._marshallers[1] is not None:
-			return self._marshallers[1](self, isUpdate)
+			return self._marshallers[1](self, isUpdate, isAcpiUpdate)
 		return None
 
 
@@ -500,9 +523,9 @@ class ResourceBase:
 			self._marshallers[2](self, jsn)
 
 
-	def _createJSON(self, isUpdate=False):
+	def _createJSON(self, isUpdate=False, isAcpiUpdate=False):
 		if self._marshallers[3] is not None:
-			return self._marshallers[3](self, isUpdate)
+			return self._marshallers[3](self, isUpdate, isAcpiUpdate)
 		return None
 
 

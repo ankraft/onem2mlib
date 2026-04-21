@@ -25,17 +25,18 @@ if __name__ == '__main__':
 
 	# create an <AE> resource
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName, originator='C'+aeName)
+	ae = AE(parent=cse, resourceName=aeName, originator='C'+aeName)
+ 
 
 	# create a <container> and add it to the <AE>
-	cnt = Container(ae)
+	cnt = Container(parent=ae)
 	print(cnt)
 
 	# add a <contentInstance> to the <container>, with labels
-	cin = ContentInstance(cnt, content='Some value', labels=['label1/example', 'label2/anotherExample'])
+	cin = ContentInstance(parent=cnt, content='Some value', labels=['label1/example', 'label2/anotherExample'])
 
 	# or do the same a bit more conventient
-	cnt.addContent('Some other Value', ['label1/example', 'label2/anotherExample'])
+	cnt.addContent('Some other Value', labels=['label1/example', 'label2/anotherExample'])
 	print('ContentInstances in the Container: ' + str([cin.resourceID for cin in cnt.contentInstances()]))
 
 	# retrieve the <contentInstance> via the <container>.latest and print it

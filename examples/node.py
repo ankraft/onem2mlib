@@ -12,7 +12,6 @@ sys.path.append('..')
 from onem2mlib import *
 import conf
 
-
 if __name__ == '__main__':
 	logging.basicConfig(level=conf.LOGGINGLEVEL)
 	logging.getLogger('urllib3').setLevel(logging.CRITICAL)
@@ -25,13 +24,13 @@ if __name__ == '__main__':
 	print(cse)
 
 	# Create a Node
-	nodeName='exampleNode_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	node = Node(cse, resourceName=nodeName, nodeID='12345')
+	nodeName='exampleNode_'+str(uuid.uuid4().hex)
+	node = Node(parent=cse, resourceName=nodeName, nodeID='12345')
 	print(node)
 
 	# Create an AE
-	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName, originator='C'+aeName)
+	aeName = 'exampleAE_'+str(uuid.uuid4().hex)
+	ae = AE(parent=cse, resourceName=aeName, originator='C'+aeName)
 	ae.nodeLink = node.resourceID
 	ae.updateInCSE()
 	print(ae)

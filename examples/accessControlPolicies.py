@@ -34,15 +34,13 @@ if __name__ == '__main__':
 	]
 
 	# Create a new accessControlPolicy with the previous created privileges and self-privileges
-	acpName = 'exampleACP_'+str(uuid.uuid4().hex)	# unique name
-	acp = AccessControlPolicy(cse, resourceName=acpName, privileges=privileges, selfPrivileges=selfPrivileges)
+	acpName = 'exampleACP_'+str(uuid.uuid4().hex)
+	acp = AccessControlPolicy(parent=cse, resourceName=acpName, privileges=privileges, selfPrivileges=selfPrivileges)
 	print(acp)
 
 	# Create a 
-	aeName = 'exampleAE_'+str(uuid.uuid4().hex)	# unique name for the <AE>
-	ae = AE(cse, resourceName=aeName, instantly=False)
+	aeName = 'exampleAE_'+str(uuid.uuid4().hex)
+	ae = AE(parent=cse, resourceName=aeName, instantly=False)
 	ae.setAccessControlPolicies(acp)
 	ae.createInCSE()
 	print(ae)
-
-
