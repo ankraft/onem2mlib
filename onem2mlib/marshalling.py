@@ -450,6 +450,9 @@ def _Subscription_parseXML(obj, root):
 	obj.groupID = INT.getElement(root, 'gpi', obj.groupID)
 	obj.notificationForwardingURI = INT.getElement(root, 'nfu', obj.notificationForwardingURI)
 	obj.subscriberURI = INT.getElement(root, 'su', obj.subscriberURI)
+	enc_root = INT.getElement(root, 'enc')
+	if enc_root is not None and obj.eventNotificationCriteria:
+		obj.eventNotificationCriteria._parseXML(enc_root)
 
 
 def _Subscription_createXML(obj, isUpdate=False, isAcpiUpdate=False):
@@ -468,6 +471,8 @@ def _Subscription_createXML(obj, isUpdate=False, isAcpiUpdate=False):
 		INT.addToElement(root, 'nfu', obj.notificationForwardingURI)
 	if obj.subscriberURI:
 		INT.addToElement(root, 'su', obj.subscriberURI)
+	if obj.eventNotificationCriteria:
+		root.append(obj.eventNotificationCriteria._createXML(isUpdate))
 	return root
 
 
@@ -480,6 +485,9 @@ def _Subscription_parseJSON(obj, jsn):
 	obj.groupID = INT.getElementJSON(_jsn, 'gpi', obj.groupID)
 	obj.notificationForwardingURI = INT.getElementJSON(_jsn, 'nfu', obj.notificationForwardingURI)
 	obj.subscriberURI = INT.getElementJSON(_jsn, 'su', obj.subscriberURI)
+	enc_jsn = INT.getElementJSON(_jsn, 'enc')
+	if enc_jsn and obj.eventNotificationCriteria:
+		obj.eventNotificationCriteria._parseJSON(enc_jsn)
 
 
 def _Subscription_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
@@ -498,7 +506,93 @@ def _Subscription_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
 		INT.addToElementJSON(jsn, 'nfu', obj.notificationForwardingURI)
 	if obj.subscriberURI:
 		INT.addToElementJSON(jsn, 'su', obj.subscriberURI)
+	if obj.eventNotificationCriteria:
+		jsn['enc'] = obj.eventNotificationCriteria._createJSON(isUpdate)
 	return INT.wrapJSON(obj, jsn)
+
+###############################################################################
+#
+#	EventNotificationCriteria
+#
+
+def _EventNotificationCriteria_parseXML(obj, root):
+    if root is None: return
+    obj.createdBefore = INT.getElement(root, 'crb', obj.createdBefore)
+    obj.createdAfter = INT.getElement(root, 'cra', obj.createdAfter)
+    obj.modifiedSince = INT.getElement(root, 'ms', obj.modifiedSince)
+    obj.unmodifiedSince = INT.getElement(root, 'us', obj.unmodifiedSince)
+    obj.stateTagSmaller = INT.getElement(root, 'sts', obj.stateTagSmaller)
+    obj.stateTagBigger = INT.getElement(root, 'stb', obj.stateTagBigger)
+    obj.expireBefore = INT.getElement(root, 'exb', obj.expireBefore)
+    obj.expireAfter = INT.getElement(root, 'exa', obj.expireAfter)
+    obj.sizeAbove = INT.getElement(root, 'sza', obj.sizeAbove)
+    obj.sizeBelow = INT.getElement(root, 'szb', obj.sizeBelow)
+    obj.notificationEventType = INT.getElement(root, 'net', obj.notificationEventType)
+    obj.operationMonitor = INT.getElement(root, 'om', obj.operationMonitor)
+    obj.attribute = INT.getElement(root, 'atr', obj.attribute)
+    obj.childResourceType = INT.getElement(root, 'chty', obj.childResourceType)
+    obj.missingData = INT.getElement(root, 'md', obj.missingData)
+    obj.filterOperation = INT.getElement(root, 'fo', obj.filterOperation)
+
+def _EventNotificationCriteria_createXML(obj, isUpdate=False):
+    # ENC is a sub-element, usually 'enc'
+    root = INT.createElement('enc')
+    INT.addToElement(root, 'crb', obj.createdBefore)
+    INT.addToElement(root, 'cra', obj.createdAfter)
+    INT.addToElement(root, 'ms', obj.modifiedSince)
+    INT.addToElement(root, 'us', obj.unmodifiedSince)
+    INT.addToElement(root, 'sts', obj.stateTagSmaller)
+    INT.addToElement(root, 'stb', obj.stateTagBigger)
+    INT.addToElement(root, 'exb', obj.expireBefore)
+    INT.addToElement(root, 'exa', obj.expireAfter)
+    INT.addToElement(root, 'sza', obj.sizeAbove)
+    INT.addToElement(root, 'szb', obj.sizeBelow)
+    INT.addToElement(root, 'net', obj.notificationEventType)
+    INT.addToElement(root, 'om', obj.operationMonitor)
+    INT.addToElement(root, 'atr', obj.attribute)
+    INT.addToElement(root, 'chty', obj.childResourceType)
+    INT.addToElement(root, 'md', obj.missingData)
+    INT.addToElement(root, 'fo', obj.filterOperation)
+    return root
+
+def _EventNotificationCriteria_parseJSON(obj, jsn):
+    if jsn is None: return
+    obj.createdBefore = INT.getElementJSON(jsn, 'crb', obj.createdBefore)
+    obj.createdAfter = INT.getElementJSON(jsn, 'cra', obj.createdAfter)
+    obj.modifiedSince = INT.getElementJSON(jsn, 'ms', obj.modifiedSince)
+    obj.unmodifiedSince = INT.getElementJSON(jsn, 'us', obj.unmodifiedSince)
+    obj.stateTagSmaller = INT.getElementJSON(jsn, 'sts', obj.stateTagSmaller)
+    obj.stateTagBigger = INT.getElementJSON(jsn, 'stb', obj.stateTagBigger)
+    obj.expireBefore = INT.getElementJSON(jsn, 'exb', obj.expireBefore)
+    obj.expireAfter = INT.getElementJSON(jsn, 'exa', obj.expireAfter)
+    obj.sizeAbove = INT.getElementJSON(jsn, 'sza', obj.sizeAbove)
+    obj.sizeBelow = INT.getElementJSON(jsn, 'szb', obj.sizeBelow)
+    obj.notificationEventType = INT.getElementJSON(jsn, 'net', obj.notificationEventType)
+    obj.operationMonitor = INT.getElementJSON(jsn, 'om', obj.operationMonitor)
+    obj.attribute = INT.getElementJSON(jsn, 'atr', obj.attribute)
+    obj.childResourceType = INT.getElementJSON(jsn, 'chty', obj.childResourceType)
+    obj.missingData = INT.getElementJSON(jsn, 'md', obj.missingData)
+    obj.filterOperation = INT.getElementJSON(jsn, 'fo', obj.filterOperation)
+
+def _EventNotificationCriteria_createJSON(obj, isUpdate=False):
+    jsn = {}
+    INT.addToElementJSON(jsn, 'crb', obj.createdBefore)
+    INT.addToElementJSON(jsn, 'cra', obj.createdAfter)
+    INT.addToElementJSON(jsn, 'ms', obj.modifiedSince)
+    INT.addToElementJSON(jsn, 'us', obj.unmodifiedSince)
+    INT.addToElementJSON(jsn, 'sts', obj.stateTagSmaller)
+    INT.addToElementJSON(jsn, 'stb', obj.stateTagBigger)
+    INT.addToElementJSON(jsn, 'exb', obj.expireBefore)
+    INT.addToElementJSON(jsn, 'exa', obj.expireAfter)
+    INT.addToElementJSON(jsn, 'sza', obj.sizeAbove)
+    INT.addToElementJSON(jsn, 'szb', obj.sizeBelow)
+    INT.addToElementJSON(jsn, 'net', obj.notificationEventType)
+    INT.addToElementJSON(jsn, 'om', obj.operationMonitor)
+    INT.addToElementJSON(jsn, 'atr', obj.attribute)
+    INT.addToElementJSON(jsn, 'chty', obj.childResourceType)
+    INT.addToElementJSON(jsn, 'md', obj.missingData)
+    INT.addToElementJSON(jsn, 'fo', obj.filterOperation)
+    return jsn
 
 
 
