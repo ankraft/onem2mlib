@@ -6,7 +6,8 @@
 #
 #	This module contains helper functions to communicate with an CSE over the Mca interface via HTTP.
 #
-
+import base64
+import uuid
 import requests
 import logging
 import onem2mlib.internal
@@ -408,20 +409,33 @@ def _logResponse(response):
 def _getHeaders(session, type=None, originator=None):
 	headers = dict()
 	headers['X-M2M-Origin'] = originator if originator is not None else session.originator
-	headers['X-M2M-RI'] = 'xyz'	# TODO
-	headers['X-M2M-RVI'] = '3' # needs to be either passed down or be saved in the session
+	headers['X-M2M-RI'] = str(uuid.uuid4())
+	headers['X-M2M-RVI'] = session.releaseVersion or '3'
+
+	# Handle Encoding
 	if session.encoding == CON.Encoding_XML:
 		encoding = 'application/xml'
 	else:
 		encoding = 'application/json'
-		#encoding = 'application/vnd.onem2m-res+json'
 
 	if type:
-		headers['Content-Type'] = encoding + ';ty=' + str(type)
-		headers['Accept'] = encoding # + ';ty=' + str(type)	# TODO: Make this configurable
+		headers['Content-Type'] = f'{encoding};ty={type}'
+		headers['Accept'] = encoding
 	else:
 		headers['Content-Type'] = encoding
 		headers['Accept'] = encoding
+
+	# Authentication Header Logic
+	if session.username:
+		if session.password is not None:
+			# Basic Auth: Authorization: Basic <base64(user:pass)>
+			auth_str = f"{session.username}:{session.password}"
+			encoded_auth = base64.b64encode(auth_str.encode('ascii')).decode('ascii')
+			headers['Authorization'] = f"Basic {encoded_auth}"
+		else:
+			# Bearer Token: Authorization: Bearer <token>
+			headers['Authorization'] = f"Bearer {session.username}"
+
 	return headers
 
 
