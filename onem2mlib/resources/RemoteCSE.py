@@ -116,8 +116,7 @@ class RemoteCSE(ResourceBase):
 			a *CSEOperationError* exception in case of an error.
 		"""
 		from .CSEBase import CSEBase
-		from onem2mlib.session import Session # Assuming Session class location
-
+		from .Session import Session 
 		if not self.pointOfAccess:
 			logger.error('Missing PointOfAccess of remote CSE.')
 			raise EXC.CSEOperationError('Missing PointOfAccess of remote CSE.')
@@ -128,7 +127,7 @@ class RemoteCSE(ResourceBase):
 		else:
 			target_session = Session(self.pointOfAccess[0], session.originator, session.encoding)
 			
-		return CSEBase(session=target_session, cseID=self.cseID, instantly=instantly)
+		return target_session.getCSEBase()
 
 
 	def _copy(self, resource: 'RemoteCSE'):
