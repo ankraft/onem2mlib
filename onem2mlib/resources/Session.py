@@ -39,6 +39,13 @@ class Session:
 		self.encoding = encoding
 		"""	Integer, either `onem2mlib.constants.Encoding_XML` or `onem2mlib.constants.Encoding_JSON`.
 			It specifies the type of encoding for requests between the AE and the CSE. """
+		self.username = None
+		""" String. The username for basic authentication, or the token string for bearer authentication. """
+		self.password = None
+		""" String. The password for basic authentication. If this is None, the username is treated 
+			as a bearer token. """
+		self.releaseVersion = '3'
+		""" String. The oneM2M release version (e.g., "2a", "3", "4") used in the X-M2M-RVI header. """
 
 		if not self.originator:
 			logger.error('Missing originator for Session')
@@ -52,6 +59,24 @@ class Session:
 			logger.critical('Unsupported encoding: Encoding_XML.')
 			raise EXC.NotSupportedError('Unsupported encoding: Encoding_XML')
 
+	def setUser(self, username: str, password: str|None = None) -> 'Session':
+		""" 
+		Set credentials for Basic Auth (user + pass) or 
+		Bearer Auth (token only). 
+		"""
+		self.username = username
+		self.password = password
+		return self
+
+	def setBearerToken(self, token: str) -> 'Session':
+		""" Set a bearer token for the session. """
+		return self.setUser(token, None)
+
+	def setReleaseVersion(self, rvi: str) -> 'Session':
+		""" Set the oneM2M release version (X-M2M-RVI). """
+		self.releaseVersion = rvi
+		return self
+
 	def getCSEBase(self):
 		"""
 		Retrieves the CSEBase resource directly from the root path.
@@ -59,7 +84,6 @@ class Session:
 		"""
   
 		response = MCA.get(self, '-') 
-
 		if response and response.status_code == 200:
 			from .CSEBase import CSEBase
 			resource = CSEBase(session=self, instantly=False)
@@ -75,4 +99,5 @@ class Session:
 		result += INT.strResource('address', None, self.address)
 		result += INT.strResource('originator', None, self.originator)
 		result += INT.strResource('encoding', None, self.encoding)
+		result += INT.strResource('rvi', None, self.releaseVersion)
 		return result
