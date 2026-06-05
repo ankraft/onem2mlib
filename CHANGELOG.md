@@ -10,6 +10,7 @@
 - [IMPROVEMENT] Add CSEBase to Session Resource. 
 - [IMPROVEMENT] Add Originator to Resources.
 - [IMPROVEMENT] Add optional Filter Parameter for finding SubResources.
+- [IMPROVEMENT] Add EventNotificationCriteria
 
 
 ## Version 0.7 (2018-05-13)

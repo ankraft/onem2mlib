@@ -290,9 +290,9 @@ class ResourceBase:
 		return results
 
 
-	def subscribe(self, originator=None, callback=None):
+	def subscribe(self, originator=None, callback=None, eventNotificationCriteria=None):
 		"""
-		Create a &lt;subscription> to resource and receive notifications. For this, the notification
+		Create a <subscription> to resource and receive notifications. For this, the notification
 		sub-module must be enabled, ie. `onem2mlib.notifications.setupNotifications`() must have
 		been called sucessfully. To stop notification from the resource and to remove the
 		subscription, the `onem2mlib.ResourceBase.unsubscribe`() method must be called.
@@ -304,17 +304,19 @@ class ResourceBase:
 		- *originator*: when doing a subscription from a different device, you have to specify the 
 		X-Origin in order to be able to post.
 
-
 		- *callback*: An optional reference to a callback functions that is called when a
 		notification is received for the subscription. If this argument is ommitted then the
 		default callback function, provided with `onem2mlib.notifications.setupNotifiations`(),
 		is called instead.
 
+		- *eventNotificationCriteria*: An optional `onem2mlib.datatypes.EventNotificationCriteria` 
+		object to specify which events (create, update, delete, etc.) should trigger a notification.
+
 		The method returns a Boolean indicating whether the subscription was successfull.
 
 		**Note**
 
-		The &lt;subsription> resource created with this method is only valid for the
+		The <subsription> resource created with this method is only valid for the
 		runtime of the calling program. The scubscription will be removed at least when the
 		program terminates, or when `onem2mlib.notifications.shutdownNotifications`() is called.
 
@@ -322,9 +324,18 @@ class ResourceBase:
 		if self.type not in NOT._allowedSubscriptionResources:
 			logger.error('Subscription not supported for this resource type: ' + INT.nameAndType(self))
 			raise EXC.NotSupportedError('Subscription not supported for this resource type: ' + INT.nameAndType(self))
+		
 		if not NOT.isNotificationEnabled():
+			logger.warning('Notification module is not enabled. Call setupNotifications() first.')
 			return False
-		return NOT.addSubscription(self, callback, originator=originator)
+
+		# Pass the eventNotificationCriteria through to the notifications module
+		return NOT.addSubscription(
+			self, 
+			callback, 
+			originator=originator, 
+			eventNotificationCriteria=eventNotificationCriteria
+		)
 
 	def unsubscribe(self):
 		"""

@@ -35,11 +35,6 @@ try:
 except ImportError:
 	from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
-try:
-	import urllib.parse
-except ImportError:
-	import urlparse
-
 import onem2mlib
 import onem2mlib.exceptions as EXC
 import onem2mlib.constants as CON
@@ -53,7 +48,6 @@ _notificationURI = None
 
 logger = logging.getLogger(__name__)
 
-
 _allowedSubscriptionResources = [
 	CON.Type_CSEBase,
 	CON.Type_AE,
@@ -62,7 +56,6 @@ _allowedSubscriptionResources = [
 	CON.Type_Group,
 	CON.Type_RemoteCSE
 ]
-
 
 def setupNotifications(callback=None, host='localhost', port=1400):
 	"""
@@ -83,20 +76,18 @@ def setupNotifications(callback=None, host='localhost', port=1400):
 	The function returns a Boolean value that indicates whether the notification sub-module
 	was successfully started.
 	"""
-
 	global _host, _port, _callback, _notificationURI
 
 	if _notificationURI:
 		return True
 	
-	# Initialize configuration, possible a new configuration
-
 	if not host:
 		logger.critical('enableNotifications(): Missing host.')
 		raise EXC.ConfigurationError('enableNotifications(): Missing host.')
 	if port == -1:
 		logger.critical('enableNotifications(): Missing port.')
 		raise EXC.ConfigurationError('enableNotifications(): Missing port.')
+
 	_host = host
 	_port = port
 	_callback = callback
@@ -105,18 +96,14 @@ def setupNotifications(callback=None, host='localhost', port=1400):
 	enableNotifications()
 	return True
 
-
 def enableNotifications():
 	"""
 	Enable the notification handling again, after disabling them with the
 	`onem2mlib.notifications.disableNotifications`() method.
 	"""
 	global _isEnabled
-	if _isEnabled:
-		return
 	_isEnabled = True
 	
-
 def disableNotifications():
 	"""
 	Disable the notification handling for a short time. This does **not** shut down the
@@ -127,10 +114,7 @@ def disableNotifications():
 	method.
 	"""
 	global _isEnabled
-	if not _isEnabled:
-		return
 	_isEnabled = False
-
 
 @atexit.register
 def shutdownNotifications():
@@ -144,34 +128,31 @@ def shutdownNotifications():
 	This function is automatically called when the parent program terminates.
 	"""
 	global _notificationURI
-
 	if not _notificationURI:
 		return
-	removeAllSubscriptions()
+	try:
+		removeAllSubscriptions()
+	except Exception as e:
+		logger.warning('Failed to remove subscriptions during shutdown: ' + str(e))
 	disableNotifications()
 	_notificationURI = None
 	_stopNotificationServer()
 
-
 def isNotificationEnabled():
 	""" Boolean. Return the status whether notifications are currently enabled. """
 	return _isEnabled
-
 
 def getNotificationURI():
 	""" String. Return the current notificationURI, or None when notifications are disabled. """
 	return _notificationURI
 
 ###############################################################################
-#
 #	Handling temporary subscriptions / notifications
-#
-#
 
 _subscriptions = {}
 _subscriptionIDToParentResourceID = {}
 
-def addSubscription(resource, callback=None, originator=None):
+def addSubscription(resource, callback=None, originator=None, eventNotificationCriteria=None):
 	"""
 	Add a subscription to the given resource. This creates a &lt;subscription> resource for
 	that resource.
@@ -190,18 +171,24 @@ def addSubscription(resource, callback=None, originator=None):
 
 	The method returns a Boolean indicating whether the subscription was successfully added.
 	"""
-
 	if resource.resourceID in _subscriptions:
 		return True
 	if resource.type not in _allowedSubscriptionResources:
 		logger.error('Subscription not supported for this resource type: ' + INT.nameAndType(resource))
-		raise EXC.NotSupportedError('Subscription not supported for this resource type: ' + INT.nameAndType(resource))
-	sub = onem2mlib.Subscription(resource, notificationURI=[_notificationURI], originator=originator)
+		raise EXC.NotSupportedError('Subscription not supported for this resource type.')
+	
+	# Create the Subscription resource with the optional ENC
+	sub = onem2mlib.Subscription(
+		parent=resource, 
+		notificationURI=[_notificationURI], 
+		originator=originator, 
+		eventNotificationCriteria=eventNotificationCriteria
+	)
+	
 	if not sub:
 		return False
 	_addSubscription(resource, sub, callback)
 	return True
-
 
 def removeSubscription(resource):
 	"""
@@ -219,7 +206,6 @@ def removeSubscription(resource):
 		return False
 	return _removeSubscriptionByID(resource.resourceID)
 
-
 def hasSubscription(resource):
 	"""
 	Check whether a resource has a subscription attached, which is managed by the
@@ -234,8 +220,7 @@ def hasSubscription(resource):
 	"""
 	if not resource or not resource.resourceID:
 		return False
-	return resource.resourceID in _subscriptions.keys()
-
+	return resource.resourceID in _subscriptions
 
 # Add a subscription to the internal data strucures
 def _addSubscription(resource, sub, callback):
@@ -243,14 +228,14 @@ def _addSubscription(resource, sub, callback):
 	_subscriptionIDToParentResourceID[sub.resourceID] = resource.resourceID
 	_subscriptionIDToParentResourceID[sub._structuredResourceID(withRIScope=True)] = resource.resourceID
 
-
 # Remove a subscription from the internal data structures
 def _removeSubscriptionByID(resourceID):
+	if resourceID not in _subscriptions: 
+		return False
 	(sub, _, _) = _subscriptions.pop(resourceID)
-	_subscriptionIDToParentResourceID.pop(sub.resourceID)
-	_subscriptionIDToParentResourceID.pop(sub._structuredResourceID(withRIScope=True))
+	_subscriptionIDToParentResourceID.pop(sub.resourceID, None)
+	_subscriptionIDToParentResourceID.pop(sub._structuredResourceID(withRIScope=True), None)
 	return sub.deleteFromCSE()
-
 
 # Remove all subscriptions from internal data structures
 def removeAllSubscriptions():
@@ -262,10 +247,7 @@ def removeAllSubscriptions():
 	for k in keys:
 		_removeSubscriptionByID(k)
 
-
-
 ###############################################################################
-#
 #	Notification callback server
 #
 #	This is actually a simple HTTP server
@@ -285,6 +267,7 @@ def _startNotificationServer():
 	# TODO: Make this configurable
 	_server = HTTPNotificationServer(('', _port), HTTPNotificationHandler)
 	_thread = threading.Thread(target=_server.run)
+	_thread.daemon = True
 	_thread.start()
 
 
@@ -307,112 +290,127 @@ class HTTPNotificationServer(HTTPServer):
 		try:
 			self.serve_forever()
 		finally:
-			# Clean-up server (close socket, etc.)
 			self.server_close()
 
 
 # This class implements the handler that reseives the requests
 class HTTPNotificationHandler(BaseHTTPRequestHandler):
-
-	# Handle incoming notifications (POST requests)
 	def do_POST(self):
-			# Construct return header
-			self.send_response(200)
-			self.send_header('X-M2M-RSC', '2000')
-			self.end_headers()
+		# Send response first (oneM2M requires 200 OK fast)
+		requestIdentifier = self.headers.get('X-M2M-RI', 'unknown')
+		self.send_response(200)
+		self.send_header('X-M2M-RSC', '2000')
+		self.send_header('X-M2M-RI', requestIdentifier)
+		self.end_headers()
 
-			# Get headers and content data
-			length = int(self.headers['Content-Length'])
-			contentType = self.headers['Content-Type']
-			post_data = self.rfile.read(length)
-			#print(post_data)
+		length = int(self.headers.get('Content-Length', 0))
+		contentType = self.headers.get('Content-Type', '')
+		post_data = self.rfile.read(length)
 
-			if _isEnabled:
-				# Handle notification in the background when enabled
-				if contentType.lower().startswith('application/xml'):
-					threading.Thread(target=self._handleXML(post_data), args=(post_data)).start()
-				elif contentType.lower().startswith('application/json'):
-					threading.Thread(target=self._handleJSON(post_data), args=(post_data)).start()
-			
+		if _isEnabled:
+			if contentType.lower().startswith('application/xml'):
+				threading.Thread(target=self._handleXML, args=(post_data,)).start()
+			elif contentType.lower().startswith('application/json'):
+				threading.Thread(target=self._handleJSON, args=(post_data,)).start()
 
-	# Catch and ignore all log messages
 	def log_message(self, format, *args):
 		return
 
-
-	# Handle XML notifications 
 	def _handleXML(self, data):
 		tree = INT.stringToXML(data)
-		
-		# check verification request
-		vrq = INT.getElement(tree, 'vrq')
-		if vrq:
-			return 	# do nothing
+		if INT.getElement(tree, 'vrq'): 
+			return 
 
-		# get resource
 		rep = INT.getElements(tree, 'rep')
-		if rep and len(rep) > 0:
-			tree = rep[0][0]
-			type = INT.toInt(INT.getElement(tree, 'ty'))
-			resource = INT._newResourceFromType(type, None)
-			resource._parseXML(tree)
+		resource = None
+		if rep:
+			res_tree = rep[0][0]
+			ty = INT.toInt(INT.getElement(res_tree, 'ty'))
+			resource = INT._newResourceFromType(ty, None)
+			resource._parseXML(res_tree)
 		
-		# get the sur first
 		sur = INT.getElement(tree, 'sur')
-		if not sur:
-			return 	# must have a subscription ID
+		if sur:
+			self._callCallback(resource, sur)
 
-		# get and call callback
-		self._callCallback(resource, sur)
-	
-
-	# Handle JSON notifications 
 	def _handleJSON(self, data):
-		jsn =  json.loads(data.decode('utf-8'))
-		#print(jsn)
+		raw_jsn = json.loads(data.decode('utf-8'))
+		
+		# Verification Request check
+		vrq = INT.getALLSubElementsJSON(raw_jsn, 'vrq') or INT.getALLSubElementsJSON(raw_jsn, 'm2m:vrq')
+		if vrq and vrq[0] is True: return
 
-		# check verification request
-		vrq = INT.getALLSubElementsJSON(jsn, 'vrq')
-		if len(vrq) == 0:										# TODO remove later when om2m corrects this
-			vrq = INT.getALLSubElementsJSON(jsn, 'm2m:vrq')
-		if len(vrq) > 0 and vrq[0] == True:
-			return 	# do nothing
+		sgn = INT.getElementJSON(raw_jsn, 'm2m:sgn', default={})
+		nev = INT.getElementJSON(sgn, 'nev', default={})
+		event_type = INT.getElementJSON(nev, 'net')
+		
+		sur = INT.getElementJSON(sgn, 'sur') or INT.getElementJSON(raw_jsn, 'm2m:sur')
+		if isinstance(sur, list) and len(sur) > 0: sur = sur[0]
+		if not sur: return
 
-		# get the sur first
-		sur = INT.getALLSubElementsJSON(jsn, 'sur')
-		if len(sur) == 0:										# TODO remove later when om2m corrects this
-			sur = INT.getALLSubElementsJSON(jsn, 'm2m:sur')
-		if len(sur) > 0:
-			sur = sur[0]
+		rep = INT.getALLSubElementsJSON(raw_jsn, 'rep') or INT.getALLSubElementsJSON(raw_jsn, 'm2m:rep')
+		resource = None
+		if rep:
+			res_jsn = rep[0]
+			ty_list = INT.getALLSubElementsJSON(res_jsn, 'ty')
+			if ty_list:
+				resource = INT._newResourceFromType(ty_list[0], None)
+				resource._parseJSON(res_jsn)
+		
+		self._callCallback(resource, sur, event_type, raw_jsn)
+
+	def _callCallback(self, resource, sur, event_type=None, jsn=None):
+		"""
+		Finds the appropriate subscription and prepares the notification context.
+		"""
+		parentResourceID = None
+		if sur in _subscriptionIDToParentResourceID:
+			parentResourceID = _subscriptionIDToParentResourceID[sur]
 		else:
-			return 	# must have a subscription ID
+			for key in _subscriptionIDToParentResourceID.keys():
+				if sur.endswith(key) or key.endswith(sur):
+					parentResourceID = _subscriptionIDToParentResourceID[key]
+					break
 
-		# get resource
-		rep = INT.getALLSubElementsJSON(jsn, 'rep')
-		if len(rep) == 0:										# TODO remove later when om2m corrects this
-			rep = INT.getALLSubElementsJSON(jsn, 'm2m:rep')
-		if len(rep) > 0:
-			jsn = rep[0]
-			type = INT.getALLSubElementsJSON(jsn, 'ty')
-			if type and len(type) > 0:
-				resource = INT._newResourceFromType(type[0], None)
-				resource._parseJSON(jsn)
-				self._callCallback(resource, sur)
+		notification_context = {
+			'resource': resource,
+			'event_type': event_type,
+			'jsn': jsn,
+			'subscription_id': sur
+		}
 
-
-	def _callCallback(self, resource, sur):
-		# get and call callback
-		if sur not in _subscriptionIDToParentResourceID:
+		# If we don't know the subscription, try the global default
+		if not parentResourceID or parentResourceID not in _subscriptions:
+			if _callback: 
+				self._safe_execute_callback(_callback, **notification_context)
 			return
-		parentResourceID = _subscriptionIDToParentResourceID[sur]
-		if not parentResourceID:
-			return
+
 		(_, _, callback) = _subscriptions[parentResourceID]
-		if not callback:
-			callback = _callback
-		callback(resource)
+		target_callback = callback if callback else _callback
+		
+		if target_callback:
+			self._safe_execute_callback(target_callback, **notification_context)
 
-
+	def _safe_execute_callback(self, func, **kwargs):
+		"""
+		Standardized callback executor. Supports:
+		1. def cb(resource, event_type, jsn, **kwargs)
+		2. def cb(resource) [via fallback]
+		"""
+		try:
+			# Attempt to pass all context data
+			return func(**kwargs)
+		except TypeError as e:
+			# If it failed because of the signature, try passing ONLY the resource
+			# Note: We check the error message to ensure we don't swallow 
+			# TypeErrors occurring INSIDE the function logic.
+			if "unexpected keyword argument" in str(e) or "positional argument" in str(e):
+				try:
+					return func(kwargs.get('resource'))
+				except Exception as inner_e:
+					logger.error(f"Error in simplified notification callback: {inner_e}")
+			else:
+				logger.error(f"Logic error inside notification callback: {e}")
 ###############################################################################
 
 
