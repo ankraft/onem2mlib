@@ -66,7 +66,7 @@ class AE(ResourceBase):
 		self.requestReachability = requestReachability
 		""" Boolean. This indicates the reachability of the AE.	Assigned by the application or the CSE. """
 
-		self.pointOfAccess = []
+		self.pointOfAccess: list[str] = []
 		""" List of String. The list of addresses for communicating with the registered AE. """
 
 		self.nodeLink = nodeLink

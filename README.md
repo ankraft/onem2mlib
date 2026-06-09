@@ -1,6 +1,6 @@
 # onem2mlib
 
-**Version 0.8**
+**Version 2026.06**
 
 
 This Python 3 module implements a library to access and manage resources on a oneM2M CSE.
@@ -21,7 +21,7 @@ This Python 3 module implements a library to access and manage resources on a on
 - [License](#license)
 
 
-## Introduction[](#Introduction)
+## Introduction
 
 This Python3 module implements a library to access and manage resources on a oneM2M CSE.
 
@@ -35,13 +35,23 @@ For further information about oneM2M and its specifications see [http://www.onem
 
 *onem2mlib* has been tested with the following oneM2M implementations:
 
--  [Eclipse om2m](http://www.eclipse.org/om2m/) (feature0 branch)
+-  [ACME oneM2M CSE](http://acmecse.net/)
 
 More implementations should follow.
 
 ## Installation and Prerequisites
 
 This module requires Python3.
+
+### Package Installation
+
+The easiest way to  install the *onem2mlib* is to install it from the PyPi package repository:
+
+```bash
+pip install onem2mlib
+```
+
+### Manual Installation
 
 Copy the *onem2mlib* directory to your project.
 
@@ -50,29 +60,18 @@ In addition you need to install the following modules:
 - [requests](http://docs.python-requests.org/en/master/)
 - [lxml](http://lxml.de)
 
-### requests
-onem2mlib uses the [requests HTTP library](http://python-requests.org). One can install it with pip3:
-
 ```bash
-pip3 install requests
+pip3 install requests lxml
 ```
 
-### LXML
-This is an optional install. By default, XML as a serialization format is not enabled (see [Enabling support for XML encoding](#enabling-support-for-xml-encoding) below), therefore this module must only be installed if XML serialization is enabled.
-
-Install with pip3:
-
-```bash
-pip3 install lxml
-```
-
-Depending on the OS and target environment you might need to install some additional libraries:
+Depending on the OS and target environment you might need to install some additional libraries to use the *lxml* package:
 
 ```bash
 apt-get install libxml2-dev libxslt1-dev
 ```
 
 #### Using a package manager
+
 All this might take a very long time on a small system (such as a Raspberry Pi). Alternative you may install the library with the help of a package manager:
 
 ```bash
@@ -87,7 +86,7 @@ By default, XML serialization is not enabled. If, in addition to JSON serializat
 Support_XML = True
 ```
 
-## Usage[](#Usage)
+## Usage
 
 Read the [full module documentation](http://htmlpreview.github.io/?https://raw.githubusercontent.com/ankraft/onem2mlib/master/doc/onem2mlib/index.html).
 
@@ -168,7 +167,7 @@ There is also a  shortcut for adding a new &lt;contentInstance> to a &lt;contain
 
 ```python
 	cnt.addContent('Some value')
-``` 
+```
 ### Retrieve the latest &lt;contentInstance> from a &lt;container> resource
 And print it.
 
