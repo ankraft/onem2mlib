@@ -4,22 +4,43 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module defines various internal functions for marchalling and unmarshalling of objects.
-#
+"""	This module defines various internal functions for marshalling and unmarshalling of objects. """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import json, logging
 import onem2mlib
 import onem2mlib.internal as INT
 import onem2mlib.exceptions as EXC
+import onem2mlib.constants as CON
+
+if CON.Support_XML:
+	from lxml import etree as ET
+
+
+if TYPE_CHECKING:
+	from .resources.AccessControlPolicy import AccessControlPolicy, AccessControlRule
+	from .resources.AE import AE
+	from .resources.Container import Container
+	from .resources.ContentInstance import ContentInstance
+	from .resources.CSEBase import CSEBase
+	from .resources.FlexContainer import FlexContainer
+	from .resources.Group import Group
+	from .resources.Node import Node
+	from .resources.RemoteCSE import RemoteCSE
+	from .resources.ResourceBase import ResourceBase
+	from .resources.Subscription import Subscription
+	from .datatypes import EventNotificationCriteria
 
 logger = logging.getLogger(__name__)
+""" Logger for this module. """
 
 ###############################################################################
 #
 #	Resource Base
 #
 
-def _resourceBase_parseXML(obj, root):
+def _resourceBase_parseXML(obj: ResourceBase, root: ET._Element) -> None:
 	rootTag = INT.xmlQualifiedName(root)
 
 	obj.resourceName = INT.getAttribute(root, rootTag[1] + ':' + rootTag[0], 'rn', obj.resourceName)
@@ -38,8 +59,10 @@ def _resourceBase_parseXML(obj, root):
 
 
 # Create the XML for only some of the writable attributes.
-def _resourceBase_createXML(obj, isUpdate, isAcpiUpdate=False):
-	root = INT.createElement(obj.typeShortName, namespace=obj.namespace )
+def _resourceBase_createXML(obj: ResourceBase, 
+							isUpdate: bool, 
+							isAcpiUpdate: bool = False) -> ET._Element:
+	root: ET._Element = INT.createElement(obj.typeShortName, namespace=obj.namespace)
 	if isUpdate and isAcpiUpdate:
 			INT.addToElement(root, 'acpi', obj.accessControlPolicyIDs)
 			return root
@@ -52,7 +75,7 @@ def _resourceBase_createXML(obj, isUpdate, isAcpiUpdate=False):
 	return root
 
 
-def _resourceBase_parseJSON(obj, jsn):
+def _resourceBase_parseJSON(obj: ResourceBase, jsn: dict) -> dict:
 	name = obj.namespace + ':' + obj.typeShortName
 	if name not in jsn:
 		logger.error('Wrong encoding: ' + str(jsn))
@@ -77,8 +100,8 @@ def _resourceBase_parseJSON(obj, jsn):
 
 
 # Create the JSON for only some of the writable attributes.
-def _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate=False):
-	jsn = {}
+def _resourceBase_createJSON(obj: ResourceBase, isUpdate: bool, isAcpiUpdate: bool = False) -> dict:
+	jsn: dict = {}
 	if isUpdate and isAcpiUpdate:
 		INT.addToElementJSON(jsn, 'acpi', obj.accessControlPolicyIDs)
 		return jsn
@@ -96,14 +119,14 @@ def _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate=False):
 #	CSEBase
 #
 
-def _CSEBase_parseXML(obj, root):
+def _CSEBase_parseXML(obj: CSEBase, root: ET._Element) -> None:
 	_resourceBase_parseXML(obj, root)
 	obj.cseType = INT.toInt(INT.getElement(root, 'cst', obj.cseType))
 	obj.supportedResourceTypes = INT.getElement(root, 'srt', obj.supportedResourceTypes)
 	obj.pointOfAccess = INT.getElement(root, 'poa', obj.pointOfAccess)
 
 
-def _CSEBase_parseJSON(obj, jsn):
+def _CSEBase_parseJSON(obj: CSEBase, jsn: dict) -> None:
 	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.cseType = INT.toInt(INT.getElementJSON(_jsn, 'cst', obj.cseType))
 	obj.supportedResourceTypes = INT.getElementJSON(_jsn, 'srt', obj.supportedResourceTypes)
@@ -116,7 +139,7 @@ def _CSEBase_parseJSON(obj, jsn):
 #	RemoteCSE
 #
 
-def _remoteCSE_parseXML(obj, root):
+def _remoteCSE_parseXML(obj: RemoteCSE, root: ET._Element) -> None:
 	_resourceBase_parseXML(obj, root)
 	obj.requestReachability = INT.getElement(root, 'rr', obj.requestReachability)
 	obj.pointOfAccess = INT.getElement(root, 'poa', obj.pointOfAccess)
@@ -124,7 +147,7 @@ def _remoteCSE_parseXML(obj, root):
 	obj.cseID = INT.getElement(root, 'csi', obj.cseID)
 
 
-def _remoteCSE_parseJSON(obj, jsn):
+def _remoteCSE_parseJSON(obj: RemoteCSE, jsn: dict) -> None:
 	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.requestReachability = INT.getElementJSON(_jsn, 'rr', obj.requestReachability)
 	obj.pointOfAccess = INT.getElementJSON(_jsn, 'poa', obj.pointOfAccess)
@@ -137,7 +160,7 @@ def _remoteCSE_parseJSON(obj, jsn):
 #	AccessControlPolicy
 #
 
-def _accessControlPolicy_parseXML(obj, root):
+def _accessControlPolicy_parseXML(obj: AccessControlPolicy, root: ET._Element) -> None:
 	_resourceBase_parseXML(obj, root)
 	obj.privileges = []
 	pv = INT.getElementWithChildren(root, 'pv')
@@ -145,7 +168,7 @@ def _accessControlPolicy_parseXML(obj, root):
 		acrs = INT.getElements(pv[0], 'acr', relative=True) # only the first element[0]
 		for a in acrs:
 			acr = onem2mlib.AccessControlRule()
-			_accessControlPolicy_parseXML(acr, a)
+			_accessControlRule_parseXML(acr, a)
 			#acr._parseXML(a)
 			obj.privileges.append(acr)
 	obj.selfPrivileges = []
@@ -154,12 +177,14 @@ def _accessControlPolicy_parseXML(obj, root):
 		acrs = INT.getElements(pvs[0], 'acr', relative=True) # only the first element[0]
 		for a in acrs:
 			acr = onem2mlib.AccessControlRule()
-			_accessControlPolicy_parseXML(acr, a)
+			_accessControlRule_parseXML(acr, a)
 			#acr._parseXML(a)
 			obj.selfPrivileges.append(acr)
 
 
-def _accessControlPolicy_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+def _accessControlPolicy_createXML(obj: AccessControlPolicy, 
+								   isUpdate: bool = False, 
+								   isAcpiUpdate: bool = False) -> ET._Element:
 	# add resource attributes
 	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
 	pv = INT.addElement(root, 'pv')
@@ -173,7 +198,7 @@ def _accessControlPolicy_createXML(obj, isUpdate=False, isAcpiUpdate=False):
 	return root
 
 
-def _accessControlPolicy_parseJSON(obj, jsn):
+def _accessControlPolicy_parseJSON(obj: AccessControlPolicy, jsn: dict) -> None:
 	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.privileges = []
 	pv = INT.getElementJSON(_jsn, 'pv')
@@ -197,7 +222,7 @@ def _accessControlPolicy_parseJSON(obj, jsn):
 				obj.selfPrivileges.append(acr)	
 
 
-def _accessControlPolicy_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+def _accessControlPolicy_createJSON(obj: AccessControlPolicy, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
 	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
 	if obj.privileges:
 		pv = {}
@@ -218,7 +243,7 @@ def _accessControlPolicy_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
 #	AccessControlRule
 #
 
-def _accessControlRule_parseXML(obj, root):
+def _accessControlRule_parseXML(obj: AccessControlRule, root: ET._Element) -> None:
 	obj.accessControlOriginators = []
 	acors = INT.getElements(root, 'acor', relative=True)
 	if acors:
@@ -226,20 +251,20 @@ def _accessControlRule_parseXML(obj, root):
 	obj.accessControlOperations = INT.getElement(root, 'acop', 0, relative=True)
 
 
-def _accessControlRule_createXML(obj, root):
+def _accessControlRule_createXML(obj: AccessControlRule, root: ET._Element) -> None:
 	acr = INT.addElement(root, 'acr')
 	for acor in obj.accessControlOriginators:
 		INT.addToElement(acr, 'acor', acor)
 	INT.addToElement(acr, 'acop', obj.accessControlOperations)
 
 
-def _accessControlRule_parseJSON(obj, jsn):
+def _accessControlRule_parseJSON(obj: AccessControlRule, jsn: dict) -> None:
 	obj.accessControlOriginators = INT.getElementJSON(jsn, 'acor', [])
 	obj.accessControlOperations = INT.getElementJSON(jsn, 'acop', 0)
 
 
-def _accessControlRule_createJSON(obj):
-	jsn = {}
+def _accessControlRule_createJSON(obj: AccessControlRule) -> dict:
+	jsn: dict = {}
 	INT.addToElementJSON(jsn, 'acor', obj.accessControlOriginators)
 	INT.addToElementJSON(jsn, 'acop', obj.accessControlOperations)
 	return jsn
@@ -250,7 +275,7 @@ def _accessControlRule_createJSON(obj):
 #	AE
 #
 
-def _AE_parseXML(obj, root):
+def _AE_parseXML(obj: AE, root: ET._Element) -> None:
 	_resourceBase_parseXML(obj, root)
 	obj.appID = INT.getElement(root, 'api', obj.appID)
 	obj.AEID = INT.getElement(root, 'aei', obj.AEID)
@@ -259,7 +284,7 @@ def _AE_parseXML(obj, root):
 	obj.nodeLink = INT.getElement(root, 'nl', obj.nodeLink)
 
 
-def _AE_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+def _AE_createXML(obj: AE, isUpdate: bool = False, isAcpiUpdate: bool = False) -> ET._Element:
 	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return root
@@ -274,7 +299,7 @@ def _AE_createXML(obj, isUpdate=False, isAcpiUpdate=False):
 	return root
 
 
-def _AE_parseJSON(obj, jsn):
+def _AE_parseJSON(obj: AE, jsn: dict) -> None:
 	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.appID = INT.getElementJSON(_jsn, 'api', obj.appID)
 	obj.AEID = INT.getElementJSON(_jsn, 'aei', obj.AEID)
@@ -283,7 +308,7 @@ def _AE_parseJSON(obj, jsn):
 	obj.nodeLink = INT.getElementJSON(_jsn, 'nl', obj.nodeLink)
 
 
-def _AE_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+def _AE_createJSON(obj: AE, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
 	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return INT.wrapJSON(obj, jsn)
@@ -303,7 +328,7 @@ def _AE_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
 #	Container
 #
 
-def _Container_parseXML(obj, root):
+def _Container_parseXML(obj: Container, root: ET._Element) -> None:
 	_resourceBase_parseXML(obj, root)
 	obj.maxNrOfInstances = INT.toInt(INT.getElement(root, 'mni', obj.maxNrOfInstances))
 	obj.maxByteSize = INT.toInt(INT.getElement(root, 'mbs', obj.maxByteSize))
@@ -314,7 +339,7 @@ def _Container_parseXML(obj, root):
 	obj.latest = INT.getElement(root, 'la', obj.latest)
 
 
-def _Container_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+def _Container_createXML(obj: Container, isUpdate: bool = False, isAcpiUpdate: bool = False) -> ET._Element:
 	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return root
@@ -324,7 +349,7 @@ def _Container_createXML(obj, isUpdate=False, isAcpiUpdate=False):
 	return root
 
 
-def _Container_parseJSON(obj, jsn):
+def _Container_parseJSON(obj: Container, jsn: dict) -> None:
 	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.maxNrOfInstances = INT.getElementJSON(_jsn, 'mni', obj.maxNrOfInstances)
 	obj.maxByteSize = INT.getElementJSON(_jsn, 'mbs', obj.maxByteSize)
@@ -335,7 +360,7 @@ def _Container_parseJSON(obj, jsn):
 	obj.latest = INT.getElementJSON(_jsn, 'la', obj.latest)
 
 
-def _Container_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+def _Container_createJSON(obj: Container, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
 	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return INT.wrapJSON(obj, jsn)
@@ -350,28 +375,28 @@ def _Container_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
 #	ContentInstance
 #
 
-def _ContentInstance_parseXML(obj, root):
+def _ContentInstance_parseXML(obj: ContentInstance, root: ET._Element) -> None:
 	_resourceBase_parseXML(obj, root)
 	obj.contentInfo = INT.getElement(root, 'cnf', obj.contentInfo)
 	obj.contentSize = INT.toInt(INT.getElement(root, 'cs', obj.contentSize))
 	obj.content = INT.getElement(root, 'con', obj.content)
 
 
-def _ContentInstance_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+def _ContentInstance_createXML(obj: ContentInstance, isUpdate: bool = False, isAcpiUpdate: bool = False) -> ET._Element:
 	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
 	INT.addToElement(root, 'cnf', obj.contentInfo)
 	INT.addToElement(root, 'con', obj.content)
 	return root
 
 
-def _ContentInstance_parseJSON(obj, jsn):
+def _ContentInstance_parseJSON(obj: ContentInstance, jsn: dict) -> None:
 	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.contentInfo = INT.getElementJSON(_jsn, 'cnf', obj.contentInfo)
 	obj.contentSize = INT.getElementJSON(_jsn, 'cs', obj.contentSize)
 	obj.content = INT.getElementJSON(_jsn, 'con', obj.content)
 
 
-def _ContentInstance_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+def _ContentInstance_createJSON(obj: ContentInstance, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
 	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
 	INT.addToElementJSON(jsn, 'cnf', obj.contentInfo)
 	INT.addToElementJSON(jsn, 'con', obj.content)
@@ -383,7 +408,7 @@ def _ContentInstance_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
 #	Group
 #
 
-def _Group_parseXML(obj, root):
+def _Group_parseXML(obj: Group, root: ET._Element) -> None:
 	_resourceBase_parseXML(obj, root)
 	obj.maxNrOfMembers = INT.toInt(INT.getElement(root, 'mnm', obj.maxNrOfMembers))
 	obj.memberType = INT.toInt(INT.getElement(root, 'mt', obj.memberType))
@@ -392,10 +417,9 @@ def _Group_parseXML(obj, root):
 	obj.memberTypeValidated = INT.getElement(root, 'mtv', obj.memberTypeValidated)
 	obj.consistencyStrategy = INT.toInt(INT.getElement(root, 'csy', obj.consistencyStrategy))
 	obj.groupName = INT.getElement(root, 'gn', obj.groupName)
-	obj.fanOutPoint = INT.getElement(root, 'fopt', obj.fanOutPoint)
 
 
-def _Group_createXML(obj, isUpdate, isAcpiUpdate=False):
+def _Group_createXML(obj: Group, isUpdate: bool, isAcpiUpdate: bool = False) -> ET._Element:
 	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return root
@@ -409,7 +433,7 @@ def _Group_createXML(obj, isUpdate, isAcpiUpdate=False):
 	return root
 
 
-def _Group_parseJSON(obj, jsn):
+def _Group_parseJSON(obj: Group, jsn: dict) -> None:
 	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.maxNrOfMembers = INT.getElementJSON(_jsn, 'mnm', obj.maxNrOfMembers)
 	obj.memberType = INT.getElementJSON(_jsn, 'mt', obj.memberType)
@@ -418,10 +442,10 @@ def _Group_parseJSON(obj, jsn):
 	obj.memberTypeValidated = INT.getElementJSON(_jsn, 'mtv', obj.memberTypeValidated)
 	obj.consistencyStrategy = INT.getElementJSON(_jsn, 'csy', obj.consistencyStrategy)
 	obj.groupName = INT.getElementJSON(_jsn, 'gn', obj.groupName)
-	obj.fanOutPoint = INT.getElementJSON(_jsn, 'fopt', obj.fanOutPoint)
+	obj.fanOutPoint = f'{obj._structuredResourceID()}/fopt'
 
 
-def _Group_createJSON(obj, isUpdate, isAcpiUpdate=False):
+def _Group_createJSON(obj: Group, isUpdate: bool, isAcpiUpdate: bool = False) -> dict:
 	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return INT.wrapJSON(obj, jsn)
@@ -441,7 +465,7 @@ def _Group_createJSON(obj, isUpdate, isAcpiUpdate=False):
 #	Subscription
 #
 
-def _Subscription_parseXML(obj, root):
+def _Subscription_parseXML(obj: Subscription, root: ET._Element) -> None:
 	_resourceBase_parseXML(obj, root)
 	obj.notificationURI = INT.getElement(root, 'nu', obj.notificationURI)
 	obj.notificationContentType = INT.toInt(INT.getElement(root, 'nct', obj.notificationContentType))
@@ -455,7 +479,7 @@ def _Subscription_parseXML(obj, root):
 		obj.eventNotificationCriteria._parseXML(enc_root)
 
 
-def _Subscription_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+def _Subscription_createXML(obj: Subscription, isUpdate: bool = False, isAcpiUpdate: bool = False) -> ET._Element:
 	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 			return root
@@ -476,7 +500,7 @@ def _Subscription_createXML(obj, isUpdate=False, isAcpiUpdate=False):
 	return root
 
 
-def _Subscription_parseJSON(obj, jsn):
+def _Subscription_parseJSON(obj: Subscription, jsn: dict) -> None:
 	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.notificationURI = INT.getElementJSON(_jsn, 'nu', obj.notificationURI)
 	obj.notificationContentType = INT.getElementJSON(_jsn, 'nct', obj.notificationContentType)
@@ -490,7 +514,7 @@ def _Subscription_parseJSON(obj, jsn):
 		obj.eventNotificationCriteria._parseJSON(enc_jsn)
 
 
-def _Subscription_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+def _Subscription_createJSON(obj: Subscription, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
 	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return INT.wrapJSON(obj, jsn)
@@ -515,7 +539,7 @@ def _Subscription_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
 #	EventNotificationCriteria
 #
 
-def _EventNotificationCriteria_parseXML(obj, root):
+def _EventNotificationCriteria_parseXML(obj: EventNotificationCriteria, root: ET._Element) -> None:
     if root is None: return
     obj.createdBefore = INT.getElement(root, 'crb', obj.createdBefore)
     obj.createdAfter = INT.getElement(root, 'cra', obj.createdAfter)
@@ -534,7 +558,7 @@ def _EventNotificationCriteria_parseXML(obj, root):
     obj.missingData = INT.getElement(root, 'md', obj.missingData)
     obj.filterOperation = INT.getElement(root, 'fo', obj.filterOperation)
 
-def _EventNotificationCriteria_createXML(obj, isUpdate=False):
+def _EventNotificationCriteria_createXML(obj: EventNotificationCriteria, isUpdate: bool = False) -> ET._Element:
     # ENC is a sub-element, usually 'enc'
     root = INT.createElement('enc')
     INT.addToElement(root, 'crb', obj.createdBefore)
@@ -555,7 +579,7 @@ def _EventNotificationCriteria_createXML(obj, isUpdate=False):
     INT.addToElement(root, 'fo', obj.filterOperation)
     return root
 
-def _EventNotificationCriteria_parseJSON(obj, jsn):
+def _EventNotificationCriteria_parseJSON(obj: EventNotificationCriteria, jsn: dict) -> None:
     if jsn is None: return
     obj.createdBefore = INT.getElementJSON(jsn, 'crb', obj.createdBefore)
     obj.createdAfter = INT.getElementJSON(jsn, 'cra', obj.createdAfter)
@@ -574,8 +598,8 @@ def _EventNotificationCriteria_parseJSON(obj, jsn):
     obj.missingData = INT.getElementJSON(jsn, 'md', obj.missingData)
     obj.filterOperation = INT.getElementJSON(jsn, 'fo', obj.filterOperation)
 
-def _EventNotificationCriteria_createJSON(obj, isUpdate=False):
-    jsn = {}
+def _EventNotificationCriteria_createJSON(obj: EventNotificationCriteria, isUpdate: bool = False) -> dict:
+    jsn: dict = {}
     INT.addToElementJSON(jsn, 'crb', obj.createdBefore)
     INT.addToElementJSON(jsn, 'cra', obj.createdAfter)
     INT.addToElementJSON(jsn, 'ms', obj.modifiedSince)
@@ -601,18 +625,18 @@ def _EventNotificationCriteria_createJSON(obj, isUpdate=False):
 #	Node
 #
 
-def _Node_parseXML(obj, root):
+def _Node_parseXML(obj: Node, root: ET._Element) -> None:
 	_resourceBase_parseXML(obj, root)
 	obj.nodeID = INT.getElement(root, 'ni', obj.nodeID)
-	obj.hostedCSELink = INT.toInt(INT.getElement(root, 'hcl', obj.hostedCSELink))
-	obj.hostedAELinks = INT.toInt(INT.getElement(root, 'hael', obj.hostedAELinks))
+	obj.hostedCSELink = INT.getElement(root, 'hcl', obj.hostedCSELink)
+	obj.hostedAELinks = INT.getElement(root, 'hael', obj.hostedAELinks)
 	obj.hostedServiceLinks = INT.getElement(root, 'hsl', obj.hostedServiceLinks)
 	obj.mgmtClientAddress = INT.getElement(root, 'mgca', obj.mgmtClientAddress)
 	obj.roamingStatus = INT.getElement(root, 'rms', obj.roamingStatus)
 	obj.networkID = INT.getElement(root, 'nid', obj.networkID)
 
 
-def _Node_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+def _Node_createXML(obj: Node, isUpdate: bool = False, isAcpiUpdate: bool = False) -> ET._Element:
 	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return root
@@ -622,7 +646,7 @@ def _Node_createXML(obj, isUpdate=False, isAcpiUpdate=False):
 	return root
 
 
-def _Node_parseJSON(obj, jsn):
+def _Node_parseJSON(obj: Node, jsn: dict) -> None:
 	_jsn = _resourceBase_parseJSON(obj, jsn)
 	obj.nodeID = INT.getElementJSON(_jsn, 'ni', obj.nodeID)
 	obj.hostedCSELink = INT.getElementJSON(_jsn, 'hcl', obj.hostedCSELink)
@@ -633,7 +657,7 @@ def _Node_parseJSON(obj, jsn):
 	obj.networkID = INT.getElementJSON(_jsn, 'nid', obj.networkID)
 
 
-def _Node_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+def _Node_createJSON(obj: Node, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
 	jsn = _resourceBase_createJSON(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return INT.wrapJSON(obj, jsn)
@@ -648,14 +672,14 @@ def _Node_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
 #	FlexContainer
 #
 
-def _FlexContainer_parseXML(obj, root):
+def _FlexContainer_parseXML(obj: FlexContainer, root: ET._Element) -> None:
 	_resourceBase_parseXML(obj, root)
 	obj.contentDefinition = INT.getElement(root, 'cnd', obj.contentDefinition)
 	# TODO attributes
 
 
 
-def _FlexContainer_createXML(obj, isUpdate=False, isAcpiUpdate=False):
+def _FlexContainer_createXML(obj: FlexContainer, isUpdate: bool = False, isAcpiUpdate: bool = False) -> ET._Element:
 	root = _resourceBase_createXML(obj, isUpdate, isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return root
@@ -664,16 +688,16 @@ def _FlexContainer_createXML(obj, isUpdate=False, isAcpiUpdate=False):
 	return root
 
 
-def _FlexContainer_parseJSON(obj, jsn):
+def _FlexContainer_parseJSON(obj: FlexContainer, jsn: dict) -> None:
 	_resourceBase_parseJSON(obj, jsn)
 	obj.contentDefinition = INT.getElementJSON(jsn, 'cnd', obj.contentDefinition)
 	# TODO Attributes
 
 
-def _FlexContainer_createJSON(obj, isUpdate=False, isAcpiUpdate=False):
+def _FlexContainer_createJSON(obj: FlexContainer, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
 	jsn = _resourceBase_createJSON(obj, isUpdate,isAcpiUpdate)
 	if isUpdate and isAcpiUpdate:
 		return INT.wrapJSON(obj, jsn)
-	INT.addToElementJSON(data, 'cnd', obj.contentDefinition)
+	INT.addToElementJSON(jsn, 'cnd', obj.contentDefinition)
 	# >TODO attribues
 	return INT.wrapJSON(obj, jsn)

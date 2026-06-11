@@ -6,6 +6,7 @@
 #
 #	This example shows how to susbcribe to resources and receive notifications.
 #
+from typing import cast
 
 import uuid, sys, time, logging
 sys.path.append('..')
@@ -18,10 +19,10 @@ import conf
 
 # This is the callback function that is called for the notifications.
 # The parameter is the changed resource
-def callback(resource):
+def callback(resource: ResourceBase) -> None:
 	print('Received notification')
 	if resource.type == CON.Type_ContentInstance:
-		print(resource.content)
+		print(cast(ContentInstance, resource).content)
 	else:
 		print(resource)
 
@@ -40,8 +41,8 @@ if __name__ == '__main__':
 	cse = session.getCSEBase()
 
 	# create an <AE> resource
-	aeName = 'exampleAE_'+str(uuid.uuid4().hex) # unique name for the <AE>
-	ae = AE(parent=cse, resourceName=aeName, originator='C'+aeName)
+	aeName = f'exampleAE_{uuid.uuid4().hex}' # unique name for the <AE>
+	ae = AE(parent=cse, resourceName=aeName, originator=f'C{aeName}')
 
 	# create a <container> and add it to the <AE>
 	cnt = Container(parent=ae)

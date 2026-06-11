@@ -4,8 +4,10 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the <Node> resource.
-#
+""" This module implements the class for the <Node> resource. """
+
+from __future__ import annotations
+from typing import Optional, Any, override
 
 import logging
 import onem2mlib.marshalling as M
@@ -16,78 +18,79 @@ import onem2mlib.exceptions as EXC
 from .ResourceBase import ResourceBase
 
 logger = logging.getLogger(__name__)
+""" Logger for this module. """
 
 class Node(ResourceBase):
-	"""
-	This class implements the oneM2M <node> resource. 
-
-	It is used to represent nodes, or devices.
+	"""	This class implements the oneM2M <node> resource. 
+	
+		It is used to represent nodes, or devices.
 	"""
 
 	def __init__(self, 
-				 nodeID: str | None = None, 
-				 mgmtClientAddress: str | None = None, 
+				 nodeID: Optional[str] = None, 
+				 mgmtClientAddress: Optional[str] = None, 
 				 instantly: bool = True, 
-				 **kwargs):
-		"""
-		Initialize the &lt;node> resource. 
+				 **kwargs: Any) -> None:
+		"""	Initialize the <node> resource. 
 
-		Args:
-			nodeID: The M2M-Node-ID (Mandatory).
-			mgmtClientAddress: Physical address of the management client.
-			instantly: If True, immediately sync with the CSE.
-			**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
-		"""
+			Args:
+				nodeID: The M2M-Node-ID (Mandatory).
+				mgmtClientAddress: Physical address of the management client.
+				instantly: If True, immediately sync with the CSE.
+				**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
 
+			Raises:
+				ParameterError: If the parent resource is not a <CSEBase> or if nodeID is not provided.
+		"""
 		super().__init__(type=CON.Type_Node, typeShortName=CON.Type_Node_SN, **kwargs)
 
 		self._marshallers = [M._Node_parseXML, M._Node_createXML,
 							 M._Node_parseJSON, M._Node_createJSON]
 
+		if self.parent is not None and self.parent.type not in [CON.Type_CSEBase]:
+			logger.error('Parent of <Node> must be <CSEBase>.')
+			raise EXC.ParameterError('Parent must be <CSEBase>.')
+
 		if not nodeID:
 			raise EXC.ParameterError('nodeID is mandatory for <node> resources.')
-		self.nodeID = nodeID
-		"""The M2M-Node-ID of the node which is represented by this &lt;node> resource."""
+		
+		self.nodeID: str = nodeID
+		"""	The M2M-Node-ID of the node which is represented by this <node> resource."""
 
-		self.hostedCSELink = None
-		"""
-		This attribute allows to find the &lt;CSEBase> or &lt;remoteCSE> resource representing
-		the CSE that is residing on the node that is represented by this &lt;node> resource. R/O.
-		"""
-
-		self.hostedAELinks = None
-		"""
-		This attribute allows to find the AEs hosted by the node that is represented by this
-		&lt;node> resource. The attribute shall contain a list of resource identifiers of
-		&lt;AE> resources representing the ADN-AEs residing on the node that is represented
-		by the current &lt;node> resource. R/O.
+		self.hostedCSELink: Optional[str] = None
+		"""	This attribute allows to find the <CSEBase> or <remoteCSE> resource representing
+			the CSE that is residing on the node that is represented by this <node> resource. R/O.
 		"""
 
-		self.hostedServiceLinks = None
-		"""
-		This attribute allows to find &lt;flexContainer> resources that have been created by an
-		IPE to represent services hosted on a NoDN, the NoDN being represented by this &lt;node>
-		resource.
-		If the NoDN hosts a set of services represented by &lt;flexContainer>s, then the attribute
-		shall contain the list of resource identifiers of these &lt;flexContainer> resources. R/O.
+		self.hostedAELinks: Optional[list[str]] = None
+		"""	This attribute allows to find the AEs hosted by the node that is represented by this
+			<node> resource. The attribute shall contain a list of resource identifiers of
+			<AE> resources representing the ADN-AEs residing on the node that is represented
+			by the current <node> resource. R/O.
 		"""
 
-		self.mgmtClientAddress = mgmtClientAddress
-		"""
-		Represents the physical address of management client of the node which is represented 
-		by this &lt;node> resource.
-		"""
-
-		self.roamingStatus = None
-		"""
-		Indicates if the M2M Node is currently roaming from the perspective of the underlying
-		network. R/O.
+		self.hostedServiceLinks: Optional[list[str]] = None
+		"""	This attribute allows to find <flexContainer> resources that have been created by an
+			IPE to represent services hosted on a NoDN, the NoDN being represented by this <node>
+			resource.
+			
+			If the NoDN hosts a set of services represented by <flexContainer>s, then the attribute
+			shall contain the list of resource identifiers of these <flexContainer> resources. R/O.
 		"""
 
-		self.networkID = None
+		self.mgmtClientAddress: Optional[str] = mgmtClientAddress
+		""" Represents the physical address of management client of the node which is represented 
+			by this <node> resource.
 		"""
-		Configured with the identity of the underlying network which the M2M Node is currently
-		attached to. R/O.
+
+		self.roamingStatus: Optional[str] = None
+		"""	Indicates if the M2M Node is currently roaming from the perspective of the underlying
+			network. R/O.
+		"""
+
+		self.networkID: Optional[str] = None
+		"""	Configured with the identity of the underlying network which the M2M Node is currently
+			attached to. R/O.
 		"""
 		
 		if instantly:
@@ -96,20 +99,20 @@ class Node(ResourceBase):
 				raise EXC.CSEOperationError(f'Cannot get or create Node. {MCA.lastError}')
 
 
-	def __str__(self):
-		result = 'Node:\n'
-		result += super().__str__()
-		result += INT.strResource('nodeID', 'ni', self.nodeID)
-		result += INT.strResource('hostedCSELink', 'hcl', self.hostedCSELink)
-		result += INT.strResource('hostedAELinks', 'hael', self.hostedAELinks)
-		result += INT.strResource('hostedServiceLinks', 'hsl', self.hostedServiceLinks)
-		result += INT.strResource('mgmtClientAddress', 'mgca', self.mgmtClientAddress)
-		result += INT.strResource('roamingStatus', 'rms', self.roamingStatus)
-		result += INT.strResource('networkID', 'nid', self.networkID)
-		return result
+	def __str__(self) -> str:
+		return	'Node:\n' + \
+				super().__str__() + \
+				INT.strResource('nodeID', 'ni', self.nodeID) + \
+				INT.strResource('hostedCSELink', 'hcl', self.hostedCSELink) + \
+				INT.strResource('hostedAELinks', 'hael', self.hostedAELinks) + \
+				INT.strResource('hostedServiceLinks', 'hsl', self.hostedServiceLinks) + \
+				INT.strResource('mgmtClientAddress', 'mgca', self.mgmtClientAddress) + \
+				INT.strResource('roamingStatus', 'rms', self.roamingStatus) + \
+				INT.strResource('networkID', 'nid', self.networkID)
 
 
-	def _copy(self, resource: 'Node'):
+	@override
+	def _copy(self, resource: Node) -> None:	# type: ignore[override]
 		super()._copy(resource)
 		self.nodeID = resource.nodeID
 		self.hostedCSELink = resource.hostedCSELink

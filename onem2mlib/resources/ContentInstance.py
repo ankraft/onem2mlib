@@ -4,8 +4,10 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the <ContentInstance> resource.
-#
+""" This module implements the class for the <ContentInstance> resource. """
+
+from __future__ import annotations
+from typing import Optional, Any, override
 
 import logging
 import onem2mlib.marshalling as M
@@ -18,20 +20,22 @@ from .ResourceBase import ResourceBase
 logger = logging.getLogger(__name__)
 
 class ContentInstance(ResourceBase):
+	"""	This class implements the oneM2M <contentInstance> resource. This type of resource can
+		only be created or deleted, but not updated.
+
+		It is a child-resource of the <container> resource.
+
+		To publish data in a <contentInstance> resource, one must first encode the data so 
+		that it can be transferred as a string value and must then set the encoding type in the 
+		`contentInfo` attribute. The default is ``text/plain:0``.
 	"""
-	This class implements the oneM2M &lt;contentInstance> resource. This type of resource can
-	only be created or deleted, but not updated.
 
-	It is usually a sub-resource of the &lt;container> resource.
-
-	To publish data in a <contentInstance> resource, one must first encode the data so 
-	that it can be transferred as a string value and must then set the encoding type in the 
-	`contentInfo` attribute. The default is `text/plain:0`.
-	"""
-
-	def __init__(self, content: str | None= None, contentInfo: str |None = None, instantly: bool = True, **kwargs):
+	def __init__(self, content: Optional[str] = None, 
+			  		   contentInfo: Optional[str] = None, 
+					   instantly: bool = True, 
+					   **kwargs: Any) -> None:
 		"""
-		Initialize the &lt;contentInstance> resource. 
+		Initialize the <contentInstance> resource. 
 
 		Args:
 			content: The actual data payload.
@@ -53,7 +57,7 @@ class ContentInstance(ResourceBase):
 		state variable. R/O."""
 
 		self.content = content
-		""" Usually an encoded String. The actual content of the &lt;contentInstance> resource."""
+		""" Usually an encoded String. The actual content of the <contentInstance> resource."""
 
 		if instantly:
 			if not self.get():
@@ -61,16 +65,15 @@ class ContentInstance(ResourceBase):
 				raise EXC.CSEOperationError(f'Cannot get or create ContentInstance. {MCA.lastError}')
 
 
-	def __str__(self):
-		result = 'ContentInstance:\n'
-		result += super().__str__()
-		result += INT.strResource('contentInfo', 'cnf', self.contentInfo)
-		result += INT.strResource('contentSize', 'cs', self.contentSize)
-		result += INT.strResource('content', 'con', self.content)
-		return result
+	def __str__(self) -> str:
+		return	'ContentInstance:\n' + \
+				super().__str__() + \
+				INT.strResource('contentInfo', 'cnf', self.contentInfo) + \
+				INT.strResource('contentSize', 'cs', self.contentSize) + \
+				INT.strResource('content', 'con', self.content)
 
-
-	def _copy(self, resource: 'ContentInstance'):
+	@override
+	def _copy(self, resource: ContentInstance) -> None:	# type: ignore[override]
 		super()._copy(resource)
 		self.contentInfo = resource.contentInfo
 		self.contentSize = resource.contentSize

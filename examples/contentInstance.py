@@ -38,6 +38,7 @@ if __name__ == '__main__':
 	# or do the same a bit more conventient
 	cnt.addContent('Some other Value', labels=['label1/example', 'label2/anotherExample'])
 	print('ContentInstances in the Container: ' + str([cin.resourceID for cin in cnt.contentInstances()]))
+	print()
 
 	# retrieve the <contentInstance> via the <container>.latest and print it
 	print('Latest ' + str(cnt.latestContentInstance()))

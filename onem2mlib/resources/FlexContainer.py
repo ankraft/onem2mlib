@@ -4,8 +4,10 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the <FlexContainer> resource.
-#
+""" This module implements the class for the <FlexContainer> resource. """
+
+from __future__ import annotations
+from typing import Optional, Any, cast, override
 
 import logging
 import onem2mlib.marshalling as M
@@ -16,30 +18,29 @@ import onem2mlib.exceptions as EXC
 from .ResourceBase import ResourceBase
 
 logger = logging.getLogger(__name__)
+""" Logger for this module. """
 
 class FlexContainer(ResourceBase):
-	"""
-	This class implements the oneM2M &lt;flexContainer> resource. 
+	"""	This class implements the oneM2M <flexContainer> resource. 
 
-	This is only a base class with the basic &lt;flexContainer> functionalities.
-	It should be inherited to implement flexContainer specializations.
+		This is only a base class with the basic <flexContainer> functionalities.
+		It should be inherited to implement <flexContainer> specializations.
 	"""
 
 	def __init__(self, 
-				 resourceSpecialization: str | None = None, 
-				 contentDefinition: str | None = None, 
-				 attributes: dict | None = None, 
+				 resourceSpecialization: Optional[str] = None, 
+				 contentDefinition: Optional[str] = None, 
+				 attributes: Optional[dict] = None, 
 				 instantly: bool = True, 
-				 **kwargs):
-		"""
-		Initialize the &lt;flexContainer> resource. 
+				 **kwargs: Any) -> None:
+		"""	Initialize the <flexContainer> resource. 
 
-		Args:
-			resourceSpecialization: The specialization name (used as typeShortName, e.g., 'cod:light').
-			contentDefinition: The URI defining the content of this specialization.
-			attributes: A dictionary of custom attributes for this specialization.
-			instantly: If True, the resource is immediately synced with the CSE.
-			**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
+			Args:
+				resourceSpecialization: The specialization name (used as typeShortName, e.g., 'cod:light').
+				contentDefinition: The URI defining the content of this specialization.
+				attributes: A dictionary of custom attributes for this specialization.
+				instantly: If True, the resource is immediately synced with the CSE.
+				**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
 		"""
 		super().__init__(
 			type=CON.Type_FlexContainer, 
@@ -60,17 +61,16 @@ class FlexContainer(ResourceBase):
 				raise EXC.CSEOperationError(f'Cannot get or create FlexContainer specialization. {MCA.lastError}')
 
 
-	def __str__(self):
-		result = 'FlexContainer:\n'
-		result += super().__str__()
-		result += INT.strResource('resourceSpecialization', None, self.resourceSpecialization)
-		result += INT.strResource('contentDefinition', 'cnd', self.contentDefinition)
-
+	def __str__(self) -> str:
+		return	'FlexContainer:\n' + \
+				super().__str__() + \
+				INT.strResource('resourceSpecialization', None, self.resourceSpecialization) + \
+				INT.strResource('contentDefinition', 'cnd', self.contentDefinition)
 		# TODO attributes
-		return result
 
 
-	def _copy(self, resource: 'FlexContainer'):
+	@override
+	def _copy(self, resource: FlexContainer) -> None:	# type: ignore[override]
 		super()._copy(resource)
 		self.resourceSpecialization = resource.resourceSpecialization
 		self.contentDefinition = resource.contentDefinition

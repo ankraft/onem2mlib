@@ -13,6 +13,7 @@ from onem2mlib import *
 import onem2mlib.constants as CON
 import conf
 
+orig = 'CTest'
 
 if __name__ == '__main__':
 	logging.basicConfig(level=conf.LOGGINGLEVEL)
@@ -27,7 +28,7 @@ if __name__ == '__main__':
 	# Create AccessControlRules for privileges and self-privileges
 	privileges = [ 
 		AccessControlRule([conf.ORIGINATOR], CON.Acp_ALL),
-		AccessControlRule(['user:user'], CON.Acp_RETRIEVE+CON.Acp_DISCOVER)
+		AccessControlRule([orig], CON.Acp_RETRIEVE+CON.Acp_DISCOVER)
 	]
 	selfPrivileges = [ 
 		AccessControlRule([conf.ORIGINATOR], CON.Acp_ALL)
@@ -40,7 +41,11 @@ if __name__ == '__main__':
 
 	# Create a 
 	aeName = 'exampleAE_'+str(uuid.uuid4().hex)
-	ae = AE(parent=cse, resourceName=aeName, instantly=False)
+	ae = AE(parent=cse, resourceName=aeName, originator=orig, instantly=False)
 	ae.setAccessControlPolicies(acp)
 	ae.createInCSE()
 	print(ae)
+
+	# Delete everything
+	acp.deleteFromCSE()
+	ae.deleteFromCSE()

@@ -4,52 +4,47 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module defines various utilitiy classes and functions
-#
 
-"""
-This sub-module defines the various utility classes and function for the onem2mlib module.
-
-"""
+"""	This sub-module defines the various utility classes and function for the onem2mlib module. """
 import logging
 import onem2mlib.exceptions as EXC
 import onem2mlib.constants as CON
 
 logger = logging.getLogger(__name__)
+""" Logger for this module. """
 
 #
 #	Filter
 #
 
-def newLabelFilterCriteria(label):
-	"""
-	Create a new label filter criteria.
+def newLabelFilterCriteria(label: str) -> tuple[str, str]:
+	"""	Create a new label filter criteria.
 
-	Args:
+		Args:
+			label: The label to filter for. The format of a label is "key:value".
 
-	- *label*: String. The label to filter for. The format of a label is "key/value".
-
-	This function may throw a *ParameterError* exception when called with an empty or wrong label format.
+		Raises:
+			ParameterError: This function may throw a *ParameterError* exception when called with an empty or wrong label format.
 	"""
 	if label is None:
 		logger.error('label must not be empty.')
 		raise EXC.ParameterError('label must not be empty.')
-	if label.count('/') < 1:
-		logger.error('Wrong format: label format is "key/value": ' + label)
-		raise EXC.ParameterError('Wrong format: label format is "key/value": ' + label)
+	if label.count(':') < 1:
+		logger.error('Wrong format: label format is "key:value": ' + label)
+		raise EXC.ParameterError('Wrong format: label format is "key:value": ' + label)
 	return ('lbl', label)
 
 
-def newTypeFilterCriteria(type):
+def newTypeFilterCriteria(type: int) -> tuple[str, str]:
+	"""	Create a new resource type filter criteria.
+	
+		Args:
+			type: The resource type to filter for. It must be one of the valid oneM2M resource types.
+
+		Raises:
+			ParameterError: This function may throw a *ParameterError* exception when called with a wrong resource type.	
 	"""
-	Create a new resource type filter criteria.
-
-	Args:
-
-	- *label*: Integer. The resource type to filter for. It must be one of the valid oneM2M resource types.
-
-	This function may throw a *ParameterError* exception when called with a wrong resource type.
-	"""
+	# TODO enum for resource types
 	if type not in [CON.Type_Mixed, CON.Type_ACP, CON.Type_AE, CON.Type_Container, \
 					CON.Type_ContentInstance, CON.Type_CSEBase, CON.Type_Group, CON.Type_RemoteCSE, \
 					CON.Type_Subscription, \
@@ -60,7 +55,7 @@ def newTypeFilterCriteria(type):
 
 #
 ##
-###	TBD: More filter criteria when supported by om2m
+###	TBD: More filter criteria when needed
 ##
 #
 

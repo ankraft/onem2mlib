@@ -23,55 +23,55 @@ Support_XML = False
 #
 
 Type_Mixed =  0
-""" The *Mixed* type, e.g. for &lt;group> resources that point to resources of various types. """
+""" The *Mixed* type, e.g. for <group> resources that point to resources of various types. """
 
 Type_ACP = 1
 """ The &lt>ACP> resource type. """
 Type_ACP_SN = 'acp'
-""" Shortname for the &lt;ACP> resource type. """
+""" Shortname for the <ACP> resource type. """
 
 Type_AE =  2
-""" The &lt;AE> resource type. """
+""" The <AE> resource type. """
 Type_AE_SN = 'ae'
-""" Shortname for the &lt;AE> resource type. """
+""" Shortname for the <AE> resource type. """
 
 Type_Container =  3
-""" The &lt;container> resource type. """
+""" The <container> resource type. """
 Type_Container_SN = 'cnt'
-""" Shortname for the &lt;container> resource type. """
+""" Shortname for the <container> resource type. """
 
 Type_ContentInstance =  4
-""" The &lt;contentInstance> resource type. """
+""" The <contentInstance> resource type. """
 Type_ContentInstance_SN = 'cin'
-""" Shortname for the &lt;contentInstance> resource type. """
+""" Shortname for the <contentInstance> resource type. """
 
 Type_CSEBase = 5
-""" The &lt;CSE> resource type. """
+""" The <CSE> resource type. """
 Type_CSEBase_SN = 'cb'
-""" The &lt;CSEBase> resource type. """
+""" The <CSEBase> resource type. """
 
 Type_Group =  9
-""" The &lt;group> resource type. """
+""" The <group> resource type. """
 Type_Group_SN = 'grp'
-""" Shortname for the &lt;group> resource type. """
+""" Shortname for the <group> resource type. """
 
 Type_Node = 14
-""" The &lt;node> resource type. """
+""" The <node> resource type. """
 Type_Node_SN = 'nod'
-""" Shortname for the &lt;node> resource type. """
+""" Shortname for the <node> resource type. """
 
 Type_RemoteCSE = 16
-""" The &lt;remoteCSE> resource type. """
+""" The <remoteCSE> resource type. """
 Type_RemoteCSE_SN = 'csr'
-""" Shortname for the &lt;remoteCSE> resource type. """
+""" Shortname for the <remoteCSE> resource type. """
 
 Type_Subscription = 23
-""" The &lt;subscription> resource type"""
+""" The <subscription> resource type"""
 Type_Subscription_SN = 'sub'
-""" Shortname for the &lt;subscription> resource type. """
+""" Shortname for the <subscription> resource type. """
 
 Type_FlexContainer = 28
-""" The &lt;flexContainer> resource type. """
+""" The <flexContainer> resource type. """
 # No implicit shortname for the flexContainer.
 
 
@@ -80,11 +80,11 @@ Type_FlexContainer = 28
 #
 
 Cse_Type_IN = 1
-""" Used for the &lt;CSEBase> resource's *cseType* attribute. In indicates an IN-CSE. """
+""" Used for the <CSEBase> resource's *cseType* attribute. In indicates an IN-CSE. """
 Cse_Type_MN = 2
-""" Used for the &lt;CSEBase> resource's *cseType* attribute. In indicates an MN-CSE. """
+""" Used for the <CSEBase> resource's *cseType* attribute. In indicates an MN-CSE. """
 Cse_Type_ASN = 3
-""" Used for the &lt;CSEBase> resource's *cseType* attribute. In indicates an ASN-CSE. """
+""" Used for the <CSEBase> resource's *cseType* attribute. In indicates an ASN-CSE. """
 
 
 #
@@ -111,18 +111,18 @@ Acp_ALL = 63
 #
 
 Grp_ABANDON_MEMBER =  1
-""" Used for the &lt;group> resource's *consistencyStrategy* attribute. Abandon group members that 
+""" Used for the <group> resource's *consistencyStrategy* attribute. Abandon group members that 
 don't match the groups type. """
 Grp_ABANDON_GROUP =  2
-""" Used for the &lt;group> resource's *consistencyStrategy* attribute. Abandon the whole group when
+""" Used for the <group> resource's *consistencyStrategy* attribute. Abandon the whole group when
 there are members that don't match the group type. """
 Grp_SET_MIXED =  3
-""" Used for the &lt;group> resource's *consistencyStrategy* attribute. Set the group's type to *mixed*
+""" Used for the <group> resource's *consistencyStrategy* attribute. Set the group's type to *mixed*
 when there are member that don't match the group type. """
 
 
 Grp_def_maxNrOfMembers = 10
-""" Default for the &lt;group> resource's *maxNrOfMembers* attribute. """
+""" Default for the <group> resource's *maxNrOfMembers* attribute. """
 
 
 #

@@ -4,45 +4,55 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the <AE> resource.
-#
+""" This module implements the class for the <AE> resource. """
+
+from __future__ import annotations
+from typing import Optional, Any, cast, override, TYPE_CHECKING
 
 import logging
-import onem2mlib.marshalling as M
-import onem2mlib.constants as CON
-import onem2mlib.exceptions as EXC
-import onem2mlib.mcarequests as MCA
-import onem2mlib.internal as INT
+from .. import marshalling as M
+from .. import constants as CON
+from .. import exceptions as EXC
+from .. import mcarequests as MCA
+from .. import internal as INT
+from .Group import Group
 from .ResourceBase import ResourceBase
+from .Container import Container
+
+
+if TYPE_CHECKING:
+	from .Session import Session
 
 
 logger = logging.getLogger(__name__)
+""" Logger for this module. """
 
 class AE(ResourceBase):
-	"""
-	This class implements the oneM2M <AE> resource. 
+	"""	This class implements the oneM2M <AE> resource. 
 
-	It is usually a sub-resource of the <CSEBase> resource, and it represents an 
-	application and the sub-structure of resources beneath it.
+		It is always a child-resource of the <CSEBase> resource, and it represents an 
+		application and the sub-structure of resources beneath it.
 	"""
 
 	def __init__(self,
-              	 appID: str | None = None,
-              	 AEID: str | None = None,
+              	 appID: Optional[str] = None,
+              	 AEID: Optional[str] = None,
                  requestReachability: bool = True, 
-				 nodeLink: str | None = None,
+				 nodeLink: Optional[str] = None,
      			 instantly: bool = True,
-         		 **kwargs):
-		"""
-		Initialize the &lt;AE> resource. 
+         		 **kwargs: Any) -> None:
+		"""	Initialize the <AE> resource. 
 
-		Args:
-			appID: Identifier of the Application. Defaults to resourceName if not provided.
-			AEID: Identifier of the Application Entity.
-			requestReachability: Reachability status of the AE.
-			nodeLink: Resource ID of the associated node resource.
-			instantly: If True, the resource is immediately synced with the CSE.
-			**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
+			Args:
+				appID: Identifier of the Application. Defaults to resourceName if not provided.
+				AEID: Identifier of the Application Entity.
+				requestReachability: Reachability status of the AE.
+				nodeLink: Resource ID of the associated node resource.
+				instantly: If True, the resource is immediately synced with the CSE.
+				**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
+			
+			Raises:
+				onem2mlib.exceptions.ParameterError: If the parent resource is not a <CSEBase>.
 		"""
 		if not appID:
 			appID = kwargs.get('resourceName')
@@ -56,26 +66,31 @@ class AE(ResourceBase):
 		# 3. Set Marshallers
 		self._marshallers = [M._AE_parseXML, M._AE_createXML,
 							 M._AE_parseJSON, M._AE_createJSON]
+		
+		if self.parent is not None and self.parent.type not in [CON.Type_CSEBase]:
+			logger.error('Parent of <AE> must be <CSEBase>')
+			raise EXC.ParameterError('Parent must be <CSEBase>.')
+
 
 		# 4. Set AE-Specific Attributes
-		self.appID = appID
+		self.appID: Optional[str] = appID
 		""" String. The identifier of the Application. Assigned by the application or the CSE. """
-		self.AEID = AEID
+
+		self.AEID: Optional[str] = AEID
 		""" String. The identifier of the Application Entity. Assigned by the application or the CSE. """
 
-		self.requestReachability = requestReachability
+		self.requestReachability: bool = requestReachability
 		""" Boolean. This indicates the reachability of the AE.	Assigned by the application or the CSE. """
 
 		self.pointOfAccess: list[str] = []
 		""" List of String. The list of addresses for communicating with the registered AE. """
 
-		self.nodeLink = nodeLink
-		"""
-		The resource identifier of a &lt;node> resource that stores the node specific information
-		of the node on which the AE represented by this &lt;AE> resource resides.
+		self.nodeLink: Optional[str] = nodeLink
+		""" The resource identifier of a <node> resource that stores the node specific information
+			of the node on which the AE represented by this <AE> resource resides.
 		"""
 
-		self.supportedReleaseVersions = ['3']
+		self.supportedReleaseVersions: list[str] = ['3']
 		""" List of String. The list of supported release versions. """
 
 		if instantly:
@@ -83,34 +98,45 @@ class AE(ResourceBase):
 				raise EXC.CSEOperationError(f'Cannot get or create AE. {MCA.lastError}')
 
 
-	def __str__(self):
-		result = 'AE:\n'
-		result += super().__str__()
-		result += INT.strResource('appID', 'api', self.appID)
-		result += INT.strResource('AEID', 'aei', self.AEID)
-		result += INT.strResource('requestReachability', 'rr', self.requestReachability)
-		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
-		result += INT.strResource('nodeLink', 'nl', self.nodeLink)
-		result += INT.strResource('supportedReleaseVersions', 'srv', self.supportedReleaseVersions)
-		return result
+	def __str__(self) -> str:
+		"""	Return a string representation of the AE resource, including its attributes.
+
+			Returns:
+				A string representation of the AE resource, including its attributes.
+		"""
+
+		return	'AE:\n' + \
+				super().__str__() + \
+			    INT.strResource('appID', 'api', self.appID) + \
+			    INT.strResource('AEID', 'aei', self.AEID) + \
+			    INT.strResource('requestReachability', 'rr', self.requestReachability) + \
+			    INT.strResource('pointOfAccess', 'poa', self.pointOfAccess) + \
+			    INT.strResource('nodeLink', 'nl', self.nodeLink) + \
+			    INT.strResource('supportedReleaseVersions', 'srv', self.supportedReleaseVersions)
 
 
-	def containers(self, filter=None):
+	def containers(self, filter: Optional[list[tuple[str, str|int|bool]]] = None) -> list[Container]:
+		"""	Return a list of all <container> resources of this <AE>, or an empty list.
+
+			Args:
+				filter: Optional list of tuples (attribute, value) to filter the containers.
+			
+			Returns:
+				A list of <container> resources that are child-resources of this 
+					<AE> resource, or an empty list if there are none.
 		"""
-		Return a list of all &lt;container> resources of this &lt;AE>, or an empty list.
-		"""
-		return INT._findSubResource(self, CON.Type_Container, filter=filter)
+		return cast(list[Container], INT._findSubResource(self, CON.Type_Container, filter=filter))
 
 
 	def addContainer(self, 
-					 resourceName: str | None = None, 
-					 maxNrOfInstances: int | None = None, 
-					 maxByteSize: int | None = None, 
-					 maxInstanceAge: int | None = None, 
+					 resourceName: Optional[str] = None, 
+					 maxNrOfInstances: Optional[int] = None, 
+					 maxByteSize: Optional[int] = None, 
+					 maxInstanceAge: Optional[int] = None, 
 					 instantly: bool = True, 
-					 **kwargs):
+					 **kwargs: Any) -> Container:
 		"""
-		Add a new <container> sub-resource. 
+		Add a new <container> child-resource. 
 
 		Args:
 			resourceName: Name of the new container.
@@ -120,35 +146,39 @@ class AE(ResourceBase):
 			instantly: If True, immediately sync with the CSE.
 			**kwargs: Optional attributes like labels, originator, etc.
 		"""
-		from .Container import Container
-		return Container(
-			parent=self, 
-			resourceName=resourceName, 
-			maxNrOfInstances=maxNrOfInstances, 
-			maxByteSize=maxByteSize, 
-			maxInstanceAge=maxInstanceAge, 
-			instantly=instantly, 
-			**kwargs
+		return Container(parent=self, 
+						 resourceName=resourceName, 
+						 maxNrOfInstances=maxNrOfInstances, 
+						 maxByteSize=maxByteSize, 
+						 maxInstanceAge=maxInstanceAge, 
+						 instantly=instantly, 
+						 **kwargs
 		)
 
 
-	def groups(self, filter=None):
+	def groups(self, filter: Optional[list[tuple[str, str|int|bool]]] = None) -> list[Group]:
+		"""	Return a list of all <group> resources of this <AE>, or an empty list.
+
+			Args:
+				filter: Optional list of tuples (attribute, value) to filter the groups.
+			
+			Returns:
+				A list of <group> resources that are child-resources of this 
+					<AE> resource, or an empty list if there are none.
 		"""
-		Return a list of all <group> resources of this <AE>, or an empty list.
-		"""
-		return INT._findSubResource(self, CON.Type_Group, filter=filter)
+		return cast(list[Group], INT._findSubResource(self, CON.Type_Group, filter=filter))
 
 
 	def addGroup(self, 
-				 resourceName: str | None = None, 
-				 resources: list | None = None, 
+				 resourceName: Optional[str] = None, 
+				 resources: Optional[list] = None, 
 				 maxNrOfMembers: int = CON.Grp_def_maxNrOfMembers, 
 				 consistencyStrategy: int = CON.Grp_ABANDON_MEMBER, 
-				 groupName: str | None = None, 
+				 groupName: Optional[str] = None, 
 				 instantly: bool = True, 
-				 **kwargs):
+				 **kwargs: Any) -> Group:
 		"""
-		Add a new <group> sub-resource.
+		Add a new <group> child-resource.
 
 		Args:
 			resourceName: Name of the group resource.
@@ -160,19 +190,19 @@ class AE(ResourceBase):
 			**kwargs: Optional attributes like labels, originator, etc.
 		"""
 		from .Group import Group
-		return Group(
-			parent=self, 
-			resourceName=resourceName, 
-			resources=resources, 
-			maxNrOfMembers=maxNrOfMembers, 
-			consistencyStrategy=consistencyStrategy, 
-			groupName=groupName, 
-			instantly=instantly, 
-			**kwargs
+		return Group(parent=self, 
+					 resourceName=resourceName, 
+					 resources=resources, 
+					 maxNrOfMembers=maxNrOfMembers, 
+					 consistencyStrategy=consistencyStrategy, 
+					 groupName=groupName, 
+					 instantly=instantly, 
+					 **kwargs
 		)
 
 
-	def _copy(self, resource: 'AE'):
+	@override
+	def _copy(self, resource: AE) -> None:	# type: ignore[override]
 		super()._copy(resource)
 		self.appID = resource.appID
 		self.AEID = resource.AEID

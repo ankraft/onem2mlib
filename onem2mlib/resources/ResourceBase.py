@@ -4,135 +4,155 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the base class for resources.
-#
+""" This module implements the base class for resources. """
+
+from __future__ import annotations
+from typing import Optional, Any, cast, Callable, TYPE_CHECKING
 
 import logging, json
-import onem2mlib.constants as CON
-import onem2mlib.mcarequests as MCA
-import onem2mlib.internal as INT
-import onem2mlib.exceptions as EXC
-import onem2mlib.notifications as NOT
 
+from .. import constants as CON
+from .. import mcarequests as MCA
+from .. import internal as INT
+from .. import exceptions as EXC
+from .. import notifications as NOT
+
+
+if TYPE_CHECKING:
+	from ..datatypes import EventNotificationCriteria
+	from ..resources.AccessControlPolicy import AccessControlPolicy
+	from ..resources.Session import Session
+	from ..resources.AE import AE
+	from ..resources.Container import Container
+	from ..resources.ContentInstance import ContentInstance
+	from ..resources.Group import Group
+	from ..resources.RemoteCSE import RemoteCSE
+	from ..resources.Subscription import Subscription
+
+	from lxml import etree as ET
+	from requests import Response
 
 logger = logging.getLogger(__name__)
+""" Logger for this module. """
 
 class ResourceBase:
+	""" The ResourceBase is the base class for most of resource classes. It handles the common
+		resource attributes.
 	"""
-	The ResourceBase is the base class for most of resource classes. It handles the common
-	resource attributes.
-	"""
-	def __init__(self, **kwargs):
-		"""
-		Initialize a ResourceBase instance.
+	def __init__(self, **kwargs: Any) -> None:
+		""" Initialize a ResourceBase instance.
 
-		Args:
+			Note:
+				All keyword arguments initialize the status variables of the same name in the `ResourceBase` instance.
+		"""	
 
-		- *parent*: The parent resource object in which the resource
-			will be created.
-		- All other arguments initialize the status variables of the same name in the
-			ResourceBase instance.
-		"""		
-		self.parent = kwargs.pop('parent', None)
-		""" Resource instance object. The parent resource of this resource. """
+		self.parent: Optional[ResourceBase] = kwargs.pop('parent', None)
+		""" The parent resource of this resource. """
 
-		self.session = None
-		""" Session. The Session object of the parent. """
+		self.session: Optional[Session] = None
+		""" The Session object of the parent. """
 		if self.parent:
 			self.session = self.parent.session   
 
-		self.type = kwargs.pop('type', None)
-		""" Integer. The type of the resource. """
+		self.type: int = kwargs.pop('type', None)
+		""" The type of the resource. """
 
-		self.typeShortName = kwargs.pop('typeShortName', None)
-		""" String. The resource type as a shortname. """
+		self.typeShortName: Optional[str] = kwargs.pop('typeShortName', None)
+		""" The resource type as a shortname. """
 
-		self.resourceID = kwargs.pop('resourceID', None)
-		""" String. The resource ID of the resource. Assigned by the CSE.
-			For a &lt;CSEBase> this is the *cseID*.2"""
+		self.resourceID: Optional[str] = kwargs.pop('resourceID', None)
+		""" The resource ID of the resource. Assigned by the CSE.
+			For a <CSEBase> this is the *cseID*."""
 
-		self.resourceName = kwargs.pop('resourceName', None)
-		""" String. The resource name of the resource. Assigned by the application or the CSE. 
-			For a &lt;CSEBase> this is the *cseName*."""
+		self.resourceName: Optional[str] = kwargs.pop('resourceName', None)
+		""" The resource name of the resource. Assigned by the application or the CSE. 
+			For a <CSEBase> this is the *cseName*."""
 
-		self.originator = kwargs.pop('originator', None)
-		""" String. The originator of the resource. Assigned by the application or the CSE. 
-			For a &lt;CSEBase> this is the *x-origin*."""
+		self.originator: Optional[str] = kwargs.pop('originator', None)
+		""" The originator of the resource. Assigned by the application or the CSE. 
+			For a <CSEBase> this is the *x-origin*."""
 
-		self.namespace = kwargs.pop('namespace', 'm2m')
-		""" String. The namespace of the resource. """
+		self.namespace: str = kwargs.pop('namespace', 'm2m')
+		""" The namespace of the resource. """
   
-		self.labels = kwargs.pop('labels', [])
-		""" List of String. A list of labels of the resource. This might be an empty list. """
+		self.labels: list[str] = kwargs.pop('labels', [])
+		""" A list of labels of the resource. This might be an empty list. """
   
 		accessControlPolicies = kwargs.pop('accessControlPolicies', None)
-		self.accessControlPolicyIDs = []
-		""" List of String. A list of ACP resources. This might be an empty list."""
+		self.accessControlPolicyIDs: list[str] = []
+		""" A list of ACP resources. This might be an empty list."""
 		if accessControlPolicies:
 			self.setAccessControlPolicies(accessControlPolicies)
 
-		self.parentID = None
-		""" String. The resource ID of the parent resource. Assigned by the CSE. """
+		self.parentID: Optional[str] = None
+		""" The resource ID of the parent resource. Assigned by the CSE. """
 		
-		self.creationTime = None
-		""" String. The time of creation of the resource in the CSE. Assigned by the CSE. R/O. """
+		self.creationTime: Optional[str] = None
+		""" The time of creation of the resource in the CSE. Assigned by the CSE. R/O. """
 		
-		self.lastModifiedTime = None
-		""" String. The time of the last modification of the resource. Assigned by the CSE. R/O. """
-		self.expirationTime	= None
-		""" String. The expiration time of the resource, or None. Assigned by the CSE. R/O. """
+		self.lastModifiedTime: Optional[str] = None
+		""" The time of the last modification of the resource. Assigned by the CSE. R/O. """
+		self.expirationTime: Optional[str] = None
+		""" The expiration time of the resource, or None. Assigned by the CSE. R/O. """
 		
-		self.stateTag = 0
-		"""Integer. An incremental counter of modification on the resource. Assigned by the CSE. R/O."""
+		self.stateTag: int = 0
+		""" An incremental counter of modification on the resource. Assigned by the CSE. R/O. """
 		
-		self.dynamicAuthorizationConsultationIDs = []
-		""" List of String. A List of dynamic authorization consultation IDs. This might be an empty list. """
+		self.dynamicAuthorizationConsultationIDs: list[str] = []
+		""" A list of dynamic authorization consultation IDs. This might be an empty list. """
 		
-		self.announceTo = []
-		""" List of String. A list of URLs that point to the CSE(s) to which this resource is announced to,
+		self.announceTo: list[str] = []
+		""" A list of URLs that point to the CSE(s) to which this resource is announced to,
 			or an empty list. """
 		
-		self.announcedAttribute = []
-		""" List of String. A list of the announced attribute names of an original resource, 
+		self.announcedAttribute: list[str] = []
+		""" A list of the announced attribute names of an original resource, 
 			or an empty list. """
 
 		# Internal list of per-class marshalling methods
 		# [ parseXML, createXML, parseJSON, createJSON ]
-		self._marshallers = [ None, None, None, None ]
+		self._marshallers: list[Optional[Callable]] = [ None, None, None, None ]
 
 		super().__init__()
 
 
-	def __str__(self):
-		result = ''
-		result += INT.strResource('type', 'ty', str(self.type) + ' (' + self.namespace + ':' + self.typeShortName + ')')
-		result += INT.strResource('resourceName', 'rn', self.resourceName)
-		result += INT.strResource('resourceID', 'ri', self.resourceID)
-		result += INT.strResource('parentID', 'pi', self.parentID)
-		result += INT.strResource('originator', 'org', self.originator)
-		result += INT.strResource('creationTime', 'ct', self.creationTime)
-		result += INT.strResource('lastModifiedTime', 'lt', self.lastModifiedTime)
-		result += INT.strResource('stateTag', 'st', self.stateTag)
-		result += INT.strResource('labels', 'lbl', self.labels)
-		result += INT.strResource('accessControlPolicyIDs', 'acpi', self.accessControlPolicyIDs)
-		result += INT.strResource('expirationTime', 'et', self.expirationTime)
-		result += INT.strResource('dynamicAuthorizationConsultationIDs', 'daci', self.dynamicAuthorizationConsultationIDs)
-		result += INT.strResource('announceTo', 'at', self.announceTo)
-		result += INT.strResource('announcedAttribute', 'aa', self.announcedAttribute)
-		return result
-
-
-	def setAccessControlPolicies(self, acps, overwrite=True):
+	def __str__(self) -> str:
+		""" Return a string representation of the resource. 
+		
+			Returns:
+				A string representation of the resource.
 		"""
-		Set the &lt;ccessControlPolicy> resource ID(s) for a resource (if the resource type supports 
-		AccessControlPolicies). 
+		return	INT.strResource('type', 'ty', str(self.type) + ' (' + self.namespace + ':' + self.typeShortName + ')') +\
+				INT.strResource('resourceName', 'rn', self.resourceName) +\
+				INT.strResource('resourceID', 'ri', self.resourceID) +\
+				INT.strResource('parentID', 'pi', self.parentID) +\
+				INT.strResource('originator', 'org', self.originator) + \
+				INT.strResource('creationTime', 'ct', self.creationTime) + \
+				INT.strResource('lastModifiedTime', 'lt', self.lastModifiedTime) + \
+				INT.strResource('stateTag', 'st', self.stateTag) + \
+				INT.strResource('labels', 'lbl', self.labels) + \
+				INT.strResource('accessControlPolicyIDs', 'acpi', self.accessControlPolicyIDs) + \
+				INT.strResource('expirationTime', 'et', self.expirationTime) + \
+				INT.strResource('dynamicAuthorizationConsultationIDs', 'daci', self.dynamicAuthorizationConsultationIDs) + \
+				INT.strResource('announceTo', 'at', self.announceTo) + \
+				INT.strResource('announcedAttribute', 'aa', self.announcedAttribute)
 
-		*acps* could either be a single *AccessControlPolicies* object or a list of
-		*AccessControlPolicy* objects. If *acps* is *None*, then the accessControlPolicies
-		of this resource are set to an empty list.
 
-		This method may throw a `onem2mlib.exceptions.NotSupportedError` exception when called on a resource that doesn't
-		support accessControlPolicies.
+
+	def setAccessControlPolicies(self, acps: Optional[AccessControlPolicy|list[AccessControlPolicy]] = None, 
+							  		   overwrite: bool = True) -> None:
+		"""	Set the &lt;ccessControlPolicy> resource ID(s) for a resource (if the resource type supports 
+			AccessControlPolicies). 
+
+			Args:
+				acps: This could either be a single *AccessControlPolicies* object or a list of
+					`AccessControlPolicy` objects. If *acps* is *None*, then the accessControlPolicies
+					of this resource are set to an empty list.
+				overwrite: If *True*, the existing accessControlPolicies are replaced. If *False*, the new
+					accessControlPolicies are added to the existing ones.
+
+			Raises:
+				onem2mlib.exceptions.NotSupportedError: If the resource type doesn't support accessControlPolicies.
 		"""
 		if overwrite:
 			self.accessControlPolicyIDs = []
@@ -145,108 +165,124 @@ class ResourceBase:
 
 		if acps is not None:
 			if not isinstance(acps, list):
-				if acps.resourceID is not None:
-					self.accessControlPolicyIDs.append(acps.resourceID)
+				acps = [acps]
 			else:
 				for acp in acps:
-					if acps.resourceID is not None:
-						self.accessControlPolicyIDs.append(acps.resourceID)
+					if acp.resourceID is not None:
+						self.accessControlPolicyIDs.append(acp.resourceID)
 
-	def addAccessControlPolicy(self, acps, overwrite=True):
-		"""
-		Update a ResourceBase's AccessControlPolicy.
-		
-		:param self: Description
-		:param acps: AccessControlPolicies
+
+	def addAccessControlPolicy(self, 
+							   acps: Optional[AccessControlPolicy|list[AccessControlPolicy]] = None, 
+							   overwrite: bool = True) -> None:
+		"""	Update a ResourceBase's AccessControlPolicy.
+
+			Args:
+				acps: This could either be a single *AccessControlPolicies* object or a list of
+					`AccessControlPolicy` objects. If *acps* is *None*, then the accessControlPolicies
+					of this resource are set to an empty list.
+				overwrite: If *True*, the existing accessControlPolicies are replaced. If *False*, the new
+					accessControlPolicies are added to the existing ones.
 		"""
 		self.setAccessControlPolicies(acps, overwrite)
 		self.updateAcpiInCSE()
 
 
-	def retrieveFromCSE(self):
-		"""
-		Retrieve the resource from the &lt;CSEBase>. This object instance is updated accordingly. 
+	def retrieveFromCSE(self) -> bool:
+		"""	Retrieve the resource from the &lt;CSEBase>. This object instance is updated accordingly. 
 
-		The method returns *True* or *False*, depending on the success of the operation.
+			Note:
+				The `onem2mlib.ResourceBase.resourceID` state variable of the instance must be set to a valid value.
 
-		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
+			Returns:
+				The method returns *True* or *False*, depending on the success of the operation.
 		"""
 		return MCA.retrieveFromCSE(self, originator=self.originator)
 
 
-	def deleteFromCSE(self):
-		"""
-		Delete the resource and all its sub-resources from the &lt;CSEBase>. 
+	def deleteFromCSE(self) -> bool:
+		"""	Delete the resource and all its child-resources from the &lt;CSEBase>. 
 
-		The method returns *True* or *False*, depending on the success of the operation.
-		It may throw a `onem2mlib.exceptions.NotSupportedError` exception when the operation is not supported
-		by the resource type.
+			Returns:
+				The method returns *True* or *False*, depending on the success of the operation.
 
-		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
+			Raises:
+				It may throw a `onem2mlib.exceptions.NotSupportedError` exception when the 
+					operation is not supported by the resource type.
+			Note:
+				The `onem2mlib.ResourceBase.resourceID` state variable of the instance must be set to a valid value.
 		"""
 		if self.type in [CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
-			logger.error('Resource doesn''t support deleting: ' + INT.nameAndType(self))
-			raise EXC.NotSupportedError('Resource doesn''t support deleting: ' + INT.nameAndType(self))
+			logger.error(f"Resource doesn''t support deleting: {INT.nameAndType(self)}")
+			raise EXC.NotSupportedError(f"Resource doesn''t support deleting: {INT.nameAndType(self)}")
 		return MCA.deleteFromCSE(self, originator=self.originator)
 
 
-	def createInCSE(self):
-		"""
-		Create the resource in the &lt;CSEBase>.
+	def createInCSE(self) -> bool:
+		"""	Create the resource in the <CSEBase>.
 
-		The method returns *True* or *False*, depending on the success of the operation.'
-		It may throw a `onem2mlib.exceptions.NotSupportedError` exception when the operation is not supported
-		by the resource type.
+			Returns:
+				The method returns *True* or *False*, depending on the success of the operation.
+			
+			Raises:
+				It may throw a `onem2mlib.exceptions.NotSupportedError` exception when the operation is not supported by the resource type.
 
-		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
+			Note:
+				The `onem2mlib.ResourceBase.resourceID` state variable of the instance must be set to a valid value.
 		"""
 		if self.type in [CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
-			logger.error('Resource doesn''t support creating: ' + INT.nameAndType(self))
-			raise EXC.NotSupportedError('Resource doesn''t support creating: ' + INT.nameAndType(self))
+			logger.error(f"Resource doesn''t support creating: {INT.nameAndType(self)}")
+			raise EXC.NotSupportedError(f"Resource doesn''t support creating: {INT.nameAndType(self)}")
 		return MCA.createInCSE(self, self.type, originator=self.originator)
 
 
-	def updateInCSE(self, isAcpiUpdate=False):
-		"""
-		Update the existing resource with new attributes.
+	def updateInCSE(self, isAcpiUpdate: bool = False) -> bool:
+		"""	Update the existing resource with new attributes.
 
-		The method returns *True* or *False*, depending on the success of the operation.
-		It may throw a `onem2mlib.exceptions.NotSupportedError` exception when the operation is not supported
-		by the resource type.
+			The method returns *True* or *False*, depending on the success of the operation.
+			It may throw a `onem2mlib.exceptions.NotSupportedError` exception when the operation is not supported
+			by the resource type.
 
-		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
+			Args:
+				isAcpiUpdate: If *True*, the update is for AccessControlPolicyIDs. This is needed to handle
+					the special case of updating AccessControlPolicyIDs for a resource.
+
+			Raises:
+				onem2mlib.exceptions.NotSupportedError: If the resource type doesn't support updating.
+				onem2mlib.exceptions.CSEOperationError: If the resource cannot be updated on the CSE.
+
+			Note:
+				The `onem2mlib.ResourceBase.resourceID` state variable of the instance must be set to a valid value.
 		"""
 		if self.type in [CON.Type_ContentInstance, CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
-			logger.error('Resource doesn''t support updating: ' + INT.nameAndType(self))
-			raise EXC.NotSupportedError('Resource doesn''t support updating: ' + INT.nameAndType(self))
+			logger.error(f"Resource doesn't support updating: {INT.nameAndType(self)}")
+			raise EXC.NotSupportedError(f"Resource doesn't support updating: {INT.nameAndType(self)}")
 		return MCA.updateInCSE(self, self.type, originator=self.originator, isAcpiUpdate=isAcpiUpdate)
 
-	def updateAcpiInCSE(self):
-		"""
-		Update the existing resource with new attributes for AccessControlPolicyId.
+	def updateAcpiInCSE(self) -> bool:
+		"""	Update the existing resource with new attributes for AccessControlPolicyId.
 
-		The method returns *True* or *False*, depending on the success of the operation.
-		It may throw a `onem2mlib.exceptions.NotSupportedError` exception when the operation is not supported
-		by the resource type.
+			The method returns *True* or *False*, depending on the success of the operation.
+			It may throw a `onem2mlib.exceptions.NotSupportedError` exception when the operation is not supported
+			by the resource type.
 
-		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
+			Returns:
+				The method returns *True* or *False*, depending on the success of the operation.
+
+			Note:
+				The `onem2mlib.ResourceBase.resourceID` state variable of the instance must be set to a valid value.
 		"""
 		return self.updateInCSE(True)
 
-	def get(self):
-		"""
-		Retrieve the resource from the &lt;CSEBase>, or create it if it doesn't exist.
-		This object instance is updated accordingly. 
+	def get(self) -> bool:
+		"""	Retrieve the resource from the &lt;CSEBase>, or create it if it doesn't exist.
+			This object instance is updated accordingly. 
 
-		The method returns *True* or *False*, depending on the success of the operation.
+			Returns:
+				The method returns *True* or *False*, depending on the success of the operation.
 
-		The `onem2mlib.ResourceBase.resourceID` state variable of the instance
-		must be set to a valid value.
+			Notes:
+				The `onem2mlib.ResourceBase.resourceID` state variable of the instance must be set to a valid value.
 		"""
 		if self.resourceID:
 			return self.retrieveFromCSE()
@@ -256,24 +292,21 @@ class ResourceBase:
 		return self.createInCSE()
 
 
-	def discover(self, filter, filterOperation=CON.Dsc_AND):
-		"""
-			Discover a rsource on the CSE, starting with the resource as a root for
-			discovery.
+	def discover(self, filter: list[tuple[str, str|int|bool]], filterOperation: int = CON.Dsc_AND) -> list[ResourceBase]:
+		"""	Discover a rsource on the CSE, starting with the resource as a root for discovery.
 
 			Args:
+				filter: These filter critera can be constructed using one of the
+					*onem2mlib.utilties.new...FilterCriteria* functions.
+				filterOperation: A boolean value that Indicates the logical operation (AND/OR) 
+					to be used for different condition tags. The default value is logical AND.
 
-			- *filter*: A list of *filterCriteria*. These critera can be constructed using the
-			*onem2mlib.utilties.new...FilterCriteria* functions.
-			- *filterOperation*. A boolean value that Indicates the logical operation (AND/OR) 
-			to be used for different condition tags. The default value is logical AND.
+			Returns:
+				The method returns a list of found resources, or an empty list.
 
-			The method returns a list of found resources, or an empty list.
-
-			**Note**
-
-			Currently, only *label* and *resoureType* are supported in filters.
-			"""
+			Notes:
+				Currently, only *label* and *resoureType* are supported in filters.
+		"""
 
 		# 1. Get the list of IDs (URIs) from the CSE
 		rids = MCA.discoverInCSE(self, filter=filter, filterOperation=filterOperation)
@@ -290,36 +323,34 @@ class ResourceBase:
 		return results
 
 
-	def subscribe(self, originator=None, callback=None, eventNotificationCriteria=None):
-		"""
-		Create a <subscription> to resource and receive notifications. For this, the notification
-		sub-module must be enabled, ie. `onem2mlib.notifications.setupNotifications`() must have
-		been called sucessfully. To stop notification from the resource and to remove the
-		subscription, the `onem2mlib.ResourceBase.unsubscribe`() method must be called.
+	def subscribe(self, originator: Optional[str] = None, 
+			   			callback: Optional[Callable] = None, 
+						eventNotificationCriteria: Optional[EventNotificationCriteria] = None) -> bool:
+		""" Create a <subscription> to resource and receive notifications. For this, the notification
+			sub-module must be enabled, ie. `onem2mlib.notifications.setupNotifications` must have
+			been called sucessfully. To stop notification from the resource and to remove the
+			subscription, the `onem2mlib.ResourceBase.unsubscribe` method must be called.
 
-		This method might throw	a `onem2mlib.exceptions.NotSupportedError` exception in case
-		the target resource type doesn't support subscriptions.
+			Args:
+				originator: when doing a subscription from a different device, you have to specify the 
+					X-Origin in order to be able to post.
+				callback: An optional reference to a callback functions that is called when a
+					notification is received for the subscription. If this argument is ommitted then the
+					default callback function, provided with `onem2mlib.notifications.setupNotifications`,
+					is called instead.
+				eventNotificationCriteria: An optional `onem2mlib.datatypes.EventNotificationCriteria` 
+					object to specify which events (create, update, delete, etc.) should trigger a notification.
 
-		Args:
-		- *originator*: when doing a subscription from a different device, you have to specify the 
-		X-Origin in order to be able to post.
+			Returns:
+				The method returns a Boolean indicating whether the subscription was successfull.
 
-		- *callback*: An optional reference to a callback functions that is called when a
-		notification is received for the subscription. If this argument is ommitted then the
-		default callback function, provided with `onem2mlib.notifications.setupNotifiations`(),
-		is called instead.
-
-		- *eventNotificationCriteria*: An optional `onem2mlib.datatypes.EventNotificationCriteria` 
-		object to specify which events (create, update, delete, etc.) should trigger a notification.
-
-		The method returns a Boolean indicating whether the subscription was successfull.
-
-		**Note**
-
-		The <subsription> resource created with this method is only valid for the
-		runtime of the calling program. The scubscription will be removed at least when the
-		program terminates, or when `onem2mlib.notifications.shutdownNotifications`() is called.
-
+			Raises:
+				onem2mlib.exceptions.NotSupportedError: If the resource type doesn't support subscriptions.
+			
+			Note:
+				The <subsription> resource created with this method is only valid for the
+				runtime of the calling program. The scubscription will be removed at least when the
+				program terminates, or when `onem2mlib.notifications.shutdownNotifications` is called.
 		"""
 		if self.type not in NOT._allowedSubscriptionResources:
 			logger.error('Subscription not supported for this resource type: ' + INT.nameAndType(self))
@@ -337,23 +368,25 @@ class ResourceBase:
 			eventNotificationCriteria=eventNotificationCriteria
 		)
 
-	def unsubscribe(self):
-		"""
-		Unsubscripte from the notifications of a resource. The subscription must have
-		been created before with the `onem2mlib.ResourceBase.subscribe`() method.
+	def unsubscribe(self) -> bool:
+		"""	Unsubscripte from the notifications of a resource. The subscription must have
+			been created before with the `onem2mlib.ResourceBase.subscribe` method.
 
-		This method might throw	a `onem2mlib.exceptions.NotSupportedError` exception in case
-		the target resource type doesn't support subscriptions.
+			Returns:
+				The method returns a Boolean indicating whether the subscription was successfull.
 
-		The method returns a Boolean indicating whether the subscription was successfull.
+			Raises:
+				This method may throw a `onem2mlib.exceptions.NotSupportedError` exception in case
+					the target resource type doesn't support subscriptions.
+
 		"""
-		if self.type not in NOT._subscriptionResources:
+		if self.type not in NOT._allowedSubscriptionResources:
 			logger.error('Subscription not supported for this resource type: ' + INT.nameAndType(self))
 			raise EXC.NotSupportedError('Subscription not supported for this resource type: ' + INT.nameAndType(self))
 		return NOT.removeSubscription(self)
 
 
-	def subscriptions(self, filter=None):
+	def subscriptions(self, filter: Optional[list[tuple[str, str|int|bool]]] = None) -> list[ResourceBase]:
 		"""
 		Return a list of &lt;subscription> resources of a rersource, or an empty list.
 
@@ -366,87 +399,120 @@ class ResourceBase:
 		return INT._findSubResource(self, CON.Type_Subscription, filter=filter)
 
 
-	def findAccessControlPolicy(self, resourceName):
+	def findAccessControlPolicy(self, resourceName: str) -> Optional[AccessControlPolicy]:
+		"""	Find a specific <accessControlPolicy> resource by its *resourceName*, or None.
+
+			Args:
+				resourceName: The name of the resource to find. It could point to a 
+					direct child-resource, or it can be a relative path pointing to a resource
+					deeper down the resource tree. In that case the path elements are separated
+					by '/' characters.
+			
+			Returns:
+				The method returns the found `AccessControlPolicy` resource, or None if not found.
 		"""
-		Find a specific &lt;accessControlPolicy> resource by its *resourceName*, or None.
+		return cast(Optional[AccessControlPolicy], INT._getResourceFromCSEByResourceName(CON.Type_ACP, resourceName, self))
 
-		*resourceName* could point to a direct sub-resource, or it can be a relative path
-		pointing to a resource deeper down the resource tree. In that case the path
-		elements are separated by '/' characters.
+
+	def findAE(self, resourceName: str) -> Optional[AE]:
+		"""	Find a specific <AE> resource by its *resourceName*, or None otherwise.
+
+			Args:
+				resourceName: The name of the resource to find. It could point to a 
+					direct child-resource, or it can be a relative path pointing to a resource
+					deeper down the resource tree. In that case the path elements are separated
+					by '/' characters.
+			
+			Returns:
+				The method returns the found `AE` resource, or None if not found.
 		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_ACP, resourceName, self)
+		return cast(Optional[AE], INT._getResourceFromCSEByResourceName(CON.Type_AE, resourceName, self))
 
 
-	def findAE(self, resourceName):
+	def findContainer(self, resourceName: str) -> Optional[Container]:
+		"""	Find a <container> resource by its *resourceName*, or None.
+
+			Args:
+				resourceName: The name of the resource to find. It could point to a 
+					direct child-resource, or it can be a relative path pointing to a resource
+					deeper down the resource tree. In that case the path elements are separated
+					by '/' characters.
+			
+			Returns:
+				The method returns the found `Container` resource, or None if not found.
 		"""
-		Find a specific &lt;AE> resource by its *resourceName*, or None otherwise.
+		return cast(Optional[Container], INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self))
 
-		*resourceName* could point to a direct sub-resource, or it can be a relative path
-		pointing to a resource deeper down the resource tree. In that case the path
-		elements are separated by '/' characters.
+
+	def findContentInstance(self, resourceName: str) -> Optional[ContentInstance]:
+		"""	Find a <ContentInstance> resource by its *resourceName*, or None.
+
+			Args:
+				resourceName: The name of the resource to find. It could point to a 
+					direct child-resource, or it can be a relative path pointing to a resource
+					deeper down the resource tree. In that case the path elements are separated
+					by '/' characters.
+
+			Returns:
+				The method returns the found `ContentInstance` resource, or None if not found.
 		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_AE, resourceName, self)
+		return cast(Optional[ContentInstance], INT._getResourceFromCSEByResourceName(CON.Type_ContentInstance, resourceName, self))
 
 
-	def findContainer(self, resourceName):
+	def findGroup(self, resourceName: str) -> Optional[Group]:
+		"""	Find a specific <group> resource by its *resourceName*, or None.
+
+			Args:
+				resourceName: The name of the resource to find. It could point to a 
+					direct child-resource, or it can be a relative path pointing to a resource
+					deeper down the resource tree. In that case the path elements are separated
+					by '/' characters.
+			
+			Returns:
+				The method returns the found `Group` resource, or None if not found.
 		"""
-		Find a &lt;container> resource by its *resourceName*, or None.
+		return cast(Optional[Group], INT._getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self))
 
-		*resourceName* could point to a direct sub-resource, or it can be a relative path
-		pointing to a resource deeper down the resource tree. In that case the path
-		elements are separated by '/' characters.
+
+	def findRemoteCSE(self, resourceName: str) -> Optional[RemoteCSE]:
+		"""	Find a specific <remoteCSE> resource by its *resourceName*, or None.
+
+			Args:
+				resourceName: The name of the resource to find. It could point to a 
+					direct child-resource, or it can be a relative path pointing to a resource
+					deeper down the resource tree. In that case the path elements are separated
+					by '/' characters.
+			
+			Returns:
+				The method returns the found `RemoteCSE` resource, or None if not found.
 		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)
+		return cast(Optional[RemoteCSE], INT._getResourceFromCSEByResourceName(CON.Type_RemoteCSE, resourceName, self))
 
 
-	def findContentInstance(self, resourceName):
+	def findSubscription(self, resourceName: str) -> Optional[Subscription]:
+		"""	Find a specific <subscription> resource by its *resourceName*, or None otherwise.
+
+			Args:
+				resourceName: The name of the resource to find. It could point to a 
+					direct child-resource, or it can be a relative path pointing to a resource
+					deeper down the resource tree. In that case the path elements are separated
+					by '/' characters.
+			
+			Returns:
+				The method returns the found `Subscription` resource, or None if not found.
 		"""
-		Find a &lt;ContentInstance> resource by its *resourceName*, or None.
-
-		*resourceName* could point to a direct sub-resource, or it can be a relative path
-		pointing to a resource deeper down the resource tree. In that case the path
-		elements are separated by '/' characters.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_ContentInstance, resourceName, self)
-
-
-	def findGroup(self, resourceName):
-		"""
-		Find a specific &lt;group> resource by its *resourceName*, or None.
-
-		*resourceName* could point to a direct sub-resource, or it can be a relative path
-		pointing to a resource deeper down the resource tree. In that case the path
-		elements are separated by '/' characters.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self)
-
-
-	def findRemoteCSE(self, resourceName):
-		"""
-		Find a specific &lt;remoteCSE> resource by its *resourceName*, or None.
-
-		*resourceName* could point to a direct sub-resource, or it can be a relative path
-		pointing to a resource deeper down the resource tree. In that case the path
-		elements are separated by '/' characters.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_RemoteCSE, resourceName, self)
-
-
-	def findSubscription(self, resourceName):
-		"""
-		Find a specific &lt;subscription> resource by its *resourceName*, or None otherwise.
-
-		*resourceName* could point to a direct sub-resource, or it can be a relative path
-		pointing to a resource deeper down the resource tree. In that case the path
-		elements are separated by '/' characters.
-		"""
-		return INT._getResourceFromCSEByResourceName(CON.Type_Subscription, resourceName, self)
+		return cast(Optional[Subscription], INT._getResourceFromCSEByResourceName(CON.Type_Subscription, resourceName, self))
 
 
 
 	def _prefixResourceIDAbsolute(self) -> str:
+		""" Returns the absolute prefix of the CSE-ID, or None if not available. 
+		
+			Returns:
+				The absolute prefix of the CSE-ID, or None if not available.
+		"""
 		# returns absolute prefix or None
-		if self.cseID:
+		if hasattr(self, 'cseID') and self.cseID:
 			return f"//{self.cseID.lstrip('/')}"
 		return None
 
@@ -500,7 +566,7 @@ class ResourceBase:
 		return f"{self.parent._structuredResourceID(withRIScope)}/{self.resourceName}"
 
 
-	def _parseResponse(self, response):
+	def _parseResponse(self, response: Response) -> None:
 		if self.session.encoding == CON.Encoding_XML:
 			return self._parseXML(INT.responseToXML(response))
 		elif self.session.encoding == CON.Encoding_JSON:
@@ -509,7 +575,7 @@ class ResourceBase:
 		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
 
 
-	def _createContent(self, isUpdate=False, isAcpiUpdate=False):
+	def _createContent(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> Optional[str]:
 		if self.session.encoding == CON.Encoding_XML:
 			return INT.xmlToString(self._createXML(isUpdate, isAcpiUpdate=isAcpiUpdate))
 		elif self.session.encoding == CON.Encoding_JSON:
@@ -519,28 +585,45 @@ class ResourceBase:
 
 
 	# Marschalling calls
-	def _parseXML(self, root):
+	def _parseXML(self, root: Any) -> None:
 		if self._marshallers[0] is not None:
 			self._marshallers[0](self, root)
 
-	def _createXML(self, isUpdate=False, isAcpiUpdate=False):
+	def _createXML(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> Optional[ET._Element]:
 		if self._marshallers[1] is not None:
 			return self._marshallers[1](self, isUpdate, isAcpiUpdate)
 		return None
 
 
-	def _parseJSON(self, jsn):
+	def _parseJSON(self, jsn: dict) -> None:
+		""" Parse a JSON representation of the resource and update the state variables of this instance accordingly.
+		
+			Args:
+				jsn: The JSON representation of the resource as a dictionary.
+		"""
 		if self._marshallers[2] is not None:
 			self._marshallers[2](self, jsn)
 
 
-	def _createJSON(self, isUpdate=False, isAcpiUpdate=False):
+	def _createJSON(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> Optional[dict]:
+		""" Create a JSON representation of the resource. This is used for creating or updating the resource in the CSE.
+
+			Args:
+				isUpdate: If *True*, the JSON representation is created for an update operation. 
+				isAcpiUpdate: If *True*, the JSON representation is created for an update operation for
+					AccessControlPolicyIDs. This is needed to handle the special case of updating
+					AccessControlPolicyIDs for a resource.
+		"""
 		if self._marshallers[3] is not None:
 			return self._marshallers[3](self, isUpdate, isAcpiUpdate)
 		return None
 
-
-	def _copy(self, resource):
+	def _copy(self, resource: ResourceBase) -> None:
+		""" Copy the common attributes of a resource to this instance.
+		
+			Args:
+				resource: The resource from which to copy the attributes.
+		"""
 		self.resourceName = resource.resourceName
 		self.namespace = resource.namespace
 		self.type = resource.type

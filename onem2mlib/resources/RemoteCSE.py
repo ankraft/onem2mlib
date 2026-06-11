@@ -4,8 +4,10 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module implements the class for the <RemoteCSE> resource.
-#
+""" This module implements the class for the <RemoteCSE> resource. """
+
+from __future__ import annotations
+from typing import Optional, Any, override
 
 import logging
 import onem2mlib.marshalling as M
@@ -15,31 +17,34 @@ import onem2mlib.mcarequests as MCA
 import onem2mlib.exceptions as EXC
 from .ResourceBase import ResourceBase
 
+from .Session import Session
+from .CSEBase import CSEBase
+
 logger = logging.getLogger(__name__)
+""" Logger for this module. """
 
 class RemoteCSE(ResourceBase):
 	"""
-	This class implements the oneM2M &lt;remoteCSE> resource. 
+	This class implements the oneM2M <remoteCSE> resource. 
 
-	It is  a sub-resource of the &lt;CSEBase> resource, and it represents and grants access to a
+	It is  a child-resource of the <CSEBase> resource, and it represents and grants access to a
 	remote CSE.
 	"""
 
 	def __init__(self, 
-				 requestReachability: bool | None = None, 
-				 cseID: str | None = None, 
-				 cseBase: str | None = None, 
-				 instantly: bool = True, 
-				 **kwargs):
-		"""
-		Initialize a RemoteCSE object.
+				 requestReachability: bool = False, 
+				 cseID: Optional[str] = None, 
+				 cseBase: Optional[str] = None, 
+				 instantly: Optional[bool] = True, 
+				 **kwargs: Any) -> None:
+		"""	Initialize a RemoteCSE object.
 
-		Args:
-			requestReachability: Indicates the reachability of the RemoteCSE.
-			cseID: The CSE identifier of the remote CSE (SP-relative).
-			cseBase: The URI of the remote CSEBase resource.
-			instantly: If True, the resource is immediately retrieved from the CSE.
-			**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
+			Args:
+				requestReachability: Indicates the reachability of the RemoteCSE.
+				cseID: The CSE identifier of the remote CSE (SP-relative).
+				cseBase: The URI of the remote CSEBase resource.
+				instantly: If True, the resource is immediately retrieved from the CSE.
+				**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
 		"""
 		super().__init__(type=CON.Type_RemoteCSE, typeShortName=CON.Type_RemoteCSE_SN, **kwargs)
 
@@ -50,18 +55,18 @@ class RemoteCSE(ResourceBase):
 			logger.error(msg)
 			raise EXC.ParameterError(msg)
 
-		self.pointOfAccess = []
-		""" List of String. A list of physical addresses to be used by remote CSEs to connect to this CSE.
-			Assigned by the CSE. R/O. """
+		self.requestReachability: bool = requestReachability
+		""" This indicates the reachability of the RemoteCSE. Assigned by the application or the CSE. """
 
-		self.cseBase = None
-		""" URI. The address of the CSEBase resource represented by this &lt;remoteCSE> resource. """
+		self.pointOfAccess: list[str] = []
+		""" A list of physical addresses to be used by remote CSEs to connect to this CSE. Assigned by the CSE. R/O. """
 
-		self.cseID = None
-		""" String. The CSE identifier of a remote CSE in SP-relative CSE-ID format. """
+		self.cseBase: Optional[str] = cseBase
+		""" URI. The address of the CSEBase resource represented by this <remoteCSE> resource. """
 
-		self.requestReachability = requestReachability
-		""" Boolean. This indicates the reachability of the RemoteCSE. Assigned by the application or the CSE. """
+		self.cseID: Optional[str] = cseID
+		""" The CSE identifier of a remote CSE in SP-relative CSE-ID format. """
+
 
 		if instantly:
 			if not self.get():
@@ -69,26 +74,25 @@ class RemoteCSE(ResourceBase):
 				raise EXC.CSEOperationError(f'Cannot get remoteCSE. {MCA.lastError}')
 
 
-	def __str__(self):
-		result = 'RemoteCSE:\n'
-		result += super().__str__()
-		result += INT.strResource('requestReachability', 'rr', self.requestReachability)
-		result += INT.strResource('pointOfAccess', 'poa', self.pointOfAccess)
-		result += INT.strResource('CSEBase', 'cb', self.cseBase)
-		result += INT.strResource('cse-ID', 'csi', self.cseID)
-		return result
+	def __str__(self) -> str:
+		return	'RemoteCSE: \n' +\
+			 	super().__str__() +\
+				INT.strResource('requestReachability', 'rr', self.requestReachability) +\
+				INT.strResource('pointOfAccess', 'poa', self.pointOfAccess) +\
+				INT.strResource('CSEBase', 'cb', self.cseBase) +\
+				INT.strResource('cse-ID', 'csi', self.cseID)
 
 
-	def cseFromLocalCSE(self, instantly: bool = True):
-		"""
-		Return a `onem2mlib.CSEBase` resource instance that grants access to the remote CSE via the local
-		(the CSE from which this &lt;RemoteCSE> resource originates). This means, that all requests to the
-		remote CSE are routed through the local CSE.
+	def cseFromLocalCSE(self, instantly: bool = True) -> CSEBase:
+		"""	Return a `onem2mlib.CSEBase` resource instance that grants access to the remote CSE via the local
+			(the CSE from which this <RemoteCSE> resource originates). This means, that all requests to the
+			remote CSE are routed through the local CSE.
 
-		Args:
-
-		- *instantly*: The CSE resource will be instantly retrieved from the CSE. This might throw
-			a *CSEOperationError* exception in case of an error.
+			Args:
+				instantly: The CSE resource will be instantly retrieved from the CSE. 
+				
+			Raises:
+				*CSEOperationError*: In case of an error.
 		"""
   
 		from .CSEBase import CSEBase
@@ -100,23 +104,17 @@ class RemoteCSE(ResourceBase):
 		)
 
 
-	def cseFromRemoteCSE(self, session=None, instantly: bool = True):
+	def cseFromRemoteCSE(self, session: Optional[Session] = None) -> CSEBase:
+		"""	Return a `onem2mlib.CSEBase` resource instance that grants direct access to the remote CSE.
+			This means, that all requests to the remote CSE are directly targeting the remote CSE.
+
+			Args:
+				session: Optionally provide a `onem2mlib.Session` instance to use for the remote CSE.
+					Otherwise the current Session instance is used.
+			Raises:
+				CSEOperationError: This might be raised if there is a problem with missing or wrong
+
 		"""
-		Return a `onem2mlib.CSEBase` resource instance that grants direct access to the remote CSE.
-		This means, that all requests to the remote CSE are directly targeting the remote CSE.
-
-		This might throw a *CSEOperationError* exception if there is a problem with missing or wrong
-		parameters for the remote CSE.
-
-		Args:
-
-		- *session*: Optionally provide a `onem2mlib.Session` instance to use for the remote CSE.
-			Otherwise the current Session instance is used.
-		- *instantly*: The CSE resource will be instantly retrieved from the CSE. This might throw
-			a *CSEOperationError* exception in case of an error.
-		"""
-		from .CSEBase import CSEBase
-		from .Session import Session 
 		if not self.pointOfAccess:
 			logger.error('Missing PointOfAccess of remote CSE.')
 			raise EXC.CSEOperationError('Missing PointOfAccess of remote CSE.')
@@ -130,7 +128,8 @@ class RemoteCSE(ResourceBase):
 		return target_session.getCSEBase()
 
 
-	def _copy(self, resource: 'RemoteCSE'):
+	@override
+	def _copy(self, resource: RemoteCSE) -> None:	# type: ignore[override]
 		super()._copy(resource)
 		self.cseBase = resource.cseBase
 		self.cseID = resource.cseID

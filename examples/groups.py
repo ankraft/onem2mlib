@@ -47,7 +47,9 @@ if __name__ == '__main__':
 	cin1 = cnt1.latestContentInstance()
 	cin2 = cnt2.latestContentInstance()
 	if cin1.content == cin2.content:
-		print('okay!')
+		print('okay!\n')
+		print(cin1)
+		print(cin2)
 	else:
 		print('OH NO!')
 

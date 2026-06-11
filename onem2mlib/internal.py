@@ -4,12 +4,30 @@
 #	(c) 2017 by Andreas Kraft
 #	License: BSD 3-Clause License. See the LICENSE file for further details.
 #
-#	This module defines various internal utility functions for the library.
-#
+"""	This module defines various internal utility functions for the library.
+"""
+
+from __future__ import annotations
+from typing import Any, Optional, Union, TYPE_CHECKING
+
+from requests import Response
+
+from . import constants as CON
+from . import mcarequests as MCA
+from . import utilities as UT
+from .resources.ResourceBase import ResourceBase
+from .resources.AE import AE
+from .resources.Container import Container
+from .resources.ContentInstance import ContentInstance
+from .resources.Group import Group
+from .resources.RemoteCSE import RemoteCSE
+from .resources.FlexContainer import FlexContainer
+from .resources.AccessControlPolicy import AccessControlPolicy
+from .resources.Subscription import Subscription
 
 
-import onem2mlib.constants as CON
-import onem2mlib.mcarequests
+if TYPE_CHECKING:
+	import requests
 
 if CON.Support_XML:
 	from lxml import etree as ET
@@ -26,19 +44,19 @@ _ns = {	'm2m' : 'http://www.onem2m.org/xml/protocols',
 
 if CON.Support_XML:
 
-	def _searchExpression(elemName, relative):
+	def _searchExpression(elemName: str, relative: bool) -> str:
 		if relative:
-			return './/'+elemName
-		return '//'+elemName
+			return f'.//{elemName}'
+		return f'//{elemName}'
 
 
 	# Find a tag value (string) from the tree or, if not found, return the default.
 	# If relative is set to True then the search is done relatively to the provided
 	# element.
-	def getElement(tree, elemName, default=None, relative=False):
+	def getElement(tree: ET._Element, elemName: str, default: Any = None, relative: bool = False) -> Any:
 		elem = tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)
-		if elem and len(elem)>0 and elem[0].text:
-			result = elem[0].text
+		if elem and len(elem)>0 and elem[0].text:	# type: ignore[index, arg-type, union-attr]
+			result = elem[0].text	# type: ignore[union-attr, index]
 			if isinstance(default, list):
 				result = result.split()
 			elif isinstance(default, bool):	# bool must be checked before int!
@@ -52,12 +70,12 @@ if CON.Support_XML:
 	# Find all subtree elements from the tree. Returns a list.
 	# If relative is set to True then the search is done relatively to the provided
 	# element.
-	def getElements(tree, elemName, relative=False):
-		return tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)
+	def getElements(tree: ET._Element, elemName: str, relative: bool = False) -> list[ET._Element]:
+		return tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)	# type: ignore[return-value]
 
 
 	# Find the children elements of a specific XML element.
-	def getElementWithChildren(tree, elemName):
+	def getElementWithChildren(tree: ET._Element, elemName: str) -> Optional[list[ET._Element]]:
 		result = getElements(tree, elemName)
 		if result is not None:
 			return result
@@ -65,16 +83,16 @@ if CON.Support_XML:
 
 
 	# Find an attribute value from the tree/element or, if not found, return the default
-	def getAttribute(tree, elemName, attrName, default=None):
-		elem = tree.xpath('//'+elemName, namespaces=_ns)
-		if elem and len(elem)>0:
-			if attrName in elem[0].attrib:
-				return elem[0].attrib[attrName]
-		return default
+	def getAttribute(tree: ET._Element, elemName: str, attrName: str, default: Any = None) -> Any:
+		elem = tree.xpath(f'//{elemName}', namespaces=_ns)
+		if elem and len(elem)>0:	# type: ignore[arg-type]
+			if attrName in elem[0].attrib:	# type: ignore[index, arg-type, union-attr]
+				return elem[0].attrib[attrName]	# type: ignore[union-attr, index]
+		return default	
 
 
 	# Create an XML element, including an optional namespace. Return the element
-	def createElement(elemName, namespace=None):
+	def createElement(elemName: str, namespace: Optional[str] = None) -> ET._Element:
 		if namespace:
 			return ET.Element('{%s}%s' % (_ns['m2m'], elemName), nsmap=_ns)
 		else:
@@ -82,7 +100,7 @@ if CON.Support_XML:
 
 
 	# Create and add an element with the given name to the root. Return the new element.
-	def addElement(root, name):
+	def addElement(root: ET._Element, name: str) -> ET._Element:
 		elem = createElement(name)
 		root.append(elem)
 		return elem
@@ -90,7 +108,10 @@ if CON.Support_XML:
 
 	# Create and add an element with the given name to the root. Add content to it when
 	# the content is not None, or add the content nevertheless when mandatory is True.
-	def addToElement(root, name, content, mandatory=False):
+	def addToElement(root: ET._Element, 
+				  	 name: str, 
+					 content: Any, 
+					 mandatory: bool = False) -> Optional[ET._Element]:
 		if isinstance(content, int) or (content and len(content) > 0) or mandatory:
 			elem = createElement(name)
 			if isinstance(content, list):
@@ -103,19 +124,19 @@ if CON.Support_XML:
 
 
 	# Create a new ElementTree from a sub-tree
-	def elementAsNewTree(tree):
+	def elementAsNewTree(tree: ET._Element) -> ET._Element:
 		return ET.ElementTree(tree).getroot()
 
 
 	# Create an XML structure out of a response
-	def responseToXML(response):
-		if response and response.content and len(response.content) > 0:
-			return stringToXML(response.content)
+	def responseToXML(response: Response) -> Optional[ET._Element]:
+		if response and response.text and len(response.text) > 0:
+			return stringToXML(response.text)
 		return None
 
 
 	# Return the qualified name of an element
-	def xmlQualifiedName(element):
+	def xmlQualifiedName(element: str|ET._Element) -> tuple[str, str]:
 		qname = ET.QName(element)
 		r = ''
 		for s,n in _ns.items(): 
@@ -125,13 +146,27 @@ if CON.Support_XML:
 		return (qname.localname, s)
 
 
-	# Return the XML structure as a string
-	def xmlToString(xml):
-		return ET.tostring(xml)
+	def xmlToString(xml: ET._Element) -> str:
+		"""	Return the XML structure as a string.
+
+			Args:
+				xml: The XML element to convert to a string.
+
+			Returns:
+				The XML structure as a string.
+		"""
+		return ET.tostring(xml, encoding='unicode')
 
 
-	# create a new XML structure from a string
-	def stringToXML(value):
+	def stringToXML(value: str) -> ET._Element:
+		"""	Create a new XML structure from a string.
+
+			Args:
+				value: The string to convert to an XML element.
+
+			Returns:
+				The XML element created from the string.
+		"""
 		return ET.fromstring(value)
 
 
@@ -142,22 +177,41 @@ if CON.Support_XML:
 #	JSON Utilities
 #
 
-# Find a tag value (string) from the JSON dictionaty or, if not found, return the default.
-def getElementJSON(jsn, elemName, default=None):
+def getElementJSON(jsn: dict, elemName: str, default: Any = None) -> Any:
+	"""	Find a tag value from the JSON dictionaty or, if not found, return the default.
+
+		Args:
+			jsn: The JSON dictionary to search in.
+			elemName: The name of the element to find.
+			default: The default value to return if the element is not found.
+
+		Returns:
+			The value of the element if found, otherwise the default value.
+		"""
 	if elemName in jsn:
 		elem = jsn[elemName]
 		return elem
 	return default
 
 
-# Add an elememt to the jsn content
-def addToElementJSON(jsn, name, content, mandatory=False):
+def addToElementJSON(jsn: dict, name: str, content: Any, mandatory: bool = False) -> None:
+	"""	Add an element to the JSON content.
+
+		Args:
+			jsn: The JSON dictionary to add the element to.
+			name: The name of the element to add.
+			content: The content of the element to add.
+			mandatory: If True, the element is added even if the content is empty or None. Default is False.
+
+		Returns:
+			None
+	"""
 	if isinstance(content, int) or (content and len(content) > 0) or mandatory:
 		jsn[name] = content
 
 # Find all the sub-structures of a specific name inside a JSON document
 # TODO: Replace this with some xpath-like query package
-def getALLSubElementsJSON(jsn, name):
+def getALLSubElementsJSON(jsn: dict, name: str) -> list:
 	result = []
 	for elemName in jsn:
 		elem = jsn[elemName]
@@ -172,8 +226,8 @@ def getALLSubElementsJSON(jsn, name):
 	return result
 
 
-def wrapJSON(obj, jsn):
-	return {obj.namespace + ':' + obj.typeShortName : jsn}
+def wrapJSON(obj: ResourceBase, jsn: dict) -> dict:
+	return {f'{obj.namespace}:{obj.typeShortName}': jsn}
 
 
 ###############################################################################
@@ -182,7 +236,7 @@ def wrapJSON(obj, jsn):
 #
 
 # Get the type from a response, for JSON and XML
-def getTypeFromResponse(response, encoding):
+def getTypeFromResponse(response: requests.Response, encoding: int) -> int:
 	if encoding == CON.Encoding_XML:
 		root = responseToXML(response)
 		return toInt(getElement(root, 'ty'))
@@ -202,30 +256,48 @@ def getTypeFromResponse(response, encoding):
 
 _width = 45
 
-def strResource(name, shortName, resource, minusIndent=0):
-	if resource == None:
+def strResource(name: str, 
+				shortName: str, 
+				value: ResourceBase|str|int|bool|list[str]|list[int], 
+				minusIndent: int = 0) -> str:
+	if value is None:
 		return ''
-	if isinstance(resource, list) and len(resource) == 0:
+	if isinstance(value, list) and len(value) == 0:
 		return '' 
-	if not isinstance(resource, str):
-		resource = str(resource)
-	if resource and len(resource) > 0:
+	if not isinstance(value, str):
+		value = str(value)
+	if value and len(value) > 0:
 		if shortName:
-			return ('\t%s(%s):' % (name, shortName)).ljust(_width-minusIndent) + str(resource) + '\n'
+			return f'\t{name}({shortName}):'.ljust(_width-minusIndent) + str(value) + '\n'
 		else:
-			return ('\t%s:' % (name)).ljust(_width-minusIndent) + str(resource) + '\n'			
+			return f'\t{name}:'.ljust(_width-minusIndent) + str(value) + '\n'
 	return ''
 
 
 # Convert to an integer, except when it is None, then return None.
-def toInt(value):
+def toInt(value: Any) -> Optional[int]:
+	"""	Convert a value to an integer, except when it is None, then return None.
+		Args:
+			value: The value to convert to an integer.
+
+		Returns:
+			The integer value if conversion is possible, otherwise None.
+	"""
 	if value is None:
 		return None
 	return int(value)
 
 
 # Return the formatted resource name, id and type
-def nameAndType(resource):
+def nameAndType(resource: ResourceBase) -> str:
+	"""	Return a string with the resource name, id and type of the given resource.
+
+		Args:
+			resource: The resource to get the name and type from.
+
+		Returns:
+			A string with the resource name, id and type of the given resource.
+	"""
 	if resource is None or resource.type is None:
 		return "NONE"
 	rn = resource.resourceName if resource.resourceName is not None else 'unknown'
@@ -234,11 +306,11 @@ def nameAndType(resource):
 
 
 # Return the resource type as a string
-def typeToString(ty):
+def typeToString(ty: int) -> str:
 	res = [		"mixed", "accessControlPolicy", "AE", "container", "contentInstance", "CSEBase", "delivery", "eventConfig", "execInstance",
 				"group", "locationPolicy", "m2mServiceSubscriptionProfile", "mgmtCmd", "mgmtObj", "node", "pollingChannel",
 				"remoteCSE", "request", "schedule", "serviceSubscribedAppRule", "serviceSubscribedNode", "statsCollect",
-				"statsConfig", "subscription", "semanticDescriptor", "notificationTargetMgmtPolicyRef", "notificationTargetPolicy"
+				"statsConfig", "subscription", "semanticDescriptor", "notificationTargetMgmtPolicyRef", "notificationTargetPolicy",
 				"policyDeletionRules", "flexContainer", "timeSeries", "timeSeriesInstance", "role", "token", "void",
 				"dynamicAuthorizationConsultation", "authorizationDecision", "authorizationPolicy", "authorizationInformation",
 				"ontologyRepository", "ontology", "semanticMashupJobProfile", "semanticMashupInstance", "semanticMashupResult",
@@ -269,15 +341,17 @@ def typeToString(ty):
 #	Search
 #
 
-# Find a sub-resource
-def _findSubResource(resource, type, filter=None, originator=None):
-	import onem2mlib.utilities
+# Find a child-resource
+def _findSubResource(resource: ResourceBase, 
+					 type: int, 
+					 filter: Optional[list[tuple[str, str|int|bool]]] = None, 
+					 originator: str = None) -> Optional[list[ResourceBase]]:
 
 	if not resource or not resource.session or not resource.resourceID: 
 		return None
 	result = []
  
-	combined_filter = [onem2mlib.utilities.newTypeFilterCriteria(int(type))]
+	combined_filter: list[tuple[str, str|int|bool]] = [UT.newTypeFilterCriteria(int(type))]
 	
 	if filter:
 		if isinstance(filter, list):
@@ -288,7 +362,7 @@ def _findSubResource(resource, type, filter=None, originator=None):
 
  
  
-	ris = onem2mlib.mcarequests.discoverInCSE(resource, filter=combined_filter, structuredResult=True, originator=originator)
+	ris = MCA.discoverInCSE(resource, filter=combined_filter, structuredResult=True, originator=originator)
 	if ris:
 		#	The following is a hack to restrict the search result to the direct child
 		#	level. Yes, the oneM2M "level" attribute could be used for that, but it
@@ -316,35 +390,40 @@ def _findSubResource(resource, type, filter=None, originator=None):
 
 
 # Find a resource from a list by its resource name
-def _findResourceInList(resources, resourceName):
-	if resources and len(resources)>0:
-		for res in resources:
-			if res.resourceName == resourceName:
-				return res
+def _findResourceInList(resources: list[ResourceBase], resourceName: str) -> Optional[ResourceBase]:
+	for res in resources:
+		if res.resourceName == resourceName:
+			return res
 	return None
 
 
 # Create a new resource object with a given type, RI and parent
-def _newResourceFromRID(type, ri, parent, originator=None):
+def _newResourceFromRID(type: int, 
+						ri: str, 
+						parent: Optional[ResourceBase] = None, 
+						originator: Optional[str] = None) -> Optional[ResourceBase]:
 	res = _newResourceFromType(type, parent, originator=originator)
 	if res:
 		res.resourceID = ri
 	return res
 
 
-def _newResourceFromType(type, parent, originator=None):
-	if type == CON.Type_ContentInstance:	return onem2mlib.ContentInstance(parent=parent, originator=originator, instantly=False)
-	elif type == CON.Type_Container:		return onem2mlib.Container(parent=parent, originator=originator, instantly=False)
-	elif type == CON.Type_AE:				return onem2mlib.AE(parent=parent, originator=originator, instantly=False)
-	elif type == CON.Type_Group:			return onem2mlib.Group(parent=parent, originator=originator, instantly=False)
-	elif type == CON.Type_ACP:				return onem2mlib.AccessControlPolicy(parent=parent, originator=originator, instantly=False)
-	elif type == CON.Type_Subscription:		return onem2mlib.Subscription(parent=parent, originator=originator, instantly=False)
-	elif type == CON.Type_RemoteCSE:		return onem2mlib.RemoteCSE(parent=parent, originator=originator, instantly=False)
-	elif type == CON.Type_FlexContainer:	return onem2mlib.FlexContainer(parent=parent, originator=originator, instantly=False)
+def _newResourceFromType(type: int, parent: Optional[ResourceBase] = None, originator: Optional[str] = None) -> Optional[ResourceBase]:
+	if type == CON.Type_ContentInstance:	return ContentInstance(parent=parent, originator=originator, instantly=False)
+	elif type == CON.Type_Container:		return Container(parent=parent, originator=originator, instantly=False)
+	elif type == CON.Type_AE:				return AE(parent=parent, originator=originator, instantly=False)
+	elif type == CON.Type_Group:			return Group(parent=parent, originator=originator, instantly=False)
+	elif type == CON.Type_ACP:				return AccessControlPolicy(parent=parent, originator=originator, instantly=False)
+	elif type == CON.Type_Subscription:		return Subscription(parent=parent, originator=originator, instantly=False)
+	elif type == CON.Type_RemoteCSE:		return RemoteCSE(parent=parent, originator=originator, instantly=False)
+	elif type == CON.Type_FlexContainer:	return FlexContainer(parent=parent, originator=originator, instantly=False)
 	return None
 
 
-def _newResourceFromTypeString(typeString, parent, namespace='m2m', originator=None):
+def _newResourceFromTypeString(typeString: str,
+							   parent: Optional[ResourceBase] = None,
+							   namespace: str = 'm2m', 
+							   originator: Optional[str] = None) -> Optional[ResourceBase]:
 	if namespace == 'm2m':
 		if typeString == 'cin':		return _newResourceFromType(CON.Type_ContentInstance, parent, originator=originator)
 		elif typeString == 'cnt':	return _newResourceFromType(CON.Type_Container, parent, originator=originator)
@@ -357,18 +436,21 @@ def _newResourceFromTypeString(typeString, parent, namespace='m2m', originator=N
 
 
 # Get a resource from the CSE by its resourceName
-def _getResourceFromCSEByResourceName(type, rn, parent, originator=None):
-	res = None
+def _getResourceFromCSEByResourceName(type: int, 
+									  rn: str, 
+									  parent: Optional[ResourceBase] = None, 
+									  originator: Optional[str]=None) -> Optional[ResourceBase]:
+	res: Optional[ResourceBase] = None
 	if rn.startswith('/'):	# Remove leading '/' in case we do a deep search
 		rn = rn[1:]
-	if type == CON.Type_ContentInstance:		res = onem2mlib.ContentInstance(parent=parent, resourceName=rn, originator=originator, instantly=False)
-	elif type == CON.Type_Container:			res = onem2mlib.Container(parent=parent, resourceName=rn, originator=originator, instantly=False)
-	elif type == CON.Type_AE:					res = onem2mlib.AE(parent=parent, resourceName=rn, originator=originator, instantly=False)
-	elif type == CON.Type_Group:				res = onem2mlib.Group(parent=parent, resourceName=rn, originator=originator, instantly=False)
-	elif type == CON.Type_ACP:					res = onem2mlib.AccessControlPolicy(parent=parent, resourceName=rn, originator=originator, instantly=False)
-	elif type == CON.Type_Subscription:			res = onem2mlib.Subscription(parent=parent, resourceName=rn, originator=originator, instantly=False)
-	elif type == CON.Type_RemoteCSE:			res = onem2mlib.RemoteCSE(parent=parent, resourceName=rn, originator=originator, instantly=False)
-	elif type == CON.Type_FlexContainer: 		res = onem2mlib.FlexContainer(parent=parent, resourceName=rn, originator=originator, instantly=False)
+	if type == CON.Type_ContentInstance:		res = ContentInstance(parent=parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_Container:			res = Container(parent=parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_AE:					res = AE(parent=parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_Group:				res = Group(parent=parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_ACP:					res = AccessControlPolicy(parent=parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_Subscription:			res = Subscription(parent=parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_RemoteCSE:			res = RemoteCSE(parent=parent, resourceName=rn, originator=originator, instantly=False)
+	elif type == CON.Type_FlexContainer: 		res = FlexContainer(parent=parent, resourceName=rn, originator=originator, instantly=False)
 	if res is not None and res.retrieveFromCSE():
 		return res
 	return None
