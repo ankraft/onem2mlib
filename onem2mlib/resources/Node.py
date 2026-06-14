@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import Optional, Any, override
 
 import logging
-import onem2mlib.marshalling as M
 import onem2mlib.constants as CON
 import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
@@ -43,9 +42,6 @@ class Node(ResourceBase):
 				ParameterError: If the parent resource is not a <CSEBase> or if nodeID is not provided.
 		"""
 		super().__init__(type=CON.Type_Node, typeShortName=CON.Type_Node_SN, **kwargs)
-
-		self._marshallers = [M._Node_parseXML, M._Node_createXML,
-							 M._Node_parseJSON, M._Node_createJSON]
 
 		if self.parent is not None and self.parent.type not in [CON.Type_CSEBase]:
 			logger.error('Parent of <Node> must be <CSEBase>.')
@@ -121,3 +117,38 @@ class Node(ResourceBase):
 		self.mgmtClientAddress = resource.mgmtClientAddress
 		self.roamingStatus = resource.roamingStatus
 		self.networkID = resource.networkID
+
+
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this Node resource from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the resource as a dictionary.
+		"""
+		_jsn = super()._fromCSE(jsn)
+		self.nodeID = INT.getElementJSON(_jsn, 'ni', self.nodeID)
+		self.hostedCSELink = INT.getElementJSON(_jsn, 'hcl', self.hostedCSELink)
+		self.hostedAELinks = INT.getElementJSON(_jsn, 'hael', self.hostedAELinks)
+		self.hostedServiceLinks = INT.getElementJSON(_jsn, 'hsl', self.hostedServiceLinks)
+		self.mgmtClientAddress = INT.getElementJSON(_jsn, 'mgca', self.mgmtClientAddress)
+		self.roamingStatus = INT.getElementJSON(_jsn, 'rms', self.roamingStatus)
+		self.networkID = INT.getElementJSON(_jsn, 'nid', self.networkID)
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this Node resource as a dictionary, to be sent to the CSE.
+
+			Args:
+				isUpdate: If True, this JSON is for an update operation.
+				isAcpiUpdate: If True, this JSON is for an ACP update operation.
+				
+			Returns:
+				A JSON representation of this Node resource as a dictionary, to be sent to the CSE.
+		"""
+		jsn = super()._toCSE(isUpdate, isAcpiUpdate)
+		if isUpdate and isAcpiUpdate:
+			return INT.wrapJSON(self, jsn)
+		INT.addToElementJSON(jsn, 'ni', self.nodeID)
+		if self.mgmtClientAddress:
+			INT.addToElementJSON(jsn, 'mgca', self.mgmtClientAddress)
+		return INT.wrapJSON(self, jsn)

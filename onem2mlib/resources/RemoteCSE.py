@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import Optional, Any, override
 
 import logging
-import onem2mlib.marshalling as M
 import onem2mlib.constants as CON
 import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
@@ -47,8 +46,6 @@ class RemoteCSE(ResourceBase):
 				**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
 		"""
 		super().__init__(type=CON.Type_RemoteCSE, typeShortName=CON.Type_RemoteCSE_SN, **kwargs)
-
-		self._marshallers = [M._remoteCSE_parseXML, None, M._remoteCSE_parseJSON, None]
 
 		if self.parent is not None and self.parent.type not in [CON.Type_CSEBase, CON.Type_RemoteCSE]:
 			msg = f'Parent of <remoteCSE> must be <CSEBase> or <remoteCSE>: {INT.nameAndType(self)}'
@@ -121,9 +118,9 @@ class RemoteCSE(ResourceBase):
 
 		# Create a new session targeting the remote point of access
 		if session is None:
-			target_session = Session(self.pointOfAccess[0], self.session.originator, self.session.encoding)
+			target_session = Session(self.pointOfAccess[0], self.session.originator)
 		else:
-			target_session = Session(self.pointOfAccess[0], session.originator, session.encoding)
+			target_session = Session(self.pointOfAccess[0], session.originator)
 			
 		return target_session.getCSEBase()
 
@@ -135,3 +132,35 @@ class RemoteCSE(ResourceBase):
 		self.cseID = resource.cseID
 		self.pointOfAccess = resource.pointOfAccess.copy() if resource.pointOfAccess else []
 		self.requestReachability = resource.requestReachability
+
+
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this RemoteCSE resource from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the resource as a dictionary.
+		"""
+		_jsn = super()._fromCSE(jsn)
+		self.requestReachability = INT.getElementJSON(_jsn, 'rr', self.requestReachability)
+		self.pointOfAccess = INT.getElementJSON(_jsn, 'poa', self.pointOfAccess)
+		self.cseBase = INT.getElementJSON(_jsn, 'cb', self.cseBase)
+		self.cseID = INT.getElementJSON(_jsn, 'csi', self.cseID)
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this RemoteCSE resource as a dictionary, to be sent to the CSE.
+
+			Attention:
+				RemoteCSE cannot be created or updated on the CSE. This method will always raise an exception.
+
+			Args:
+				isUpdate: If True, this JSON is for an update operation. 
+				isAcpiUpdate: If True, this JSON is for an ACP update operation.
+
+			Raises:
+				EXC.NotSupportedError: RemoteCSE cannot be created or updated on the CSE.
+				
+			Returns:
+				Will never return. Always raises an exception since RemoteCSE cannot be created or updated on the CSE.
+		"""
+		raise EXC.NotSupportedError('RemoteCSE cannot be created or updated on the CSE.')

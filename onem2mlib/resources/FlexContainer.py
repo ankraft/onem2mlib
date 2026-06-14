@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import Optional, Any, cast, override
 
 import logging
-import onem2mlib.marshalling as M
 import onem2mlib.constants as CON
 import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
@@ -48,9 +47,6 @@ class FlexContainer(ResourceBase):
 			**kwargs
 		)
 
-		self._marshallers = [M._FlexContainer_parseXML, M._FlexContainer_createXML,
-							 M._FlexContainer_parseJSON, M._FlexContainer_createJSON]
-
 		self.resourceSpecialization = resourceSpecialization
 		self.contentDefinition = contentDefinition
 		self.attributes = attributes # TODO
@@ -75,3 +71,32 @@ class FlexContainer(ResourceBase):
 		self.resourceSpecialization = resource.resourceSpecialization
 		self.contentDefinition = resource.contentDefinition
 		# TODO attributes
+
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this Group resource from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the resource as a dictionary.
+		"""
+		_jsn = super()._fromCSE(jsn)
+		self.contentDefinition = INT.getElementJSON(jsn, 'cnd', self.contentDefinition)
+		# TODO Attributes
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this Group resource as a dictionary, to be sent to the CSE.
+
+			Args:
+				isUpdate: If True, this JSON is for an update operation.
+				isAcpiUpdate: If True, this JSON is for an ACP update operation.
+				
+			Returns:
+				A JSON representation of this Group resource as a dictionary, to be sent to the CSE.
+		"""
+		jsn = super()._toCSE(isUpdate, isAcpiUpdate)
+		if isUpdate and isAcpiUpdate:
+			return INT.wrapJSON(self, jsn)
+		INT.addToElementJSON(jsn, 'cnd', self.contentDefinition)
+		# >TODO attribues
+		return INT.wrapJSON(self, jsn)
+

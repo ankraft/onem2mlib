@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Optional, Any, cast, Callable, TYPE_CHECKING
 
 import logging, json
+from unicodedata import name
 
 from .. import constants as CON
 from .. import mcarequests as MCA
@@ -29,7 +30,6 @@ if TYPE_CHECKING:
 	from ..resources.RemoteCSE import RemoteCSE
 	from ..resources.Subscription import Subscription
 
-	from lxml import etree as ET
 	from requests import Response
 
 logger = logging.getLogger(__name__)
@@ -110,8 +110,7 @@ class ResourceBase:
 			or an empty list. """
 
 		# Internal list of per-class marshalling methods
-		# [ parseXML, createXML, parseJSON, createJSON ]
-		self._marshallers: list[Optional[Callable]] = [ None, None, None, None ]
+		self._marshallers: list[Optional[Callable]] = [ None, None ]
 
 		super().__init__()
 
@@ -411,7 +410,7 @@ class ResourceBase:
 			Returns:
 				The method returns the found `AccessControlPolicy` resource, or None if not found.
 		"""
-		return cast(Optional[AccessControlPolicy], INT._getResourceFromCSEByResourceName(CON.Type_ACP, resourceName, self))
+		return INT._getResourceFromCSEByResourceName(CON.Type_ACP, resourceName, self)	# type: ignore[return-value]
 
 
 	def findAE(self, resourceName: str) -> Optional[AE]:
@@ -426,7 +425,7 @@ class ResourceBase:
 			Returns:
 				The method returns the found `AE` resource, or None if not found.
 		"""
-		return cast(Optional[AE], INT._getResourceFromCSEByResourceName(CON.Type_AE, resourceName, self))
+		return INT._getResourceFromCSEByResourceName(CON.Type_AE, resourceName, self)	# type: ignore[return-value]
 
 
 	def findContainer(self, resourceName: str) -> Optional[Container]:
@@ -441,7 +440,7 @@ class ResourceBase:
 			Returns:
 				The method returns the found `Container` resource, or None if not found.
 		"""
-		return cast(Optional[Container], INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self))
+		return INT._getResourceFromCSEByResourceName(CON.Type_Container, resourceName, self)	# type: ignore[return-value]
 
 
 	def findContentInstance(self, resourceName: str) -> Optional[ContentInstance]:
@@ -456,7 +455,7 @@ class ResourceBase:
 			Returns:
 				The method returns the found `ContentInstance` resource, or None if not found.
 		"""
-		return cast(Optional[ContentInstance], INT._getResourceFromCSEByResourceName(CON.Type_ContentInstance, resourceName, self))
+		return INT._getResourceFromCSEByResourceName(CON.Type_ContentInstance, resourceName, self)	# type: ignore[return-value]
 
 
 	def findGroup(self, resourceName: str) -> Optional[Group]:
@@ -471,7 +470,7 @@ class ResourceBase:
 			Returns:
 				The method returns the found `Group` resource, or None if not found.
 		"""
-		return cast(Optional[Group], INT._getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self))
+		return INT._getResourceFromCSEByResourceName(CON.Type_Group, resourceName, self)	# type: ignore[return-value]
 
 
 	def findRemoteCSE(self, resourceName: str) -> Optional[RemoteCSE]:
@@ -486,7 +485,7 @@ class ResourceBase:
 			Returns:
 				The method returns the found `RemoteCSE` resource, or None if not found.
 		"""
-		return cast(Optional[RemoteCSE], INT._getResourceFromCSEByResourceName(CON.Type_RemoteCSE, resourceName, self))
+		return INT._getResourceFromCSEByResourceName(CON.Type_RemoteCSE, resourceName, self)	# type: ignore[return-value]
 
 
 	def findSubscription(self, resourceName: str) -> Optional[Subscription]:
@@ -501,7 +500,7 @@ class ResourceBase:
 			Returns:
 				The method returns the found `Subscription` resource, or None if not found.
 		"""
-		return cast(Optional[Subscription], INT._getResourceFromCSEByResourceName(CON.Type_Subscription, resourceName, self))
+		return INT._getResourceFromCSEByResourceName(CON.Type_Subscription, resourceName, self)	# type: ignore[return-value]
 
 
 
@@ -567,33 +566,14 @@ class ResourceBase:
 
 
 	def _parseResponse(self, response: Response) -> None:
-		if self.session.encoding == CON.Encoding_XML:
-			return self._parseXML(INT.responseToXML(response))
-		elif self.session.encoding == CON.Encoding_JSON:
-			return self._parseJSON(response.json())
-		logger.error('Encoding not supported: ' + str(self.session.encoding))
-		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
+		return self._parseJSON(response.json())
 
 
 	def _createContent(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> Optional[str]:
-		if self.session.encoding == CON.Encoding_XML:
-			return INT.xmlToString(self._createXML(isUpdate, isAcpiUpdate=isAcpiUpdate))
-		elif self.session.encoding == CON.Encoding_JSON:
-			return json.dumps(self._createJSON(isUpdate, isAcpiUpdate=isAcpiUpdate))
-		logger.error('Encoding not supported: ' + str(self.session.encoding))
-		raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
+		return json.dumps(self._createJSON(isUpdate, isAcpiUpdate=isAcpiUpdate))
 
 
 	# Marschalling calls
-	def _parseXML(self, root: Any) -> None:
-		if self._marshallers[0] is not None:
-			self._marshallers[0](self, root)
-
-	def _createXML(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> Optional[ET._Element]:
-		if self._marshallers[1] is not None:
-			return self._marshallers[1](self, isUpdate, isAcpiUpdate)
-		return None
-
 
 	def _parseJSON(self, jsn: dict) -> None:
 		""" Parse a JSON representation of the resource and update the state variables of this instance accordingly.
@@ -601,8 +581,10 @@ class ResourceBase:
 			Args:
 				jsn: The JSON representation of the resource as a dictionary.
 		"""
-		if self._marshallers[2] is not None:
-			self._marshallers[2](self, jsn)
+		if self._marshallers[0] is not None:
+			self._marshallers[0](self, jsn)
+		else:
+			self._fromCSE(jsn)
 
 
 	def _createJSON(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> Optional[dict]:
@@ -614,9 +596,10 @@ class ResourceBase:
 					AccessControlPolicyIDs. This is needed to handle the special case of updating
 					AccessControlPolicyIDs for a resource.
 		"""
-		if self._marshallers[3] is not None:
-			return self._marshallers[3](self, isUpdate, isAcpiUpdate)
-		return None
+		if self._marshallers[1] is not None:
+			return self._marshallers[1](self, isUpdate, isAcpiUpdate)
+		else:
+			return self._toCSE(isUpdate, isAcpiUpdate)
 
 	def _copy(self, resource: ResourceBase) -> None:
 		""" Copy the common attributes of a resource to this instance.
@@ -638,4 +621,57 @@ class ResourceBase:
 		self.announceTo = resource.announceTo
 		self.announcedAttribute = resource.announcedAttribute
 
+
+	def _fromCSE(self, jsn: dict) -> dict:
+		""" Update the state variables of this instance from a JSON representation of the resource, as returned by the CSE.
+
+			Args:
+				jsn: The JSON representation of the resource as a dictionary.
+
+			Returns:
+				The method returns the JSON representation of the resource as a dictionary, but only the resopurce part, i.e. the part under the resource type key. 
+		"""
+		name = self.namespace + ':' + self.typeShortName
+		if name not in jsn:
+			logger.error('Wrong encoding: ' + str(jsn))
+			raise EXC.EncodingError('Wrong encoding: ' + str(jsn))
+		_jsn = jsn[name]
+		self.resourceName = INT.getElementJSON(_jsn, 'rn', self.resourceName)
+		self.type = INT.getElementJSON(_jsn, 'ty', self.type)
+		self.stateTag = INT.toInt(INT.getElementJSON(_jsn, 'st', self.stateTag))
+		self.labels = INT.getElementJSON(_jsn, 'lbl', self.labels)
+		self.resourceID = INT.getElementJSON(_jsn, 'ri', self.resourceID)
+		self.parentID = INT.getElementJSON(_jsn, 'pi', self.parentID)
+		self.creationTime = INT.getElementJSON(_jsn, 'ct', self.creationTime)
+		self.lastModifiedTime = INT.getElementJSON(_jsn, 'lt', self.lastModifiedTime)
+		self.accessControlPolicyIDs = INT.getElementJSON(_jsn, 'acpi', self.accessControlPolicyIDs)
+		self.expirationTime = INT.getElementJSON(_jsn, 'et', self.expirationTime)
+		self.announceTo = INT.getElementJSON(_jsn, 'at', self.announceTo)
+		self.announcedAttribute = INT.getElementJSON(_jsn, 'aa', self.announcedAttribute)
+		return _jsn
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Create a JSON representation of the resource for creating or updating the resource in the CSE.
+
+			Args:
+				isUpdate: If *True*, the JSON representation is created for an update operation. 
+				isAcpiUpdate: If *True*, the JSON representation is created for an update operation for
+					AccessControlPolicyIDs. This is needed to handle the special case of updating
+					AccessControlPolicyIDs for a resource.
+
+			Returns:
+				The method returns the JSON representation of the resource as a dictionary.
+		"""
+		jsn: dict = {}
+		if isUpdate and isAcpiUpdate:
+			INT.addToElementJSON(jsn, 'acpi', self.accessControlPolicyIDs)
+			return jsn
+		if self.resourceName and not isUpdate: 	# No RN when updating
+			INT.addToElementJSON(jsn, 'rn', self.resourceName)
+		INT.addToElementJSON(jsn, 'lbl', self.labels)
+		INT.addToElementJSON(jsn, 'aa', self.announcedAttribute)
+		INT.addToElementJSON(jsn, 'at', self.announceTo)
+		INT.addToElementJSON(jsn, 'acpi', self.accessControlPolicyIDs)
+		return jsn
 

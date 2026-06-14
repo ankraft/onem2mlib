@@ -58,33 +58,7 @@ Copy the *onem2mlib* directory to your project.
 In addition you need to install the following modules:
 
 - [requests](http://docs.python-requests.org/en/master/)
-- [lxml](http://lxml.de)
 
-```bash
-pip3 install requests lxml
-```
-
-Depending on the OS and target environment you might need to install some additional libraries to use the *lxml* package:
-
-```bash
-apt-get install libxml2-dev libxslt1-dev
-```
-
-#### Using a package manager
-
-All this might take a very long time on a small system (such as a Raspberry Pi). Alternative you may install the library with the help of a package manager:
-
-```bash
-sudo apt-get install python3-lxml
-```
-
-### Enabling support for XML encoding
-
-By default, XML serialization is not enabled. If, in addition to JSON serialization, XML should also be supported by the oneM2M module, then one must enabled this feature by setting the ```Support_XML```in the file [onem2mlib/constants.py](onem2mlib/constants.py) to ```True```.
-
-```python
-Support_XML = True
-```
 
 ## Usage
 
@@ -99,17 +73,10 @@ The following sections provide some examples.
 First, create a session and then retrieve a &lt;CSEBase> resource from a CSE. The session holds, for example, the authentication information to access the CSE.
 
 ```python
-session = Session('http://host.com:8282', 'admin:admin')   # create a session
-cse = CSEBase(session, 'mn-cse')                            # get the <CSEBase> resource
+session = Session('http://host.com:8282', 'CAdmin')   # create a session
+cse = CSEBase(session, 'mn-cse')                      # get the <CSEBase> resource
 ```
 
-To use XML encoding, specify the encoding explicitly for a session.
-
-```python
-from onem2mlib.constants import *
-session = Session('http://host.com:8282', 'admin:admin', Encoding_XML).   # create a session with XML encoding
-cse = CSEBase(session, 'mn-cse')                                          # get the <CSEBase> resource
-```
 
 To access resources on a CSE it is not necessary to retrieve the &lt;CSEBase> resource from the CSE (for example, when one has only limited access to resources on the CSE). But one must have at least create a *CSEBase* **instance** that represents the CSE and holds the session information as shown above. This *CSEBase* instance can be used as usual in subsequent calls.
 
@@ -309,7 +276,7 @@ The module uses Python logging for debug and other output. Each of the modules a
 - **Discovery**: 
 Currently, only *label* and *resourceType* are supported in filter criteria.
 - **Encodings**:
-JSON (the default), XML.
+JSON.
 - **Notifications**:
 A program can subscribe to resource changes, provide callback methods, and receive notifications from a CSE.
 

@@ -11,7 +11,6 @@ from typing import Optional, Any, cast, override, TYPE_CHECKING
 
 import logging
 
-from .. import marshalling as M
 from .. import constants as CON
 from .. import internal as INT
 from .. import mcarequests as MCA
@@ -58,8 +57,6 @@ class CSEBase(ResourceBase):
 			**kwargs
 		)
 
-		self._marshallers = [M._CSEBase_parseXML, None, M._CSEBase_parseJSON, None]
-		
 		self.session = session
 		self.cseType: int | None = None
 		""" Integer. The type of the CSE. See also the type constants in `onem2mlib.constants`.
@@ -241,3 +238,34 @@ class CSEBase(ResourceBase):
 		self.cseType = resource.cseType
 		self.supportedResourceTypes = resource.supportedResourceTypes
 		self.pointOfAccess = resource.pointOfAccess
+
+	
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this CSEBase resource from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the resource as a dictionary.
+		"""
+		_jsn = super()._fromCSE(jsn)
+		self.cseType = INT.toInt(INT.getElementJSON(_jsn, 'cst', self.cseType))
+		self.supportedResourceTypes = INT.getElementJSON(_jsn, 'srt', self.supportedResourceTypes)
+		self.pointOfAccess = INT.getElementJSON(_jsn, 'poa', self.pointOfAccess)
+	
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this CSEBase resource as a dictionary, to be sent to the CSE.
+
+			Attention:
+				CSEBase cannot be created or updated on the CSE. This method will always raise an exception.
+
+			Args:
+				isUpdate: If True, this JSON is for an update operation. 
+				isAcpiUpdate: If True, this JSON is for an ACP update operation.
+
+			Raises:
+				EXC.NotSupportedError: CSEBase cannot be created or updated on the CSE.
+
+			Returns:
+				Will never return. Always raises an exception since CSEBase cannot be created or updated on the CSE.
+		"""
+		raise EXC.NotSupportedError('CSEBase cannot be created or updated on the CSE.')

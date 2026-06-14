@@ -11,7 +11,6 @@ from typing import Optional, Any, override
 
 import logging
 
-from .. import marshalling as M
 from .. import constants as CON
 from .. import internal as INT
 from .. import mcarequests as MCA
@@ -42,14 +41,10 @@ class Subscription(ResourceBase):
 				instantly: If True, the resource is immediately synced with the CSE.
 				**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
 		"""
-		# 1. Initialize Base Class
+		# Initialize Base Class
 		super().__init__(type=CON.Type_Subscription, typeShortName=CON.Type_Subscription_SN, **kwargs)
 		
-		# 2. Set Marshallers
-		self._marshallers = [M._Subscription_parseXML, M._Subscription_createXML,
-							 M._Subscription_parseJSON, M._Subscription_createJSON]
-
-		# 3. Set Subscription-Specific Attributes
+		# Set Subscription-Specific Attributes
 		self.notificationURI = notificationURI if notificationURI is not None else []
 		"""	A list consisting of one or more targets that the Hosting CSE shall send notifications to. 
 			A target is either a oneM2M compliant Resource-ID (either structured or unstructured),
@@ -138,3 +133,52 @@ class Subscription(ResourceBase):
 		self.notificationForwardingURI = resource.notificationForwardingURI
 		self.subscriberURI = resource.subscriberURI
 		self.eventNotificationCriteria = resource.eventNotificationCriteria
+
+
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this Subscription resource from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the resource as a dictionary.
+		"""
+		_jsn = super()._fromCSE(jsn)
+		self.notificationURI = INT.getElementJSON(_jsn, 'nu', self.notificationURI)
+		self.notificationContentType = INT.getElementJSON(_jsn, 'nct', self.notificationContentType)
+		self.expirationCounter = INT.getElementJSON(_jsn, 'exc', self.expirationCounter)
+		self.latestNotify = INT.getElementJSON(_jsn, 'ln', self.latestNotify)
+		self.groupID = INT.getElementJSON(_jsn, 'gpi', self.groupID)
+		self.notificationForwardingURI = INT.getElementJSON(_jsn, 'nfu', self.notificationForwardingURI)
+		self.subscriberURI = INT.getElementJSON(_jsn, 'su', self.subscriberURI)
+		enc_jsn = INT.getElementJSON(_jsn, 'enc')
+		if enc_jsn and self.eventNotificationCriteria:
+			self.eventNotificationCriteria._fromCSE(enc_jsn)
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this Group resource as a dictionary, to be sent to the CSE.
+
+			Args:
+				isUpdate: If True, this JSON is for an update operation.
+				isAcpiUpdate: If True, this JSON is for an ACP update operation.
+				
+			Returns:
+				A JSON representation of this Group resource as a dictionary, to be sent to the CSE.
+		"""
+		jsn = super()._toCSE(isUpdate, isAcpiUpdate)
+		if isUpdate and isAcpiUpdate:
+			return INT.wrapJSON(self, jsn)
+		INT.addToElementJSON(jsn, 'nu', self.notificationURI)
+		INT.addToElementJSON(jsn, 'nct', self.notificationContentType)
+		if self.expirationCounter != -1:
+			INT.addToElementJSON(jsn, 'exc', self.expirationCounter)
+		if self.latestNotify:
+			INT.addToElementJSON(jsn, 'ln', self.latestNotify)
+		if self.groupID:
+			INT.addToElementJSON(jsn, 'gpi', self.groupID)
+		if self.notificationForwardingURI:
+			INT.addToElementJSON(jsn, 'nfu', self.notificationForwardingURI)
+		if self.subscriberURI:
+			INT.addToElementJSON(jsn, 'su', self.subscriberURI)
+		if self.eventNotificationCriteria:
+			jsn['enc'] = self.eventNotificationCriteria._toCSE(isUpdate)
+		return INT.wrapJSON(self, jsn)

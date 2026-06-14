@@ -10,7 +10,6 @@ import json, logging, uuid
 import onem2mlib.constants as CON
 import onem2mlib.exceptions
 import onem2mlib.utilities as UT
-import onem2mlib.marshalling as M
 import onem2mlib.mcarequests as MCA
 import onem2mlib.internal as INT
 import onem2mlib.exceptions as EXC

@@ -15,8 +15,6 @@ This sub-module defines various constants used in the onem2mlib module.
 #	library configuration
 #
 
-Support_XML = False
-""" Enabling or disabling XML serialization support. """
 
 #
 #	on2M2M resource types
@@ -152,8 +150,3 @@ Sub_ResourceID = 3
 NETWORK_REQUEST_TIMEOUT = 20
 """ Timeout after n seconds in requests. """
 
-Encoding_XML = 1
-""" Specify XML as the request encoding format. """
-
-Encoding_JSON = 2
-""" Specify JSON as the request encoding format. """

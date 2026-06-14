@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import Optional, Any, cast, override, TYPE_CHECKING
 
 import logging
-from .. import marshalling as M
 from .. import constants as CON
 from .. import exceptions as EXC
 from .. import mcarequests as MCA
@@ -63,16 +62,12 @@ class AE(ResourceBase):
 
 		super().__init__(type=CON.Type_AE, typeShortName=CON.Type_AE_SN, **kwargs)
 
-		# 3. Set Marshallers
-		self._marshallers = [M._AE_parseXML, M._AE_createXML,
-							 M._AE_parseJSON, M._AE_createJSON]
-		
 		if self.parent is not None and self.parent.type not in [CON.Type_CSEBase]:
 			logger.error('Parent of <AE> must be <CSEBase>')
 			raise EXC.ParameterError('Parent must be <CSEBase>.')
 
 
-		# 4. Set AE-Specific Attributes
+		# Set AE-Specific Attributes
 		self.appID: Optional[str] = appID
 		""" String. The identifier of the Application. Assigned by the application or the CSE. """
 
@@ -209,3 +204,42 @@ class AE(ResourceBase):
 		self.requestReachability = resource.requestReachability
 		self.pointOfAccess = resource.pointOfAccess
 		self.nodeLink = resource.nodeLink
+
+
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this AE resource from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the resource as a dictionary.
+		"""
+		_jsn = super()._fromCSE(jsn)
+		self.appID = INT.getElementJSON(_jsn, 'api', self.appID)
+		self.AEID = INT.getElementJSON(_jsn, 'aei', self.AEID)
+		self.requestReachability = INT.getElementJSON(_jsn, 'rr', self.requestReachability)
+		self.pointOfAccess = INT.getElementJSON(_jsn, 'poa', self.pointOfAccess)	
+		self.nodeLink = INT.getElementJSON(_jsn, 'nl', self.nodeLink)
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this AE resource as a dictionary, to be sent to the CSE.
+
+			Args:
+				isUpdate: If True, this JSON is for an update operation.
+				isAcpiUpdate: If True, this JSON is for an ACP update operation.
+				
+			Returns:
+				A JSON representation of this AE resource as a dictionary, to be sent to the CSE.
+		"""
+		jsn = super()._toCSE(isUpdate, isAcpiUpdate)
+
+		if isUpdate and isAcpiUpdate:
+			return INT.wrapJSON(self, jsn)
+		if self.appID and not isUpdate: 		# No api when updating
+			INT.addToElementJSON(jsn, 'api', self.appID)
+		if self.AEID and not isUpdate:	# No api when updating
+			INT.addToElementJSON(jsn, 'aei', self.AEID)
+		INT.addToElementJSON(jsn, 'rr', self.requestReachability)
+		INT.addToElementJSON(jsn, 'poa', self.pointOfAccess)
+		INT.addToElementJSON(jsn, 'nl', self.nodeLink)
+		INT.addToElementJSON(jsn, 'srv', self.supportedReleaseVersions)
+		return INT.wrapJSON(self, jsn)

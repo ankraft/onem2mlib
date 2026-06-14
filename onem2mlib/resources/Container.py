@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import Optional, Any, cast, override
 
 import logging
-import onem2mlib.marshalling as M
 import onem2mlib.constants as CON
 import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
@@ -44,9 +43,6 @@ class Container(ResourceBase):
 				**kwargs: Inherited attributes (parent, resourceName, resourceID, labels, originator, etc.)
 		"""
 		super().__init__(type=CON.Type_Container, typeShortName=CON.Type_Container_SN, **kwargs)
-
-		self._marshallers = [M._Container_parseXML, M._Container_createXML,
-							 M._Container_parseJSON, M._Container_createJSON]
 
 		self.maxNrOfInstances = maxNrOfInstances
 		""" Integer. Maximum number of direct child <contentInstance> resources in the 
@@ -284,3 +280,39 @@ class Container(ResourceBase):
 		self.currentByteSize = resource.currentByteSize
 		self.oldest = resource.oldest
 		self.latest = resource.latest
+
+
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this Container resource from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the resource as a dictionary.
+		"""
+		_jsn = super()._fromCSE(jsn)
+		self.maxNrOfInstances = INT.getElementJSON(_jsn, 'mni', self.maxNrOfInstances)
+		self.maxByteSize = INT.getElementJSON(_jsn, 'mbs', self.maxByteSize)
+		self.maxInstanceAge = INT.getElementJSON(_jsn, 'mia', self.maxInstanceAge)
+		self.currentNrOfInstances = INT.getElementJSON(_jsn, 'cni', self.currentNrOfInstances)
+		self.currentByteSize = INT.getElementJSON(_jsn, 'cbs', self.currentByteSize)
+		self.oldest = INT.getElementJSON(_jsn, 'ol', self.oldest)
+		self.latest = INT.getElementJSON(_jsn, 'la', self.latest)
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this Container resource as a dictionary, to be sent to the CSE.
+
+			Args:
+				isUpdate: If True, this JSON is for an update operation.
+				isAcpiUpdate: If True, this JSON is for an ACP update operation.
+				
+			Returns:
+				A JSON representation of this Container resource as a dictionary, to be sent to the CSE.
+		"""
+		jsn = super()._toCSE(isUpdate, isAcpiUpdate)
+		if isUpdate and isAcpiUpdate:
+			return INT.wrapJSON(self, jsn)
+		INT.addToElementJSON(jsn, 'mni', self.maxNrOfInstances)
+		INT.addToElementJSON(jsn, 'mbs', self.maxByteSize)
+		INT.addToElementJSON(jsn, 'mia', self.maxInstanceAge)
+		return INT.wrapJSON(self, jsn)
+

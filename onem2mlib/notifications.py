@@ -338,30 +338,14 @@ class HTTPNotificationHandler(BaseHTTPRequestHandler):
 		post_data = self.rfile.read(length)
 
 		if _isEnabled:
-			if contentType.lower().startswith('application/xml'):
-				threading.Thread(target=self._handleXML, args=(post_data,)).start()
-			elif contentType.lower().startswith('application/json'):
+			if contentType.lower().startswith('application/json'):
 				threading.Thread(target=self._handleJSON, args=(post_data,)).start()
+			else:
+				raise EXC.NotSupportedError('Unsupported content type for notification: ' + contentType)
 
 	def log_message(self, format: str, *args: Any) -> None:
 		return
 
-	def _handleXML(self, data: str) -> None:
-		tree = INT.stringToXML(data)
-		if INT.getElement(tree, 'vrq'): 
-			return 
-
-		rep = INT.getElements(tree, 'rep')
-		resource = None
-		if rep:
-			res_tree = rep[0][0]
-			ty = INT.toInt(INT.getElement(res_tree, 'ty'))
-			resource = INT._newResourceFromType(ty, None)
-			resource._parseXML(res_tree)
-		
-		sur = INT.getElement(tree, 'sur')
-		if sur:
-			self._callCallback(resource, sur)
 
 	def _handleJSON(self, data: bytes) -> None:
 		raw_jsn = json.loads(data.decode('utf-8'))

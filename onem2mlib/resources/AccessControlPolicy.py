@@ -8,9 +8,9 @@
 """ This module implements the class for the <AccessControlPolicy> resource. """
 
 from __future__ import annotations
-from typing import Optional, Any, override, TYPE_CHECKING
+from typing import Optional, Any, override
 import logging
-import onem2mlib.marshalling as M
+import onem2mlib
 import onem2mlib.constants as CON
 import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
@@ -50,9 +50,6 @@ class AccessControlPolicy(ResourceBase):
 		"""
 		super().__init__(type=CON.Type_ACP, typeShortName=CON.Type_ACP_SN, **kwargs)
 		
-		self._marshallers = [M._accessControlPolicy_parseXML, M._accessControlPolicy_createXML, 
-							 M._accessControlPolicy_parseJSON, M._accessControlPolicy_createJSON]
-
 		if self.parent is not None and self.parent.type not in [CON.Type_CSEBase, CON.Type_AE, CON.Type_RemoteCSE]:
 			logger.error('Parent of <ACP> must be <CSEBase>, <AE> or <remoteCSE>.')
 			raise EXC.ParameterError('Parent must be <CSEBase>, <AE> or <remoteCSE>.')
@@ -85,6 +82,53 @@ class AccessControlPolicy(ResourceBase):
 		self.selfPrivileges = resource.selfPrivileges.copy() if resource.selfPrivileges else []
 
 
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this AE resource from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the resource as a dictionary.
+		"""
+		_jsn = super()._fromCSE(jsn)
+		self.privileges = []
+		pv = INT.getElementJSON(_jsn, 'pv')
+		if pv:
+			acrs = INT.getElementJSON(pv, 'acr')
+			if acrs:
+				for ajsn in acrs:
+					acr = onem2mlib.AccessControlRule()
+					acr._fromCSE(ajsn)
+					self.privileges.append(acr)	
+		self.selfPrivileges = []
+		pvs = INT.getElementJSON(_jsn, 'pvs')
+		if pvs:
+			acrs = INT.getElementJSON(pvs, 'acr')
+			if acrs:
+				for ajsn in acrs:
+					acr = onem2mlib.AccessControlRule()
+					acr._fromCSE(ajsn)
+					#acr._parseJSON(ajsn)
+					self.selfPrivileges.append(acr)	
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this ACP resource as a dictionary, to be sent to the CSE.
+
+			Returns:
+				A JSON representation of this ACP resource as a dictionary, to be sent to the CSE.
+		"""
+		jsn = super()._toCSE(isUpdate, isAcpiUpdate)
+		if self.privileges:
+			pv = {}
+			#pv['acr'] = [ p._createJSON() for p in obj.privileges ]
+			pv['acr'] = [ p._toCSE() for p in self.privileges ]
+			jsn['pv'] = pv
+		if self.selfPrivileges:
+			pvs = {}
+			#pvs['acr'] = [ p._createJSON() for p in obj.selfPrivileges ]
+			pvs['acr'] = [ p._toCSE() for p in self.selfPrivileges ]
+			jsn['pvs'] = pvs
+		return INT.wrapJSON(self, jsn)
+
 class AccessControlRule:
 	"""	Structure for access control rules (acr) used in <ACP> resources."""
 
@@ -108,3 +152,31 @@ class AccessControlRule:
 		return	'\t  accessControlRule:\n' + \
 				INT.strResource('    ' + 'accessControlOriginators', 'acor', self.accessControlOriginators) + \
 				INT.strResource('    ' + 'accessControlOperations', 'acop', self.accessControlOperations)
+
+
+
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this AccessControlRule structure from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the structure as a dictionary.
+		"""
+		self.accessControlOriginators = INT.getElementJSON(jsn, 'acor', [])
+		self.accessControlOperations = INT.getElementJSON(jsn, 'acop', 0)
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this AccessControlRule structure as a dictionary, to be sent to the CSE.
+
+			Args:
+				isUpdate: If True, this JSON is for an update operation. 
+				isAcpiUpdate: If True, this JSON is for an ACP update operation.
+
+			Returns:
+				A JSON representation of this AccessControlRule structure as a dictionary, to be sent to the CSE.
+		"""
+		jsn: dict = {}
+		INT.addToElementJSON(jsn, 'acor', self.accessControlOriginators)
+		INT.addToElementJSON(jsn, 'acop', self.accessControlOperations)
+		return jsn
+

@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import Optional, Any, override
 
 import logging
-import onem2mlib.marshalling as M
 import onem2mlib.constants as CON
 import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
@@ -45,9 +44,6 @@ class ContentInstance(ResourceBase):
 		"""
 		super().__init__(type=CON.Type_ContentInstance, typeShortName=CON.Type_ContentInstance_SN, **kwargs)
 
-		self._marshallers = [M._ContentInstance_parseXML, M._ContentInstance_createXML,
-							 M._ContentInstance_parseJSON, M._ContentInstance_createJSON]
-
 		self.contentInfo = contentInfo
 		""" String. The type of the data in the `onem2mlib.ContentInstance.content` 
 		state variable."""
@@ -78,3 +74,32 @@ class ContentInstance(ResourceBase):
 		self.contentInfo = resource.contentInfo
 		self.contentSize = resource.contentSize
 		self.content = resource.content
+
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this AE resource from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the resource as a dictionary.
+		"""
+		_jsn = super()._fromCSE(jsn)
+		self.contentInfo = INT.getElementJSON(_jsn, 'cnf', self.contentInfo)
+		self.contentSize = INT.getElementJSON(_jsn, 'cs', self.contentSize)
+		self.content = INT.getElementJSON(_jsn, 'con', self.content)
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this AE resource as a dictionary, to be sent to the CSE.
+
+			Args:
+				isUpdate: If True, this JSON is for an update operation.
+				isAcpiUpdate: If True, this JSON is for an ACP update operation.
+
+			Returns:
+				A JSON representation of this AE resource as a dictionary, to be sent to the CSE.
+		"""
+		jsn = super()._toCSE(isUpdate, isAcpiUpdate)
+		INT.addToElementJSON(jsn, 'cnf', self.contentInfo)
+		INT.addToElementJSON(jsn, 'con', self.content)
+		return INT.wrapJSON(self, jsn)
+
+

@@ -23,7 +23,7 @@ class Session:
 		about the current session, such as the CSE endpoint, credentials, desired encoding, etc.
 	"""
 
-	def __init__(self, address: str, originator: str, encoding: int = CON.Encoding_JSON) -> None:
+	def __init__(self, address: str, originator: str) -> None:
 		""" Initialize a Session object. 
 
 		Initialize a Session object. 
@@ -31,7 +31,6 @@ class Session:
 		Args:
 			address: The URL of the CSE host (e.g., http://localhost:8080).
 			originator: The originator (ID) for identification.
-			encoding: The encoding (JSON or XML).
 		"""
 
 		self.address = address.rstrip('/') if address else None
@@ -41,10 +40,6 @@ class Session:
 		self.originator = originator
 		""" String. This specifies the originator for identification in access control policies. 
 			It can be a domain, an originatorID, the string "all", or a role-ID. """
-		
-		self.encoding: int = encoding
-		"""	Either `onem2mlib.constants.Encoding_XML` or `onem2mlib.constants.Encoding_JSON`.
-			It specifies the type of encoding for requests between the AE and the CSE. """
 		
 		self.username: Optional[str] = None
 		""" String. The username for basic authentication, or the token string for bearer authentication. """
@@ -60,13 +55,6 @@ class Session:
 			logger.error('Missing originator for Session')
 			raise EXC.AuthenticationError('Missing originator')
 
-		if self.encoding not in [CON.Encoding_XML, CON.Encoding_JSON]:
-			logger.critical(f'Unsupported encoding: {self.encoding}')
-			raise EXC.NotSupportedError(f'Unsupported encoding: {self.encoding}')
-		
-		if self.encoding == CON.Encoding_XML and not CON.Support_XML:
-			logger.critical('Unsupported encoding: Encoding_XML.')
-			raise EXC.NotSupportedError('Unsupported encoding: Encoding_XML')
 
 	def setUser(self, username: str, password: str|None = None) -> 'Session':
 		""" Set credentials for Basic Auth (user + pass) or Bearer Auth (token only). 
@@ -106,6 +94,5 @@ class Session:
 		result = f'Session:\n'
 		result += INT.strResource('address', None, self.address)
 		result += INT.strResource('originator', None, self.originator)
-		result += INT.strResource('encoding', None, self.encoding)
 		result += INT.strResource('rvi', None, self.releaseVersion)
 		return result

@@ -36,7 +36,6 @@ setup(
 	description='An open source implementation of a Python library for the oneM2M standard',
 	include_package_data=True,
 	install_requires=[
-		'lxml',
 		'requests'
 	],
 	license='BSD',

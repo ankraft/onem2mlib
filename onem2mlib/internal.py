@@ -29,147 +29,6 @@ from .resources.Subscription import Subscription
 if TYPE_CHECKING:
 	import requests
 
-if CON.Support_XML:
-	from lxml import etree as ET
-
-
-# define the namespace
-_ns = {	'm2m' : 'http://www.onem2m.org/xml/protocols',
-	 	'hd'  : 'http://www.onem2m.org/xml/protocols/homedomain'}
-
-###############################################################################
-#
-#	XML Utilities
-#
-
-if CON.Support_XML:
-
-	def _searchExpression(elemName: str, relative: bool) -> str:
-		if relative:
-			return f'.//{elemName}'
-		return f'//{elemName}'
-
-
-	# Find a tag value (string) from the tree or, if not found, return the default.
-	# If relative is set to True then the search is done relatively to the provided
-	# element.
-	def getElement(tree: ET._Element, elemName: str, default: Any = None, relative: bool = False) -> Any:
-		elem = tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)
-		if elem and len(elem)>0 and elem[0].text:	# type: ignore[index, arg-type, union-attr]
-			result = elem[0].text	# type: ignore[union-attr, index]
-			if isinstance(default, list):
-				result = result.split()
-			elif isinstance(default, bool):	# bool must be checked before int!
-				result = bool(result)
-			elif isinstance(default, int):
-				result = int(result)
-			return result
-		return default
-
-
-	# Find all subtree elements from the tree. Returns a list.
-	# If relative is set to True then the search is done relatively to the provided
-	# element.
-	def getElements(tree: ET._Element, elemName: str, relative: bool = False) -> list[ET._Element]:
-		return tree.xpath(_searchExpression(elemName, relative), namespaces=_ns)	# type: ignore[return-value]
-
-
-	# Find the children elements of a specific XML element.
-	def getElementWithChildren(tree: ET._Element, elemName: str) -> Optional[list[ET._Element]]:
-		result = getElements(tree, elemName)
-		if result is not None:
-			return result
-		return None
-
-
-	# Find an attribute value from the tree/element or, if not found, return the default
-	def getAttribute(tree: ET._Element, elemName: str, attrName: str, default: Any = None) -> Any:
-		elem = tree.xpath(f'//{elemName}', namespaces=_ns)
-		if elem and len(elem)>0:	# type: ignore[arg-type]
-			if attrName in elem[0].attrib:	# type: ignore[index, arg-type, union-attr]
-				return elem[0].attrib[attrName]	# type: ignore[union-attr, index]
-		return default	
-
-
-	# Create an XML element, including an optional namespace. Return the element
-	def createElement(elemName: str, namespace: Optional[str] = None) -> ET._Element:
-		if namespace:
-			return ET.Element('{%s}%s' % (_ns['m2m'], elemName), nsmap=_ns)
-		else:
-			return ET.Element(elemName)
-
-
-	# Create and add an element with the given name to the root. Return the new element.
-	def addElement(root: ET._Element, name: str) -> ET._Element:
-		elem = createElement(name)
-		root.append(elem)
-		return elem
-
-
-	# Create and add an element with the given name to the root. Add content to it when
-	# the content is not None, or add the content nevertheless when mandatory is True.
-	def addToElement(root: ET._Element, 
-				  	 name: str, 
-					 content: Any, 
-					 mandatory: bool = False) -> Optional[ET._Element]:
-		if isinstance(content, int) or (content and len(content) > 0) or mandatory:
-			elem = createElement(name)
-			if isinstance(content, list):
-				elem.text = ' '.join(content)
-			else:
-				elem.text = str(content)
-			root.append(elem)
-			return elem
-		return None
-
-
-	# Create a new ElementTree from a sub-tree
-	def elementAsNewTree(tree: ET._Element) -> ET._Element:
-		return ET.ElementTree(tree).getroot()
-
-
-	# Create an XML structure out of a response
-	def responseToXML(response: Response) -> Optional[ET._Element]:
-		if response and response.text and len(response.text) > 0:
-			return stringToXML(response.text)
-		return None
-
-
-	# Return the qualified name of an element
-	def xmlQualifiedName(element: str|ET._Element) -> tuple[str, str]:
-		qname = ET.QName(element)
-		r = ''
-		for s,n in _ns.items(): 
-			if n == qname.namespace:
-				r = s
-				break
-		return (qname.localname, s)
-
-
-	def xmlToString(xml: ET._Element) -> str:
-		"""	Return the XML structure as a string.
-
-			Args:
-				xml: The XML element to convert to a string.
-
-			Returns:
-				The XML structure as a string.
-		"""
-		return ET.tostring(xml, encoding='unicode')
-
-
-	def stringToXML(value: str) -> ET._Element:
-		"""	Create a new XML structure from a string.
-
-			Args:
-				value: The string to convert to an XML element.
-
-			Returns:
-				The XML element created from the string.
-		"""
-		return ET.fromstring(value)
-
-
 
 ###############################################################################
 
@@ -202,9 +61,6 @@ def addToElementJSON(jsn: dict, name: str, content: Any, mandatory: bool = False
 			name: The name of the element to add.
 			content: The content of the element to add.
 			mandatory: If True, the element is added even if the content is empty or None. Default is False.
-
-		Returns:
-			None
 	"""
 	if isinstance(content, int) or (content and len(content) > 0) or mandatory:
 		jsn[name] = content
@@ -235,19 +91,14 @@ def wrapJSON(obj: ResourceBase, jsn: dict) -> dict:
 #	Utilities
 #
 
-# Get the type from a response, for JSON and XML
-def getTypeFromResponse(response: requests.Response, encoding: int) -> int:
-	if encoding == CON.Encoding_XML:
-		root = responseToXML(response)
-		return toInt(getElement(root, 'ty'))
-	elif encoding == CON.Encoding_JSON:
-		jsn = response.json()
-		# This is a bit complicated. We need to get to the type, which is hidden under an
-		# unknown object definition key. So, we asume that the JSON we get has the object
-		# definition in the first element (as it should be).
-		inner = list(jsn.values())[0]
-		return getElementJSON(inner, 'ty')
-	return -1
+# Get the type from a response, for JSON
+def getTypeFromResponse(response: requests.Response) -> int:
+	jsn = response.json()
+	# This is a bit complicated. We need to get to the type, which is hidden under an
+	# unknown object definition key. So, we asume that the JSON we get has the object
+	# definition in the first element (as it should be).
+	inner = list(jsn.values())[0]
+	return getElementJSON(inner, 'ty')
 
 ###############################################################################
 #

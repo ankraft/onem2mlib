@@ -11,7 +11,6 @@ from __future__ import annotations
 from typing import Optional, Any, override, TYPE_CHECKING
 
 import logging
-import onem2mlib.marshalling as M
 import onem2mlib.constants as CON
 import onem2mlib.internal as INT
 import onem2mlib.mcarequests as MCA
@@ -53,9 +52,6 @@ class Group(ResourceBase):
 			**kwargs: Inherited attributes (parent, resourceName, labels, originator, etc.)
 		"""
 		super().__init__(type=CON.Type_Group, typeShortName=CON.Type_Group_SN, **kwargs)
-
-		self._marshallers = [M._Group_parseXML, M._Group_createXML,
-							M._Group_parseJSON, M._Group_createJSON]
 
 		self.maxNrOfMembers: int = maxNrOfMembers
 		""" Maximum number of members in the <group>. """
@@ -201,38 +197,15 @@ class Group(ResourceBase):
 	def _parseFanOutPointResponse(self, response: Response) -> Optional[list[ResourceBase]]:
 		# Get the resources from the answer
 		if response and response.status_code == 200:
-			if self.session.encoding == CON.Encoding_XML:
-				rsps = INT.getElements(INT.responseToXML(response), 'pc')	# deep-search the tree for all <pc> elements
-				if not rsps or not len(rsps) > 0: return None
-				resources = []
-				for rsp in rsps: # each <pc>  contains a onem2m resource 
-
-					# The following is a hack to get a stand-alone XML tree. Otherwise the XML parser always only
-					# finds the first resource in the whole response tree.
-					# Take the XML as a string and parse it again.
-					xml = INT.stringToXML(INT.xmlToString(rsp[0]))
-					(tag, ns) = INT.xmlQualifiedName(xml)
-					# The resources get the group as a parent to pass on the Session.
-					# Yes, this is halfway wrong, it will not result in a fully qualified path later.
-					# But at least the resources can be used by the application
-					resource = INT._newResourceFromTypeString(tag, self, namespace=ns)
-					if resource:
-						resource._parseXML(xml)
-						resources.append(resource)
-				return resources
-			elif self.session.encoding == CON.Encoding_JSON:
-				elements = INT.getALLSubElementsJSON(response.json(), 'm2m:pc')
-				resources = []
-				for elem in elements:
-					keyWithoutPrefix = list(elem.keys())[0].replace('m2m:','')		# TODO check this for other domains, eg. hd
-					resource = INT._newResourceFromTypeString(keyWithoutPrefix, self)
-					if resource:
-						resource._parseJSON(elem)
-						resources.append(resource)
-				return resources
-			else:
-				logger.error('Encoding not supported: ' + str(self.session.encoding))
-				raise EXC.NotSupportedError('Encoding not supported: ' + str(self.session.encoding))
+			elements = INT.getALLSubElementsJSON(response.json(), 'm2m:pc')
+			resources = []
+			for elem in elements:
+				keyWithoutPrefix = list(elem.keys())[0].replace('m2m:','')		# TODO check this for other domains, eg. hd
+				resource = INT._newResourceFromTypeString(keyWithoutPrefix, self)
+				if resource:
+					resource._parseJSON(elem)
+					resources.append(resource)
+			return resources
 		return None
 
 
@@ -251,3 +224,45 @@ class Group(ResourceBase):
 		self.consistencyStrategy = resource.consistencyStrategy
 		self.groupName = resource.groupName
 		self.fanOutPoint = resource.fanOutPoint
+
+
+	def _fromCSE(self, jsn: dict) -> None:
+		""" Update the attributes of this Group resource from a JSON representation.
+
+				Args:
+					jsn: The JSON representation of the resource as a dictionary.
+		"""
+		_jsn = super()._fromCSE(jsn)
+		self.maxNrOfMembers = INT.getElementJSON(_jsn, 'mnm', self.maxNrOfMembers)
+		self.memberType = INT.getElementJSON(_jsn, 'mt', self.memberType)
+		self.currentNrOfMembers = INT.getElementJSON(_jsn, 'cnm', self.currentNrOfMembers)
+		self.memberIDs = INT.getElementJSON(_jsn, 'mid', self.memberIDs)
+		self.memberTypeValidated = INT.getElementJSON(_jsn, 'mtv', self.memberTypeValidated)
+		self.consistencyStrategy = INT.getElementJSON(_jsn, 'csy', self.consistencyStrategy)
+		self.groupName = INT.getElementJSON(_jsn, 'gn', self.groupName)
+		self.fanOutPoint = f'{self._structuredResourceID()}/fopt'
+
+
+	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
+		""" Return a JSON representation of this Group resource as a dictionary, to be sent to the CSE.
+
+			Args:
+				isUpdate: If True, this JSON is for an update operation.
+				isAcpiUpdate: If True, this JSON is for an ACP update operation.
+				
+			Returns:
+				A JSON representation of this Group resource as a dictionary, to be sent to the CSE.
+		"""
+		jsn = super()._toCSE(isUpdate, isAcpiUpdate)
+		if isUpdate and isAcpiUpdate:
+			return INT.wrapJSON(self, jsn)
+		if self.maxNrOfMembers and not isUpdate: 	# No mnm when updating
+			INT.addToElementJSON(jsn, 'mnm', self.maxNrOfMembers)
+		INT.addToElementJSON(jsn, 'mt', self.memberType)
+		INT.addToElementJSON(jsn, 'mid', self.memberIDs, mandatory=True)
+		if self.consistencyStrategy and not isUpdate: 	# No csy when updating
+			INT.addToElementJSON(jsn, 'csy', self.consistencyStrategy)
+		INT.addToElementJSON(jsn, 'gn', self.groupName)
+		return INT.wrapJSON(self, jsn)
+
+

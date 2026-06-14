@@ -259,22 +259,11 @@ def discoverInCSE(resource: ResourceBase,
 			if response is not None:
 				if response.status_code == 200:
 					# Success: Parse the URI List (m2m:uril)
-					if resource.session.encoding == CON.Encoding_XML:
-						return onem2mlib.internal.getElement(
-							onem2mlib.internal.responseToXML(response), 
-							'm2m:uril', 
-							default=[]
-						)
-					elif resource.session.encoding == CON.Encoding_JSON:
-						return onem2mlib.internal.getElementJSON(
-							response.json(), 
-							'm2m:uril', 
-							default=[]
-						)
-					else:
-						msg = 'Encoding not supported: ' + str(resource.session.encoding)
-						logger.error(msg)
-						raise EXC.NotSupportedError(msg)
+					return onem2mlib.internal.getElementJSON(
+						response.json(), 
+						'm2m:uril', 
+						default=[]
+					)
 
 				# If 404, the resource wasn't found at this ID; try the next target
 				if response.status_code == 404:
@@ -328,17 +317,13 @@ def retrieveResourceByID(parent: ResourceBase, targetID: str, originator: Option
 		import onem2mlib.internal as INT # Local import to avoid circular dependency
 		
 		# Determine the type to create the correct Python class instance
-		ty = INT.getTypeFromResponse(response, parent.session.encoding)
+		ty = INT.getTypeFromResponse(response)
 		resource = INT._newResourceFromRID(ty, targetID, parent, originator=originator)
 		
 		if resource:
 			# Populate the object with the server data
-			if parent.session.encoding == CON.Encoding_XML:
-				root = INT.responseToXML(response)
-				resource._parseXML(root)
-			elif parent.session.encoding == CON.Encoding_JSON:
-				jsn = response.json()
-				resource._parseJSON(jsn)
+			jsn = response.json()
+			resource._parseJSON(jsn)
 			return resource
 		else:
 			lastError = f'Could not instantiate resource type: {ty}'
@@ -437,10 +422,7 @@ def _getHeaders(session: Session, type: Optional[int] = None, originator: Option
 	headers['X-M2M-RVI'] = session.releaseVersion or '3'
 
 	# Handle Encoding
-	if session.encoding == CON.Encoding_XML:
-		encoding = 'application/xml'
-	else:
-		encoding = 'application/json'
+	encoding = 'application/json'
 
 	if type:
 		headers['Content-Type'] = f'{encoding};ty={type}'
