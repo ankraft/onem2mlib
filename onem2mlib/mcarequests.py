@@ -63,7 +63,7 @@ def retrieveFromCSE(resource: ResourceBase, originator: Optional[str] = None) ->
 			
 			if response is not None:
 				if response.status_code == 200:
-					resource._parseResponse(response)
+					resource._fromCSE(response.json())
 					return True
 				
 				# If 404, we don't return yet; we try the next ID in the list
@@ -116,7 +116,7 @@ def createInCSE(resource: ResourceBase, type: int, originator: Optional[str] = N
 			
 			if response is not None:
 				if response.status_code == 201:
-					resource._parseResponse(response)
+					resource._fromCSE(response.json())
 					return True
 				
 				# If parent not found on this ID, try the next one
@@ -201,7 +201,7 @@ def updateInCSE(resource: ResourceBase,
 			
 			if response is not None:
 				if response.status_code == 200:
-					resource._parseResponse(response)
+					resource._fromCSE(response.json())
 					return True
 				
 				if response.status_code == 404:
@@ -325,8 +325,7 @@ def retrieveResourceByID(parent: ResourceBase, targetID: str, originator: Option
 		
 		if resource:
 			# Populate the object with the server data
-			jsn = response.json()
-			resource._parseJSON(jsn)
+			resource._fromCSE(response.json())
 			return resource
 		else:
 			lastError = f'Could not instantiate resource type: {ty}'

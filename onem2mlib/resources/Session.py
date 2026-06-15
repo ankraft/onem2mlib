@@ -87,7 +87,7 @@ class Session:
 		if response and response.status_code == 200:
 			from .CSEBase import CSEBase
 			resource = CSEBase(session=self, instantly=False)
-			resource._parseResponse(response)
+			resource._fromCSE(response.json())
 			return resource
 
 		error_text = f"{response.status_code} - {response.text}" if response else "No response"

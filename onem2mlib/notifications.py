@@ -369,7 +369,7 @@ class HTTPNotificationHandler(BaseHTTPRequestHandler):
 			ty_list = INT.getALLSubElementsJSON(res_jsn, 'ty')
 			if ty_list:
 				resource = INT._newResourceFromType(ty_list[0], None)
-				resource._parseJSON(res_jsn)
+				resource._fromCSE(res_jsn)
 		
 		self._callCallback(resource, sur, event_type, raw_jsn)
 

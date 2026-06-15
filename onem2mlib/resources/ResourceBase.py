@@ -591,42 +591,9 @@ class ResourceBase:
 				
 		return f"{self.parent._structuredResourceID(withRIScope)}/{self.resourceName}"
 
-
-	def _parseResponse(self, response: Response) -> None:
-		return self._parseJSON(response.json())
-
-
 	def _createContent(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> Optional[str]:
-		return json.dumps(self._createJSON(isUpdate, isAcpiUpdate=isAcpiUpdate))
+		return json.dumps(self._toCSE(isUpdate, isAcpiUpdate))
 
-
-	# Marschalling calls
-
-	def _parseJSON(self, jsn: dict) -> None:
-		""" Parse a JSON representation of the resource and update the state variables of this instance accordingly.
-		
-			Args:
-				jsn: The JSON representation of the resource as a dictionary.
-		"""
-		if self._marshallers[0] is not None:
-			self._marshallers[0](self, jsn)
-		else:
-			self._fromCSE(jsn)
-
-
-	def _createJSON(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> Optional[dict]:
-		""" Create a JSON representation of the resource. This is used for creating or updating the resource in the CSE.
-
-			Args:
-				isUpdate: If *True*, the JSON representation is created for an update operation. 
-				isAcpiUpdate: If *True*, the JSON representation is created for an update operation for
-					AccessControlPolicyIDs. This is needed to handle the special case of updating
-					AccessControlPolicyIDs for a resource.
-		"""
-		if self._marshallers[1] is not None:
-			return self._marshallers[1](self, isUpdate, isAcpiUpdate)
-		else:
-			return self._toCSE(isUpdate, isAcpiUpdate)
 
 	def _copy(self, resource: ResourceBase) -> None:
 		""" Copy the common attributes of a resource to this instance.

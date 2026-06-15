@@ -203,7 +203,7 @@ class Group(ResourceBase):
 				keyWithoutPrefix = list(elem.keys())[0].replace('m2m:','')		# TODO check this for other domains, eg. hd
 				resource = INT._newResourceFromTypeString(keyWithoutPrefix, self)
 				if resource:
-					resource._parseJSON(elem)
+					resource._fromCSE(elem)
 					resources.append(resource)
 			return resources
 		return None

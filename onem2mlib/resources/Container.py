@@ -260,7 +260,7 @@ class Container(ResourceBase):
 				parent=self, 
 				instantly=False
 			)
-			contentInstance._parseResponse(response)
+			contentInstance._fromCSE(response.json())
 			return contentInstance
 		return None
 
