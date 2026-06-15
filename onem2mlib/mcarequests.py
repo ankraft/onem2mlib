@@ -54,9 +54,8 @@ def retrieveFromCSE(resource: ResourceBase, originator: Optional[str] = None) ->
 		ids_to_try.append(("unstructured", resource._unstructuredResourceID(withRIScope=True)))
 	
 	# Always add structured as a candidate if name is known
-	if resource.resourceName:
+	if resource.resourceName and resource.parent:
 		ids_to_try.append(("structured", resource._structuredResourceID(withRIScope=True)))
-
 	for id_type, target_id in ids_to_try:
 		try:
 			logger.debug(f'Attempting retrieval via {id_type} ID: {target_id}')
@@ -92,7 +91,7 @@ def createInCSE(resource: ResourceBase, type: int, originator: Optional[str] = N
 	lastError = ''
 
 	logger.debug('Create resource: ' + str(resource))
-	if not _isValidResource(resource) or not resource.parent:
+	if not _isValidResource(resource) or (resource.type != CON.Type_AE and not resource.parent):
 		lastError = 'Invalid resource or missing parent'
 		logger.error(lastError)
 		return False
@@ -101,10 +100,14 @@ def createInCSE(resource: ResourceBase, type: int, originator: Optional[str] = N
 	
 	# Collect potential parent IDs to try
 	parent_targets = []
-	if resource.parent.resourceID:
-		parent_targets.append(('unstructured', resource.parent._unstructuredResourceID(withRIScope=True)))
-	if resource.parent.resourceName:
-		parent_targets.append(('structured', resource.parent._structuredResourceID(withRIScope=True)))
+	if resource.parent:
+		if resource.parent.resourceID:
+			parent_targets.append(('unstructured', resource.parent._unstructuredResourceID(withRIScope=True)))
+		if resource.parent.resourceName:
+			parent_targets.append(('structured', resource.parent._structuredResourceID(withRIScope=True)))
+	else:
+		# If there is no parent, then the resource to be created must be an AE directly under CSEBase, so we can use the root path as the target
+		parent_targets.append(('structured', '-'))	
 
 	for id_type, target_id in parent_targets:
 		try:
@@ -485,6 +488,7 @@ def _isValidResource(resource: ResourceBase) -> bool:
 			True if the resource is valid, False otherwise.
 	"""
 	return	(resource.type == CON.Type_CSEBase and resource.session is not None) or \
+			(resource.type == CON.Type_AE and resource.session is not None) or \
 			(resource.session is not None and ( \
 				#(resource.parent is not None and resource.parent.resourceName is not None)\
 				(resource.parent is not None and resource.parent.resourceID is not None)\

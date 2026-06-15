@@ -23,7 +23,7 @@ class Session:
 		about the current session, such as the CSE endpoint, credentials, desired encoding, etc.
 	"""
 
-	def __init__(self, address: str, originator: str) -> None:
+	def __init__(self, address: str, originator: Optional[str] = None) -> None:
 		""" Initialize a Session object. 
 
 		Initialize a Session object. 
@@ -37,7 +37,7 @@ class Session:
 		""" String. The URL of the CSE host to connect to. The address includes the protocol, hostname, 
 			port number, and any API prefix etc. """
 		
-		self.originator = originator
+		self.originator: Optional[str] = originator
 		""" String. This specifies the originator for identification in access control policies. 
 			It can be a domain, an originatorID, the string "all", or a role-ID. """
 		
@@ -51,9 +51,9 @@ class Session:
 		self.releaseVersion: Optional[str] = '3'
 		""" String. The oneM2M release version (e.g., "2a", "3", "4") used in the X-M2M-RVI header. """
 
-		if not self.originator:
-			logger.error('Missing originator for Session')
-			raise EXC.AuthenticationError('Missing originator')
+		# if not self.originator:
+		# 	logger.error('Missing originator for Session')
+		# 	raise EXC.AuthenticationError('Missing originator')
 
 
 	def setUser(self, username: str, password: str|None = None) -> 'Session':
@@ -78,6 +78,10 @@ class Session:
 			Returns:
 				A populated CSEBase object.
 		"""
+
+		if not self.originator:
+			logger.error('Missing originator for Session')
+			raise EXC.AuthenticationError('Missing originator')
   
 		response = MCA.get(self, '-') 
 		if response and response.status_code == 200:

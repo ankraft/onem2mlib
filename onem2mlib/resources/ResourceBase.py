@@ -49,10 +49,11 @@ class ResourceBase:
 		self.parent: Optional[ResourceBase] = kwargs.pop('parent', None)
 		""" The parent resource of this resource. """
 
-		self.session: Optional[Session] = None
+		self.session: Optional[Session] = kwargs.pop('session', None)
 		""" The Session object of the parent. """
-		if self.parent:
+		if self.parent and not self.session:
 			self.session = self.parent.session   
+		
 
 		self.type: int = kwargs.pop('type', None)
 		""" The type of the resource. """
@@ -108,9 +109,6 @@ class ResourceBase:
 		self.announcedAttribute: list[str] = []
 		""" A list of the announced attribute names of an original resource, 
 			or an empty list. """
-
-		# Internal list of per-class marshalling methods
-		self._marshallers: list[Optional[Callable]] = [ None, None ]
 
 		super().__init__()
 
@@ -196,7 +194,10 @@ class ResourceBase:
 			Returns:
 				The method returns *True* or *False*, depending on the success of the operation.
 		"""
-		return MCA.retrieveFromCSE(self, originator=self.originator)
+		try:
+			return MCA.retrieveFromCSE(self, originator=self.originator)
+		except EXC.CSEOperationError as e:
+			return False
 
 
 	def deleteFromCSE(self) -> bool:
@@ -214,7 +215,14 @@ class ResourceBase:
 		if self.type in [CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
 			logger.error(f"Resource doesn''t support deleting: {INT.nameAndType(self)}")
 			raise EXC.NotSupportedError(f"Resource doesn''t support deleting: {INT.nameAndType(self)}")
-		return MCA.deleteFromCSE(self, originator=self.originator)
+		result = MCA.deleteFromCSE(self, originator=self.originator)
+		if result and self.type == CON.Type_AE:
+			# If an AE is deleted, we also clear the session's originator (if it is the same) 
+			if self.session:
+				if self.session.originator == self.originator:
+					self.session.originator = None
+				self.session = None
+		return result
 
 
 	def createInCSE(self) -> bool:
@@ -229,10 +237,28 @@ class ResourceBase:
 			Note:
 				The `onem2mlib.ResourceBase.resourceID` state variable of the instance must be set to a valid value.
 		"""
+		
+		# Add a default originator if this is an AE being created there is no
+		# originator set for it.
+		if self.type == CON.Type_AE and not self.originator:
+			self.originator = 'C'
+
 		if self.type in [CON.Type_CSEBase, CON.Type_RemoteCSE]: # not allowed
 			logger.error(f"Resource doesn''t support creating: {INT.nameAndType(self)}")
 			raise EXC.NotSupportedError(f"Resource doesn''t support creating: {INT.nameAndType(self)}")
-		return MCA.createInCSE(self, self.type, originator=self.originator)
+		result = MCA.createInCSE(self, self.type, originator=self.originator)
+
+		# The following is a special handling for the case when an AE is created directly under CSEBase 
+		# with an incomplete session and an unknown originator. "incomplete session" means that the session 
+		# doesn't have a valid originator and/or doesn't have a reference to the CSEBase.
+		# After the AE has been created, we can update the session with the correct originator and CSEBase
+		# and set the parent of the AE to the CSEBase. 
+		if result and  self.type == CON.Type_AE:
+			if self.session and not self.session.originator:
+				self.session.originator = self.originator
+			self.parent = self.session.getCSEBase()
+		return result
+
 
 
 	def updateInCSE(self, isAcpiUpdate: bool = False) -> bool:
@@ -272,6 +298,7 @@ class ResourceBase:
 				The `onem2mlib.ResourceBase.resourceID` state variable of the instance must be set to a valid value.
 		"""
 		return self.updateInCSE(True)
+
 
 	def get(self) -> bool:
 		"""	Retrieve the resource from the &lt;CSEBase>, or create it if it doesn't exist.

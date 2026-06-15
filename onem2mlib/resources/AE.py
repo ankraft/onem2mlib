@@ -219,6 +219,9 @@ class AE(ResourceBase):
 		self.pointOfAccess = INT.getElementJSON(_jsn, 'poa', self.pointOfAccess)	
 		self.nodeLink = INT.getElementJSON(_jsn, 'nl', self.nodeLink)
 
+		# override originator
+		self.originator = self.AEID
+
 
 	def _toCSE(self, isUpdate: bool = False, isAcpiUpdate: bool = False) -> dict:
 		""" Return a JSON representation of this AE resource as a dictionary, to be sent to the CSE.
